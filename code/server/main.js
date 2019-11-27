@@ -10,7 +10,7 @@ httpServer.on("request", function(req, res) {
 		res.end("Piccadilly Game");
 	} else if(req.url == "/play") {
 		res.setHeader("Content-Type", "text/html");
-		let file = fs.createReadStream("play.html");
+		let file = fs.createReadStream("client/play.html");
 		file.pipe(res);
 	} else if(req.url == "/play/") {
 		res.writeHead(302, {"Location": "/play"});
