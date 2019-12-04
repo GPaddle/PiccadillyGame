@@ -8,3 +8,7 @@
 	font-weight: bold;
 	src: url("/fonts/lato/bold");
 }
+
+body {
+	font-family: lato;
+}

@@ -25,6 +25,13 @@ httpServer.on("request", function(req, res) {
 			break;
 		}
 
+		case "/screen": {
+			res.setHeader("Content-Type", "text/html");
+			let file = fs.createReadStream("client/screen.html");
+			file.pipe(res);
+			break;
+		}
+
 		case "/style": {
 			res.setHeader("Content-Type", "text/css");
 			let file = fs.createReadStream("client/style.css");
