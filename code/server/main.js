@@ -25,9 +25,24 @@ httpServer.on("request", function(req, res) {
 			break;
 		}
 
+		case "/play.js": {
+			res.setHeader("Content-Type", "application/javascript");
+			let file = fs.createReadStream("client/play.js");
+			file.pipe(res);
+			break;
+		}
+
 		case "/screen": {
 			res.setHeader("Content-Type", "text/html");
 			let file = fs.createReadStream("client/screen.html");
+			file.pipe(res);
+			break;
+		}
+
+
+		case "/screen.js": {
+			res.setHeader("Content-Type", "application/javascript");
+			let file = fs.createReadStream("client/screen.js");
 			file.pipe(res);
 			break;
 		}
