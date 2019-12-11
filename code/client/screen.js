@@ -1,1 +1,4 @@
-console.log("Le ciel est bleu");
+window.onload = function() {
+	let jsError = document.getElementById("javascript-error");
+	jsError.remove();
+}
