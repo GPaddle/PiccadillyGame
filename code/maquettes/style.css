@@ -1,0 +1,122 @@
+:root {
+	--back-colB : #242235;
+	--rep-colB : #4c486f;
+	--hov-colB: #151329;
+	--back-colR : #7a2c2c;
+	--rep-colR : #a65050;
+	--hov-colR: #571616;
+}
+
+body {
+	background-color: #7a2c2c; 
+	color: #fefefe;
+	font-family: sans-serif;
+}
+
+/* Classement */
+#top {
+	margin: auto;
+	text-align: center;
+	width: 20%;
+	display: grid;
+	grid-template:"a b""c d""e f""g h""i j""k l""m n";
+}
+
+#titreMJ {
+	margin: auto;
+	margin-top: 10%;
+	margin-bottom: 5%;
+	text-align: center;
+	font-size: 2em;
+	font-weight: bold;
+}
+
+.classement {
+	text-align: right;
+}
+
+.num {
+	text-align: left;
+}
+
+#mp {
+	margin-top:5%;
+	text-align: center;
+	font-size: 2em;
+}
+
+
+/* Page question */
+#moduleQ {
+	margin:auto;
+	margin-top:25%;
+	text-align: center;
+	width: 60%;
+}
+#question {
+	font-size: 2em;
+	padding: 4%;
+}
+#reponses {
+	display: grid;
+	grid-template: "a b""c d";
+}
+
+#reponse {
+	padding: 15px;
+	margin: 10px;
+	border-radius: 10px 10px 10px 10px;
+	background-color: #a65050;
+	transition: background-color .45s;
+}
+
+#reponse:hover {
+	background-color: #571616;
+}
+
+#time {
+	margin-bottom: 5px;
+}
+
+/* Page play */
+
+#textM1 {
+	margin-top: 12%;
+	text-align: center;
+}
+#progress {
+	width: 250px;
+	background-color: #571616;
+	margin: auto;
+	z-index: 10;
+}
+#progress2 {
+	height: 20px;
+	margin: 0px;
+	width: 100px;
+	background-color: #a65050;
+	z-index: 12;
+}
+#pJ, #nbJ {
+	padding: 3%;
+	margin: 2%;
+}
+
+#textIn {
+	padding: 5px;
+	width: 200px;
+	height: 20px;
+	text-align: center;
+}
+
+#button {
+	background-color: #a65050	; /* Green */
+  border: none;
+  color: white;
+  padding: 8px 32px;
+  margin-top:20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+}
