@@ -39,6 +39,11 @@ httpServer.on("request", function(req, res) {
 			break;
 		}
 
+		case "/screen/": {
+			res.writeHead(302, {"Location": "/screen"});
+			res.end();
+			break;
+		}
 
 		case "/screen.js": {
 			res.setHeader("Content-Type", "application/javascript");
