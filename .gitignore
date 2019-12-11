@@ -1,3 +1,6 @@
+*.doc
+*.docx
+
 .vscode/settings.json
 *.log
 
