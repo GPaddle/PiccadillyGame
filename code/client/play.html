@@ -1,13 +1,73 @@
 <!DOCTYPE html>
-<html lang="fr">
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width">
-		<link rel="stylesheet" href="/style">
-		<title>Piccadilly Game</title>
-		<script src="/play.js"></script>
-	</head>
-	<body>
-		<div id="javascript-error">Piccadilly Game utilise JavaScript. Veuillez l'activer pour faire fonctionner le jeu.</div>
-	</body>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>TodoList Socket.io</title>
+    <link rel="stylesheet" href="/play/style.css" type="text/css">
+</head>
+
+<body>
+
+
+    <div id="textM1">
+        <div id="pJ">Nombre de joueurs connecté : <span id="nbJoueurs"></span></div>
+        <!--<div id="progress">
+                <div id="progress2"></div>
+            </div>-->
+        <form>
+            <input type="text" name="pseudo" placeholder="Entrez votre pseudo" id="pseudo" required autofocus><br>
+            <button id="send">Envoyer</button>
+        </form>
+        <div id="nbJ">La partie commence dans <span id="tempsRestant">x</span> secondes</div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var date;
+        //Connexion au socket IO
+        let socket = io.connect('http://localhost:8082');
+
+        socket.on('init', function(nbJoueurs) {
+            console.log(nbJoueurs);
+            document.getElementById('nbJoueurs').innerHTML = nbJoueurs;
+        });
+
+        socket.on('initDate', function(dateInit) {
+
+            var date = dateInit;
+            tpsRestant = (date - new Date().getTime()) / 1000;
+
+            document.getElementById('tempsRestant').innerHTML = Math.floor(tpsRestant);
+
+            function intervalFunc() {
+                let tpsRestant = (date - new Date().getTime()) / 1000;
+                if (tpsRestant > 0) {
+                    document.getElementById('tempsRestant').innerHTML = Math.floor(tpsRestant);
+                } else {
+                    document.getElementById('nbJ').innerHTML = "GO";
+                }
+            }
+            setInterval(intervalFunc, 1000);
+
+        });
+
+
+        //Fonction d'envois de la chaine de caractère
+        document.getElementById('send').addEventListener('click', function() {
+            //Récupère la chaine
+            let txt = document.getElementById('pseudo').value;
+
+            //Envois de la chaine par webSocket
+            socket.emit('newUser', txt);
+
+        });
+
+        window.onload = function() {
+            let jsError = document.getElementById("javascript-error");
+            jsError.remove();
+        }
+    </script>
+</body>
+
 </html>
