@@ -1,20 +1,22 @@
 {
-	"name": "piccadilly-game",
-	"version": "0.0.0",
-	"description": "Projet tutoré",
-	"contributors": [
-		"Matéo Achterfeld",
-		"Tom Georgelin",
-		"Martin Jossic",
-		"Guillaume Keller"
-	],
-	"repository": {
-		"type": "git",
-		"url": "git+ssh://git@bitbucket.org/depinfoens/s3b_s15_achterfeld_georgelin_jossic_keller.git"
-	},
-	"license": "UNLICENSED",
-	"private": true,
-	"dependencies": {
-		"ws": "^7.2.0"
-	}
+    "name": "piccadilly-game",
+    "version": "0.0.0",
+    "description": "Projet tutoré",
+    "contributors": [
+        "Matéo Achterfeld",
+        "Tom Georgelin",
+        "Martin Jossic",
+        "Guillaume Keller"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@bitbucket.org/depinfoens/s3b_s15_achterfeld_georgelin_jossic_keller.git"
+    },
+    "license": "UNLICENSED",
+    "private": true,
+    "dependencies": {
+        "ws": "^7.2.0",
+        "socket.io": "^2.3.0",
+        "express": "^4.17.1"
+    }
 }
