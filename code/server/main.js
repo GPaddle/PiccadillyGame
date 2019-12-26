@@ -1,84 +1,72 @@
-const http = require("http");
-const fs = require("fs");
-const ws = require("ws");
+//Require de toutes les dépendances
+var http = require('http');
+var app = require('express')();
+var fs = require('fs');
+var server = http.createServer(app);
+var io = require('socket.io').listen(server);
 
-const httpServer = http.createServer();
-httpServer.listen(8080);
 
-httpServer.on("request", function(req, res) {
-	switch(req.url) {
-		case "/": {
-			res.end("Piccadilly Game");
-			break;
-		}
+//Init de la liste
+var joueurs = [];
+var reponses = [];
 
-		case "/play": {
-			res.setHeader("Content-Type", "text/html");
-			let file = fs.createReadStream("client/play.html");
-			file.pipe(res);
-			break;
-		}
+/*
+Création des routes 
+    - URL qui sert d'index /play
+    - Tous les autres URL redirigent sur /play
+*/
+app.get('/play', function(req, res) {
+    //Chargement de la page index
+    fs.readFile('client/play.html', 'utf-8', function(error, content) {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(content);
+    });
+})
 
-		case "/play/": {
-			res.writeHead(302, {"Location": "/play"});
-			res.end();
-			break;
-		}
+.get('/play/style.css', function(req, res) {
+    //Chargement de la page index
+    fs.readFile('client/style.css', 'utf-8', function(error, content) {
+        res.writeHead(200, { "Content-Type": "text/css" });
+        res.end(content);
+    });
+})
 
-		case "/play.js": {
-			res.setHeader("Content-Type", "application/javascript");
-			let file = fs.createReadStream("client/play.js");
-			file.pipe(res);
-			break;
-		}
+.get('/play/:numQuestion/:numReponse', function(req, res) {
+    reponses[4 * numQuestion + numReponse]++;
+    res.redirect("/play");
+})
 
-		case "/screen": {
-			res.setHeader("Content-Type", "text/html");
-			let file = fs.createReadStream("client/screen.html");
-			file.pipe(res);
-			break;
-		}
+.use(function(req, res, next) {
+    res.redirect('/play');
+})
 
-		case "/screen/": {
-			res.writeHead(302, {"Location": "/screen"});
-			res.end();
-			break;
-		}
+let duréeAttente = 30;
 
-		case "/screen.js": {
-			res.setHeader("Content-Type", "application/javascript");
-			let file = fs.createReadStream("client/screen.js");
-			file.pipe(res);
-			break;
-		}
+let date = new Date().getTime() + duréeAttente * 1000;
 
-		case "/style": {
-			res.setHeader("Content-Type", "text/css");
-			let file = fs.createReadStream("client/style.css");
-			file.pipe(res);
-			break;
-		}
 
-		case "/fonts/lato": {
-			res.setHeader("Content-Type", "font/ttf");
-			res.setHeader("Content-Length", 75136);
-			let file = fs.createReadStream("client/fonts/lato/lato.ttf");
-			file.pipe(res);
-			break;
-		}
+//Utilisation des sockets
+io.sockets.on('connection', function(socket) {
 
-		case "/fonts/lato/bold": {
-			res.setHeader("Content-Type", "font/ttf");
-			res.setHeader("Content-Length", 73316);
-			let file = fs.createReadStream("client/fonts/lato/lato-bold.ttf");
-			file.pipe(res);
-			break;
-		}
+    socket.emit('init', joueurs.length);
+    socket.emit('initDate', date)
 
-		default: {
-			res.statusCode = 404;
-			res.end("Page inexistante");
-			break;
-		}
-	}
+    socket.on('reponse', function(index) {
+        lis[index]++;
+        socket.broadcast.emit('update', lis);
+    });
+
+    socket.on('newUser', function(txt) {
+        joueurs.push(txt);
+
+        //TODO
+        // Stocker le fait que l'utilisateur ait entré un pseudo puis l'empecher de rentrer à nouveau un pseudo (disabled sur le boutton/input)
+        socket.broadcast.emit('nvJoueurs', joueurs.length);
+        console.log(txt);
+    });
+
 });
+
+//On ouvre l'écoute sur le port 8082 
+//(Pour ne pas concurrencer d'autres serveurs lancés classiquement sur 8080 : WAMP)
+server.listen(8082);
