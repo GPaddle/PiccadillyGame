@@ -1,11 +1,11 @@
 const http = require("http");
-const ws = require("ws");
 const fs = require("fs");
+const startWebSocket = require("./websocket.js");
 
-const server = http.createServer();
-server.listen(8082) // On ouvre l'écoute sur le port 8082 pour ne pas concurrencer d'autres serveurs lancés classiquement sur 8080 : WAMP
+const httpServer = http.createServer();
+httpServer.listen(8082) // On ouvre l'écoute sur le port 8082 pour ne pas concurrencer d'autres serveurs lancés classiquement sur 8080 : WAMP
 
-server.on("request", function(req, res) {
+httpServer.on("request", function(req, res) {
 	switch(req.url) {
 		case "/": {
 			res.end("Piccadilly Game");
@@ -70,3 +70,5 @@ server.on("request", function(req, res) {
 		}
 	}
 });
+
+startWebSocket(httpServer);
