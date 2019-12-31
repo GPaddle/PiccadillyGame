@@ -6,22 +6,7 @@
 @font-face {
     font-family: lato;
     font-weight: bold;
-    src: url("/fonts/lato/bold");
-}
-
-body {
-    font-family: lato;
-    padding: 20px;
-    margin: 0px;
-}
-
-#javascript-error {
-    font-weight: bold;
-    font-size: 20px;
-    margin-top: 100px;
-    text-align: center;
-    width: 100vw;
-    height: 100vh;
+    src: url("/fonts/lato-bold");
 }
 
 :root {
@@ -36,9 +21,70 @@ body {
 body {
     background-color: #7a2c2c;
     color: #fefefe;
-    font-family: sans-serif;
+    font-family: lato;
+    padding: 200px 20px 20px 20px;
 }
 
+/* Page d'accueil - ajout du pseudo */
+
+#player-infos {
+    margin-bottom: 50px;
+}
+
+.player-info {
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 15px;
+}
+
+.player-info-value {
+    font-weight: bold;
+}
+
+#new-player-form {
+    margin-bottom: 60px;
+}
+
+input {
+    display: block;
+    padding: 5px;
+    width: 250px;
+    height: 20px;
+    text-align: center;
+    margin: auto;
+    font-size: 18px;
+    background: #7a2c2c;
+    border: 2px solid white;
+    border-radius: 8px;
+    color: white;
+}
+
+button {
+    display: block;
+    background-color: #a65050;
+    /* Green */
+    border: none;
+    color: white;
+    padding: 8px 32px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    margin: 20px auto 0px auto;
+}
+
+#player-list {
+    width: 500px;
+    padding: 10px;
+    margin: auto;
+    background: #a65050;
+}
+
+.player-list-player {
+    text-align: center;
+    font-weight: bold;
+    font-size: 17px;
+    margin-bottom: 5px;
+}
 
 /* Classement */
 
@@ -117,11 +163,6 @@ body {
 
 /* Page play */
 
-#textM1 {
-    margin-top: 12%;
-    text-align: center;
-}
-
 #progress {
     width: 250px;
     background-color: #571616;
@@ -135,30 +176,4 @@ body {
     width: 100px;
     background-color: #a65050;
     z-index: 12;
-}
-
-#pJ,
-#nbJ {
-    padding: 3%;
-    margin: 2%;
-}
-
-#textIn {
-    padding: 5px;
-    width: 200px;
-    height: 20px;
-    text-align: center;
-}
-
-#button {
-    background-color: #a65050;
-    /* Green */
-    border: none;
-    color: white;
-    padding: 8px 32px;
-    margin-top: 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
 }
