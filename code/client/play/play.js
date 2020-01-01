@@ -1,5 +1,4 @@
 const CLIENT_TYPE_PLAYER = 0;
-const CLIENT_TYPE_SCREEN = 1;
 
 const ADD_PLAYER = 0;
 const SET_PSEUDO = 1;

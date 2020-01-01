@@ -14,35 +14,42 @@ httpServer.on("request", function(req, res) {
 
 		case "/play": {
 			res.setHeader("Content-Type", "text/html");
-			let file = fs.createReadStream("client/play.html");
+			let file = fs.createReadStream("client/play/play.html");
 			file.pipe(res);
 			break;
 		}
 
-		case "/screen": {
+		case "/screen/2a50e397ad42ed24": {
 			res.setHeader("Content-Type", "text/html");
-			let file = fs.createReadStream("client/screen.html");
+			let file = fs.createReadStream("client/screen/screen.html");
 			file.pipe(res);
 			break;
 		}
 
-		case "/style": {
+		case "/play.css": {
 			res.setHeader("Content-Type", "text/css");
-			let file = fs.createReadStream("client/style.css");
+			let file = fs.createReadStream("client/play/play.css");
 			file.pipe(res);
 			break;
 		}
 
 		case "/play.js": {
 			res.setHeader("Content-Type", "application/javascript");
-			let file = fs.createReadStream("client/play.js");
+			let file = fs.createReadStream("client/play/play.js");
 			file.pipe(res);
 			break;
 		}
 
 		case "/screen.js": {
 			res.setHeader("Content-Type", "application/javascript");
-			let file = fs.createReadStream("client/screen.js");
+			let file = fs.createReadStream("client/screen/screen.js");
+			file.pipe(res);
+			break;
+		}
+
+		case "/screen.css": {
+			res.setHeader("Content-Type", "text/css");
+			let file = fs.createReadStream("client/screen/screen.css");
 			file.pipe(res);
 			break;
 		}

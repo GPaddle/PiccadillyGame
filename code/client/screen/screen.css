@@ -1,0 +1,50 @@
+@font-face {
+    font-family: lato;
+    src: url("/fonts/lato");
+}
+
+@font-face {
+    font-family: lato;
+    font-weight: bold;
+    src: url("/fonts/lato-bold");
+}
+
+body {
+	background-color: #7a2c2c;
+	color: #fefefe;
+	font-family: lato;
+
+	height: 100vh;
+	margin: 0px;
+	padding: 20px;
+	box-sizing: border-box;
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+#javascript-error {
+	font-size: 60px;
+	text-align: center;
+}
+
+#service-name {
+	font-size: 90px;
+	font-weight: bold;
+	margin-bottom: 50px;
+}
+
+#join-invitation {
+	font-size: 40px;
+	margin-bottom: 100px;
+}
+
+.player-info {
+	font-size: 30px;
+}
+
+#player-info-first {
+	margin-bottom: 30px;
+}

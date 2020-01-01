@@ -12,7 +12,7 @@ const STATE_WAITING_ROOM = 1;
 const STATE_AUTH = 2;
 const STATE_PSEUDO = 3;
 
-const SCREEN_SECRET_KEY = "piccascreendilly447";
+const SCREEN_SECRET_KEY = "7116dd23254dc1a8";
 
 const MIN_PLAYER = 10;
 
@@ -46,6 +46,8 @@ module.exports = function(httpServer) {
 
 									playersSocks.push(sock);
 
+									screenSock.send(JSON.stringify([ADD_PLAYER]));
+
 									let players = [];
 
 									for(playerSock of playersSocks) {
@@ -56,9 +58,11 @@ module.exports = function(httpServer) {
 									sock.send(JSON.stringify([MIN_PLAYER, players]));
 
 									sock.state = STATE_PSEUDO;
-								} else if(msg[1] == CLIENT_TYPE_SCREEN) {
+								} else if(msg[0] == CLIENT_TYPE_SCREEN && msg[1] == SCREEN_SECRET_KEY) {
 									screenSock = sock;
-									sock.state = STATE_NONE
+									sock.state = STATE_NONE;
+
+									sock.send(JSON.stringify([MIN_PLAYER, playersSocks.length]));
 								}
 
 								break;
@@ -93,6 +97,8 @@ module.exports = function(httpServer) {
 			sock.on("close", function() {
 				if(state == STATE_WAITING_ROOM && sock.player) {
 					playersSocks.splice(playersSocks.indexOf(sock), 1);
+
+					screenSock.send(JSON.stringify([DEL_PLAYER]));
 
 					for(playerSock of playersSocks) {
 						playerSock.send(JSON.stringify([DEL_PLAYER, sock.player.id]));
