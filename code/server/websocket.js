@@ -6,6 +6,7 @@ const CLIENT_TYPE_SCREEN = 1;
 const ADD_PLAYER = 0;
 const SET_PSEUDO = 1;
 const DEL_PLAYER = 2;
+const PSEUDO_ALREADY_USED = 3;
 
 const STATE_NONE = 0;
 const STATE_WAITING_ROOM = 1;
@@ -55,7 +56,7 @@ module.exports = function(httpServer) {
 										playerSock.send(JSON.stringify([ADD_PLAYER, sock.player.id, sock.player.pseudo]));
 									}
 
-									sock.send(JSON.stringify([MIN_PLAYER, players]));
+									sock.send(JSON.stringify([MIN_PLAYER, players, sock.player.id]));
 
 									sock.state = STATE_PSEUDO;
 								} else if(msg[0] == CLIENT_TYPE_SCREEN && msg[1] == SCREEN_SECRET_KEY) {
@@ -85,6 +86,8 @@ module.exports = function(httpServer) {
 									}
 
 									sock.state = STATE_NONE;
+								} else {
+									sock.send(JSON.stringify([PSEUDO_ALREADY_USED]));
 								}
 
 								break;

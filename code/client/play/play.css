@@ -41,6 +41,16 @@ body {
     font-weight: bold;
 }
 
+#player-pseudo {
+    text-align: center;
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+#player-pseudo-value {
+    font-weight: bold;
+}
+
 #new-player-form {
     margin-bottom: 60px;
 }
@@ -69,7 +79,18 @@ button {
     text-align: center;
     text-decoration: none;
     font-size: 16px;
-    margin: 20px auto 0px auto;
+    margin: 10px auto 0px auto;
+}
+
+#pseudo-error {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#player-list-header {
+    text-align: center;
+    font-size: 26px;
+    margin-bottom: 20px;
 }
 
 #player-list {

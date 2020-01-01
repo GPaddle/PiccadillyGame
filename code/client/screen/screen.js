@@ -27,12 +27,12 @@ window.onload = function() {
 
 	const sock = new WebSocket("ws://" + window.location.host);
 
-	let state = STATE_GAME_INFO;
-
-	let playersNumber = 0;
-	let minPlayersCount;
-
 	sock.onopen = function() {
+		let state = STATE_GAME_INFO;
+
+		let playersNumber = 0;
+		let minPlayersCount;
+
 		sock.send(JSON.stringify([CLIENT_TYPE_SCREEN, SECRET_SCREEN_KEY]));
 
 		sock.onmessage = function(json) {
