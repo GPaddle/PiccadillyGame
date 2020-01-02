@@ -91,7 +91,7 @@ const MIN_PLAYER = 2;
 module.exports = function(httpServer) {
     const wss = new ws.Server({ server: httpServer });
 
-    let screenSock;
+    let screensSocks = [];
     const playersSocks = [];
 
     let state = State.WAITING_ROOM;
@@ -107,7 +107,9 @@ module.exports = function(httpServer) {
             playerSock.send(JSON.stringify([START_GAME])); // on dit aux joueurs que la partie commence (pour qu'ils affichent l'interface des questions)
         }
 
-        screenSock.send(JSON.stringify([START_GAME]));
+        for(let screenSock of screensSocks) {
+            screenSock.send(JSON.stringify([START_GAME]));
+        }
 
         function nextQuestion() {
             actualQuestion++;
@@ -116,7 +118,9 @@ module.exports = function(httpServer) {
                 playerSock.send(JSON.stringify([NEW_QUESTION, questions[actualQuestion][3]]));
             }
 
-            screenSock.send(JSON.stringify(questions[actualQuestion]));
+            for(let screenSock of screensSocks) {
+                screenSock.send(JSON.stringify(questions[actualQuestion]));
+            }
 
             if(actualQuestion < questions.length - 1) {
                 setTimeout(nextQuestion, questions[actualQuestion][3] * 1000);
@@ -151,7 +155,9 @@ module.exports = function(httpServer) {
 
                                     playersSocks.push(sock);
 
-                                    screenSock.send(JSON.stringify([ADD_PLAYER]));
+                                    for(let screenSock of screensSocks) {
+                                        screenSock.send(JSON.stringify([ADD_PLAYER]));
+                                    }
 
                                     let players = [];
 
@@ -169,7 +175,7 @@ module.exports = function(httpServer) {
 
                                     sock.state = State.PSEUDO;
                                 } else if (msg[0] == CLIENT_TYPE_SCREEN && msg[1] == SCREEN_SECRET_KEY) {
-                                    screenSock = sock;
+                                    screensSocks.push(sock);
                                     sock.state = State.NONE;
 
                                     sock.send(JSON.stringify([MIN_PLAYER, playersSocks.length]));
@@ -238,7 +244,9 @@ module.exports = function(httpServer) {
                 if (state == State.WAITING_ROOM && sock.player !== undefined) {
                     playersSocks.splice(playersSocks.indexOf(sock), 1);
 
-                    screenSock.send(JSON.stringify([DEL_PLAYER]));
+                    for(screenSock of screensSocks) {
+                        screenSock.send(JSON.stringify([DEL_PLAYER]));
+                    }
 
                     for (let playerSock of playersSocks) {
                         playerSock.send(JSON.stringify([DEL_PLAYER, sock.player.id]));
