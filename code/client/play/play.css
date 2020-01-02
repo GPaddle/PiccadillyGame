@@ -25,6 +25,7 @@ body {
     padding: 100px 20px 20px 20px;
 }
 
+
 /* Page d'accueil - ajout du pseudo */
 
 #player-infos {
@@ -106,6 +107,7 @@ button {
     font-size: 17px;
     margin-bottom: 5px;
 }
+
 
 /* Classement */
 
@@ -197,4 +199,8 @@ button {
     width: 100px;
     background-color: #a65050;
     z-index: 12;
+}
+
+.disable {
+    background: #0005 !important;
 }

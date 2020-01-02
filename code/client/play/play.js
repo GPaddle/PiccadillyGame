@@ -5,13 +5,33 @@ const SET_PSEUDO = 1;
 const DEL_PLAYER = 2;
 const PSEUDO_ALREADY_USED = 3;
 
-const STATE_NONE = 0;
-const STATE_GAME_INFO = 1;
-const STATE_PLAYER_LIST = 2;
-const STATE_WAITING_ROOM = 3;
+const State = {
+    NONE: 0,
+    GAME_INFO: 1,
+    PLAYER_LIST: 2,
+    WAITING_ROOM: 3
+}
+
+
+const Questions = {
+    Q1: {
+        Q: 'Combien y a t-il eu de présidents aux États-Unis ?',
+        R1: '12',
+        R2: '128',
+        R3: '42',
+        R4: '45'
+    },
+    Q2: {
+        Q: `En quelle année a eu lieu l'exposition universelle durant laquelle la Tour Eiffel a été construite ?`,
+        R1: '1890',
+        R2: '1907',
+        R3: '2020',
+        R4: '1887'
+    }
+}
 
 function displayHome() {
-	document.body.innerHTML = `
+    document.body.innerHTML = `
 	<div id="player-infos">
 		<div class="player-info">Nombre de joueurs connectés : <span class="player-info-value" id="connected-players">...</span></div>
 		<div class="player-info">Nombre de joueurs minimum nécessaires : <span class="player-info-value" id="min-players">...</span></div>
@@ -29,105 +49,185 @@ function displayHome() {
 	`;
 }
 
+function displayGame(nb) {
+    let jeu;
+    switch (nb) {
+        case 1:
+            jeu = Questions.Q1;
+            break;
+
+        case 2:
+            jeu = Questions.Q2;
+            break;
+
+        default:
+            break;
+    }
+    document.body.innerHTML = `
+	
+    <div id="moduleQ">
+        <div id="question">` + jeu.Q + `</div><br>
+        <div id="time">Temps restant</div>
+        <div id="progress">
+            <div id="progress2"></div>
+        </div>
+        <div id="reponses">
+            <button id="answer1">` + jeu.R1 + `</button>
+            <button id="answer2">` + jeu.R2 + `</button>
+            <button id="answer3">` + jeu.R3 + `</button>
+            <button id="answer4">` + jeu.R4 + `</button>
+        </div>
+    </div>
+
+	`;
+}
+
 window.onload = function() {
-	displayHome();
+    displayHome();
 
-	const connectedPlayersCount = document.getElementById("connected-players");
-	const minPlayersCount = document.getElementById("min-players");
+    let questionNumber = 1;
 
-	const pseudoInput = document.getElementById("pseudo-input");
-	const pseudoError = document.getElementById("pseudo-error");
-	const sendPseudoButton = document.getElementById("send-pseudo-button");
+    const connectedPlayersCount = document.getElementById("connected-players");
+    const minPlayersCount = document.getElementById("min-players");
 
-	const playerPseudoHtml = document.getElementById("player-pseudo-value");
-	const playersHtmlList = document.getElementById("player-list");
+    const pseudoInput = document.getElementById("pseudo-input");
+    const pseudoError = document.getElementById("pseudo-error");
+    const sendPseudoButton = document.getElementById("send-pseudo-button");
 
-	const sock = new WebSocket("ws://" + window.location.host);
+    const playerPseudoHtml = document.getElementById("player-pseudo-value");
+    const playersHtmlList = document.getElementById("player-list");
 
-	sock.onopen = function() {
-		let state = STATE_GAME_INFO;
-		let players;
+    const sock = new WebSocket("ws://" + window.location.host);
 
-		let meId;
+    let answers = [];
 
-		sock.send(JSON.stringify([CLIENT_TYPE_PLAYER]));
+    let minPlayer = 0;
+    sock.onopen = function() {
+        let state = State.GAME_INFO;
+        let players;
 
-		sock.onmessage = function(json) {
-			let msg = JSON.parse(json.data);
+        let minPlayersCount = 0;
 
-			switch(state) {
-				case STATE_GAME_INFO:
-					players = msg[1];
+        let meId;
 
-					minPlayersCount.innerHTML = msg[0];
-					connectedPlayersCount.innerHTML = players.length;
+        sock.send(JSON.stringify([CLIENT_TYPE_PLAYER]));
 
-					meId = msg[2];
+        sock.onmessage = function(json) {
+            let msg = JSON.parse(json.data);
 
-					for(player of players) {
-						player.htmlLine = document.createElement("div");
-						player.htmlLine.classList.add("player-list-player");
-						player.htmlLine.innerHTML = player.pseudo;
+            console.log(msg);
 
-						playersHtmlList.appendChild(player.htmlLine);
+            switch (state) {
+                case State.GAME_INFO:
+                    players = msg[1];
 
-						if(player.id == meId) {
-							playerPseudoHtml.innerHTML = player.pseudo;
-						}
-					}
+                    minPlayersCount.innerHTML = msg[0];
+                    minPlayer = msg[0];
 
-					state = STATE_WAITING_ROOM;
-					break;
+                    connectedPlayersCount.innerHTML = players.length;
 
-				case STATE_WAITING_ROOM:
-					if(msg[0] == ADD_PLAYER) {
-						let player = {id: msg[1], pseudo: msg[2]};
-						players.push(player);
+                    meId = msg[2];
 
-						player.htmlLine = document.createElement("div");
-						player.htmlLine.classList.add("player-list-player");
-						player.htmlLine.innerHTML = player.pseudo;
+                    for (player of players) {
+                        player.htmlLine = document.createElement("div");
+                        player.htmlLine.classList.add("player-list-player");
+                        player.htmlLine.innerHTML = player.pseudo;
 
-						playersHtmlList.appendChild(player.htmlLine);
+                        playersHtmlList.appendChild(player.htmlLine);
 
-						connectedPlayersCount.innerHTML = players.length;
-					} else if(msg[0] == SET_PSEUDO) {
-						for(player of players) { // on récupère le joueur concerné grâce à son id
-							if(player.id == msg[1]) {
-								player.pseudo = msg[2]; // on change le pseudo du joueur
-								player.htmlLine.innerHTML = player.pseudo; // on met à jour la liste des joueurs HTML
+                        if (player.id == meId) {
+                            playerPseudoHtml.innerHTML = player.pseudo;
+                        }
+                    }
 
-								if(player.id == meId) {
-									playerPseudoHtml.innerHTML = player.pseudo;
-								}
+                    state = State.WAITING_ROOM;
+                    break;
 
-								break;
-							}
-						}
-					} else if(msg[0] == DEL_PLAYER) {
-						for(player of players) {
-							if(player.id == msg[1]) {
-								player.htmlLine.remove();
-								players.splice(players.indexOf(player), 1);
+                case State.GAME:
+                    displayGame(questionNumber);
 
-								connectedPlayersCount.innerHTML = players.length;
-							}
-						}
-					} else if(msg[0] == PSEUDO_ALREADY_USED) {
-						pseudoError.innerHTML = "Ce pseudo est déjà utilisé";
-					}
+                    answers[0] = document.getElementById("answer1");
+                    answers[1] = document.getElementById("answer2");
+                    answers[2] = document.getElementById("answer3");
+                    answers[3] = document.getElementById("answer4");
 
-					break;
-			}
-		};
+                    for (let index = 0; index < answers.length; index++) {
+                        const element = answers[index];
 
-		pseudoInput.onfocus = function() {
-			pseudoError.innerHTML = "";
-		}
+                        element.onclick = function(index) {
+                            sock.send(JSON.stringify([questionNumber, index]));
+                            for (let index2 = 0; index2 < answers.length; index2++) {
+                                const element = answers[index2];
+                                element.disabled = true;
+                                element.classList.add("disable");
+                            }
+                        }
 
-		sendPseudoButton.onclick = function() {
-			sock.send(JSON.stringify([pseudoInput.value]));
-			pseudoError.innerHTML = "";
-		};
-	};
+                    }
+
+
+
+                    break;
+
+                case State.WAITING_ROOM:
+                    if (msg[0] == ADD_PLAYER) {
+                        let player = {
+                            id: msg[1],
+                            pseudo: msg[2]
+                        };
+                        players.push(player);
+
+                        player.htmlLine = document.createElement("div");
+                        player.htmlLine.classList.add("player-list-player");
+                        player.htmlLine.innerHTML = player.pseudo;
+
+                        playersHtmlList.appendChild(player.htmlLine);
+
+                        connectedPlayersCount.innerHTML = players.length;
+
+                        if (players.length >= minPlayer && minPlayer != 0) {
+                            state = State.GAME;
+                            console.log("JEU");
+                        }
+
+                    } else if (msg[0] == SET_PSEUDO) {
+                        for (player of players) { // on récupère le joueur concerné grâce à son id
+                            if (player.id == msg[1]) {
+                                player.pseudo = msg[2]; // on change le pseudo du joueur
+                                player.htmlLine.innerHTML = player.pseudo; // on met à jour la liste des joueurs HTML
+
+                                if (player.id == meId) {
+                                    playerPseudoHtml.innerHTML = player.pseudo;
+                                }
+
+                                break;
+                            }
+                        }
+                    } else if (msg[0] == DEL_PLAYER) {
+                        for (player of players) {
+                            if (player.id == msg[1]) {
+                                player.htmlLine.remove();
+                                players.splice(players.indexOf(player), 1);
+
+                                connectedPlayersCount.innerHTML = players.length;
+                            }
+                        }
+                    } else if (msg[0] == PSEUDO_ALREADY_USED) {
+                        pseudoError.innerHTML = "Ce pseudo est déjà utilisé";
+                    }
+
+                    break;
+            }
+        };
+
+        pseudoInput.onfocus = function() {
+            pseudoError.innerHTML = "";
+        }
+
+        sendPseudoButton.onclick = function() {
+            sock.send(JSON.stringify([pseudoInput.value]));
+            pseudoError.innerHTML = "";
+        };
+    };
+
 }
