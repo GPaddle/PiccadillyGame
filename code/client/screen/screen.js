@@ -5,7 +5,7 @@ const SECRET_SCREEN_KEY = "7116dd23254dc1a8";
 const ADD_PLAYER = 0;
 const DEL_PLAYER = 2;
 
-const State = {
+const states = {
     GAME_INFO: 0,
     WAITING_ROOM: 1,
     GAME: 2,
@@ -25,7 +25,7 @@ function displayHome() {
 //TODO 
 // Envoyer les questions et réponses lors du chargement de la page de question
 
-const Questions = {
+const questions = {
     Q1: {
         Q: 'Combien y a t-il eu de présidents aux États-Unis ?',
         R1: '12',
@@ -46,11 +46,11 @@ function displayGame(nb) {
     let jeu;
     switch (nb) {
         case 1:
-            jeu = Questions.Q1;
+            jeu = questions.Q1;
             break;
 
         case 2:
-            jeu = Questions.Q2;
+            jeu = questions.Q2;
             break;
 
         default:
@@ -59,10 +59,26 @@ function displayGame(nb) {
     document.body.innerHTML = `
 	<div id="service-name">Piccadilly Game</div>
 	<div id="player-infos">
-        <button id="answer1">` + jeu.R1 + `</button>
-        <button id="answer2">` + jeu.R2 + `</button>
-        <button id="answer3">` + jeu.R3 + `</button>
-        <button id="answer4">` + jeu.R4 + `</button>
+        <label id="answer1">` + jeu.R1 + `</label>
+        <span class='progressBar'>
+            <div id=graph1>
+            </div>
+        </span><br>
+        <label id="answer2">` + jeu.R2 + `</label>
+        <span class='progressBar'>
+            <div id=graph2>
+            </div>
+        </span><br>
+        <label id="answer3">` + jeu.R3 + `</label>
+        <span class='progressBar'>
+            <div id=graph3>
+            </div>
+        </span><br>
+        <label id="answer4">` + jeu.R4 + `</label>
+        <span class='progressBar'>
+            <div id=graph4>
+            </div>
+        </span><br>
     </div>
 	`;
 }
@@ -76,7 +92,7 @@ window.onload = function() {
     const sock = new WebSocket("ws://" + window.location.host);
 
     sock.onopen = function() {
-        let state = State.GAME_INFO;
+        let state = states.GAME_INFO;
 
         let playersNumber = 0;
         let minPlayersCount = 0;
@@ -84,6 +100,9 @@ window.onload = function() {
         let questionNumber = 1;
 
         let stats = [0, 0, 0, 0];
+        let graph = [];
+
+        let countAnswers = 0;
 
         sock.send(JSON.stringify([CLIENT_TYPE_SCREEN, SECRET_SCREEN_KEY]));
 
@@ -92,7 +111,7 @@ window.onload = function() {
 
             console.log(msg);
             switch (state) {
-                case State.GAME_INFO:
+                case states.GAME_INFO:
                     minPlayersCount = msg[0];
                     minPlayersCountHtml.innerHTML = minPlayersCount;
 
@@ -100,18 +119,23 @@ window.onload = function() {
                     connectedPlayersCount = msg[1];
                     connectedPlayersCountHtml.innerHTML = connectedPlayersCount;
 
-                    state = State.WAITING_ROOM;
+                    state = states.WAITING_ROOM;
                     break;
 
-                case State.WAITING_ROOM:
+                case states.WAITING_ROOM:
                     if (msg[0] == ADD_PLAYER) {
                         playersNumber++;
                         connectedPlayersCountHtml.innerHTML = playersNumber;
 
                         if (playersNumber >= minPlayersCount && minPlayersCount != 0) {
-                            state = State.GAME;
+                            state = states.GAME;
                             console.log("JEU");
                             displayGame(questionNumber);
+
+                            graph[0] = document.getElementById('graph1');
+                            graph[1] = document.getElementById('graph2');
+                            graph[2] = document.getElementById('graph3');
+                            graph[3] = document.getElementById('graph4');
                         }
 
 
@@ -130,9 +154,25 @@ window.onload = function() {
                      * question number
                      * answer number
                      */
-                case State.GAME:
-                    stats[msg[0]]++;
-                    console.log(stats);
+                case states.GAME:
+                    stats[msg[1]]++;
+
+                    for (let i = 0; i < graph.length; i++) {
+                        const element = graph[i];
+                        if (stats[i] != 0) {
+                            let percent = Math.trunc((stats[i] / playersNumber) * 1000) / 10;
+                            element.style.width = percent + "%";
+                            element.innerHTML = percent + "%";
+                        }
+                    }
+                    countAnswers++;
+
+                    if (countAnswers == playersNumber) {
+                        questionNumber++;
+
+                        displayGame(questionNumber);
+                    }
+
                     break;
             }
         }

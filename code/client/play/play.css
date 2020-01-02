@@ -81,6 +81,7 @@ button {
     text-decoration: none;
     font-size: 16px;
     margin: 10px auto 0px auto;
+    border-radius: 0.5em;
 }
 
 #pseudo-error {
@@ -203,4 +204,8 @@ button {
 
 .disable {
     background: #0005 !important;
+}
+
+button:active {
+    background-color: #b42424;
 }

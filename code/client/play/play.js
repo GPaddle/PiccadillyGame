@@ -13,7 +13,7 @@ const State = {
 }
 
 
-const Questions = {
+const questions = {
     Q1: {
         Q: 'Combien y a t-il eu de présidents aux États-Unis ?',
         R1: '12',
@@ -53,11 +53,11 @@ function displayGame(nb) {
     let jeu;
     switch (nb) {
         case 1:
-            jeu = Questions.Q1;
+            jeu = questions.Q1;
             break;
 
         case 2:
-            jeu = Questions.Q2;
+            jeu = questions.Q2;
             break;
 
         default:
@@ -79,8 +79,15 @@ function displayGame(nb) {
         </div>
     </div>
 
-	`;
+    `;
+
+    answers[0] = document.getElementById("answer1");
+    answers[1] = document.getElementById("answer2");
+    answers[2] = document.getElementById("answer3");
+    answers[3] = document.getElementById("answer4");
 }
+
+let answers = [];
 
 window.onload = function() {
     displayHome();
@@ -99,12 +106,11 @@ window.onload = function() {
 
     const sock = new WebSocket("ws://" + window.location.host);
 
-    let answers = [];
-
     let minPlayer = 0;
+    let players;
+
     sock.onopen = function() {
         let state = State.GAME_INFO;
-        let players;
 
         let minPlayersCount = 0;
 
@@ -146,25 +152,21 @@ window.onload = function() {
                 case State.GAME:
                     displayGame(questionNumber);
 
-                    answers[0] = document.getElementById("answer1");
-                    answers[1] = document.getElementById("answer2");
-                    answers[2] = document.getElementById("answer3");
-                    answers[3] = document.getElementById("answer4");
+                    for (let i = 0; i < answers.length; i++) {
+                        const reponse = answers[i];
+                        reponse.onclick = function() {
+                            sock.send(JSON.stringify([questionNumber, i]));
 
-                    for (let index = 0; index < answers.length; index++) {
-                        const element = answers[index];
+                            questionNumber++;
+                            displayGame(questionNumber);
 
-                        element.onclick = function(index) {
-                            sock.send(JSON.stringify([questionNumber, index]));
-                            for (let index2 = 0; index2 < answers.length; index2++) {
-                                const element = answers[index2];
+                            /*for (let j = 0; j < answers.length; j++) {
+                                const element = answers[j];
                                 element.disabled = true;
                                 element.classList.add("disable");
-                            }
-                        }
-
+                            }*/
+                        };
                     }
-
 
 
                     break;
@@ -185,10 +187,7 @@ window.onload = function() {
 
                         connectedPlayersCount.innerHTML = players.length;
 
-                        if (players.length >= minPlayer && minPlayer != 0) {
-                            state = State.GAME;
-                            console.log("JEU");
-                        }
+                        conditionJeu();
 
                     } else if (msg[0] == SET_PSEUDO) {
                         for (player of players) { // on récupère le joueur concerné grâce à son id
@@ -198,11 +197,15 @@ window.onload = function() {
 
                                 if (player.id == meId) {
                                     playerPseudoHtml.innerHTML = player.pseudo;
+
+
+                                    conditionJeu();
                                 }
 
                                 break;
                             }
                         }
+
                     } else if (msg[0] == DEL_PLAYER) {
                         for (player of players) {
                             if (player.id == msg[1]) {
@@ -227,7 +230,16 @@ window.onload = function() {
         sendPseudoButton.onclick = function() {
             sock.send(JSON.stringify([pseudoInput.value]));
             pseudoError.innerHTML = "";
+
+            conditionJeu();
         };
+
+        function conditionJeu() {
+            if (players.length >= minPlayer && minPlayer != 0) {
+                state = State.GAME;
+                console.log("JEU");
+            }
+        }
     };
 
 }
