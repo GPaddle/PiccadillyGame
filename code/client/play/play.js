@@ -6,7 +6,8 @@ const ADD_PLAYER = 0;
 const SET_PSEUDO = 1;
 const DEL_PLAYER = 2;
 const PSEUDO_ALREADY_USED = 3;
-const START_GAME = 4;
+const START_GAME_COUNTDOWN = 4;
+const START_GAME = 5;
 
 const NEW_QUESTION = 0;
 const ANSWERS_STATS = 1;
@@ -20,9 +21,9 @@ const State = {
 
 window.onload = function() {
     document.body.innerHTML = `
-	<div id="player-infos">
-		<div class="player-info">Nombre de joueurs connectés : <span class="player-info-value" id="connected-players">...</span></div>
-		<div class="player-info">Nombre de joueurs minimum nécessaires : <span class="player-info-value" id="min-players">...</span></div>
+	<div id="game-infos">
+		<div class="game-info">Nombre de joueurs connectés : <span class="game-info-value" id="connected-players">...</span></div>
+		<div class="game-info">Nombre de joueurs minimum nécessaires : <span class="game-info-value" id="min-players">...</span></div>
 	</div>
 	<div id="player-pseudo">Votre pseudo est <span id="player-pseudo-value">...</span></div>
 	<div id="new-player-form">
@@ -36,6 +37,8 @@ window.onload = function() {
 	</div>
 	`;
 
+    let gameInfosContainerHtml = document.getElementById("game-infos");
+
 	let connectedPlayersCount = document.getElementById("connected-players");
     let minPlayersCountHtml = document.getElementById("min-players");
 
@@ -45,6 +48,8 @@ window.onload = function() {
 
     let playerPseudoHtml = document.getElementById("player-pseudo-value");
     let playersHtmlList = document.getElementById("player-list");
+
+    let gameStartRemainingTimeHtml;
 
     pseudoInput.onfocus = function() {
         pseudoError.innerHTML = "";
@@ -126,10 +131,10 @@ window.onload = function() {
 
             switch (state) {
                 case State.GAME_INFO:
-                    players = msg[1];
-
                     minPlayersCount = msg[0];
                     minPlayersCountHtml.innerHTML = minPlayersCount;
+
+                    players = msg[1];
 
                     connectedPlayersCount.innerHTML = players.length;
 
@@ -165,6 +170,10 @@ window.onload = function() {
                         playersHtmlList.appendChild(player.htmlLine);
 
                         connectedPlayersCount.innerHTML = players.length;
+
+                        if(players.length > minPlayersCount) {
+                            startGameCountDown();
+                        }
                     } else if (msg[0] == SET_PSEUDO) {
                         for (let player of players) { // on récupère le joueur concerné grâce à son id
                             if (player.id == msg[1]) {
@@ -189,6 +198,30 @@ window.onload = function() {
                         }
                     } else if (msg[0] == PSEUDO_ALREADY_USED) {
                         pseudoError.innerHTML = "Ce pseudo est déjà utilisé";
+                    } else if (msg[0] == START_GAME_COUNTDOWN) {
+                        console.log("countdown !");
+                        let gameInfo = document.createElement("div");
+                        gameInfo.classList.add("game-info");
+
+                        let textNode = document.createTextNode("La partie commence dans ");
+                        gameInfo.appendChild(textNode);
+
+                        let gameStartCount = msg[1];
+
+                        gameStartRemainingTimeHtml = document.createElement("span");
+                        gameStartRemainingTimeHtml.innerHTML = gameStartCount;
+                        gameInfo.appendChild(gameStartRemainingTimeHtml);
+
+                        gameInfosContainerHtml.appendChild(gameInfo);
+
+                        let gameStartCountDown = setInterval(function() {
+                            gameStartCount--;
+                            gameStartRemainingTimeHtml.innerHTML = gameStartCount;
+
+                            if(gameStartCount == 0) {
+                                clearInterval(gameStartCountDown);
+                            }
+                        }, 1000);
                     } else if (msg[0] == START_GAME) {
                     	displayGame();
                     	state = State.GAME;

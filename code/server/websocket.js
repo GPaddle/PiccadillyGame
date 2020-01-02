@@ -9,7 +9,8 @@ const ADD_PLAYER = 0;
 const SET_PSEUDO = 1;
 const DEL_PLAYER = 2;
 const PSEUDO_ALREADY_USED = 3;
-const START_GAME = 4; 
+const START_GAME_COUNTDOWN = 4;
+const START_GAME = 5;
 
 const NEW_QUESTION = 0;
 const ANSWERS_STATS = 1;
@@ -88,6 +89,8 @@ const SCREEN_SECRET_KEY = "7116dd23254dc1a8";
 
 const MIN_PLAYER = 2;
 
+const GAME_COUNT_DOWN_TIME = 15;
+
 module.exports = function(httpServer) {
     const wss = new ws.Server({ server: httpServer });
 
@@ -101,6 +104,8 @@ module.exports = function(httpServer) {
     let actualQuestion = -1;
 
     let gameWillStart = false;
+
+    let stats;
 
     function startGame() {
         for(let playerSock of playersSocks) {
@@ -121,6 +126,8 @@ module.exports = function(httpServer) {
             for(let screenSock of screensSocks) {
                 screenSock.send(JSON.stringify(questions[actualQuestion]));
             }
+
+            stats = [0, 0, 0, 0];
 
             if(actualQuestion < questions.length - 1) {
                 setTimeout(nextQuestion, questions[actualQuestion][3] * 1000);
@@ -150,7 +157,6 @@ module.exports = function(httpServer) {
                                     nextPlayerId++;
 
                                     sock.player.answers = [];
-
                                     sock.player.pseudo = "???";
 
                                     playersSocks.push(sock);
@@ -169,7 +175,15 @@ module.exports = function(httpServer) {
                                     sock.send(JSON.stringify([MIN_PLAYER, players, sock.player.id]));
 
                                     if(playersSocks.length >= MIN_PLAYER && !gameWillStart) {
-                                        setTimeout(startGame, 15000); // quand on a assez de joueurs on lance la partie dans 15 secondes
+                                        for(let playerSock of playersSocks) {
+                                            playerSock.send(JSON.stringify([START_GAME_COUNTDOWN, GAME_COUNT_DOWN_TIME]));
+                                        }
+
+                                        for(let screenSock of screensSocks) {
+                                            screenSock.send(JSON.stringify([START_GAME_COUNTDOWN, GAME_COUNT_DOWN_TIME]));
+                                        }
+
+                                        setTimeout(startGame, GAME_COUNT_DOWN_TIME * 1000); // quand on a assez de joueurs on lance la partie dans 15 secondes
                                         gameWillStart = true;
                                     }
 
@@ -214,13 +228,7 @@ module.exports = function(httpServer) {
                         if(sock.player.answers[actualQuestion] === undefined && msg[0] >= 0 && msg[0] <= 3) { // si le joueur n'a pas encore donné de réponse et si le code de réponse est 0, 1, 2 ou 3
                             sock.player.answers[actualQuestion] = msg[0] // on enregistre la réponse envoyée par le joueur
 
-                            let stats = [0, 0, 0, 0];
-
-                            for(let playerSock of playersSocks) {
-                                if(playerSock.player.answers[actualQuestion] !== undefined) {
-                                    stats[playerSock.player.answers[actualQuestion]]++;
-                                }
-                            }
+                            stats[sock.player.answers[actualQuestion]]++;
 
                             let percentStats = [
                                 stats[0] / playersSocks.length * 100,

@@ -38,7 +38,12 @@ body {
 
 #join-invitation {
 	font-size: 40px;
-	margin-bottom: 100px;
+	margin-bottom: 30px;
+}
+
+#start-countdown-info {
+	margin-bottom: 80px;
+	font-size: 40px;
 }
 
 .player-info {

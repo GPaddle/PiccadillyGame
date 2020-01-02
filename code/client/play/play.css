@@ -28,17 +28,17 @@ body {
 
 /* Page d'accueil - ajout du pseudo */
 
-#player-infos {
+#game-infos {
     margin-bottom: 50px;
 }
 
-.player-info {
+.game-info {
     text-align: center;
     font-size: 22px;
     margin-bottom: 15px;
 }
 
-.player-info-value {
+.game-info-value {
     font-weight: bold;
 }
 

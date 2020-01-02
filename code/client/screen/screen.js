@@ -6,7 +6,8 @@ const SECRET_SCREEN_KEY = "7116dd23254dc1a8";
 
 const ADD_PLAYER = 0;
 const DEL_PLAYER = 2;
-const START_GAME = 4;
+const START_GAME_COUNTDOWN = 4;
+const START_GAME = 5;
 
 const State = {
     GAME_INFO: 0,
@@ -26,6 +27,8 @@ window.onload = function() {
 
     let connectedPlayersCountHtml = document.getElementById("connected-players");
     let minPlayersCountHtml = document.getElementById("min-players");
+
+    let playersInfosContainer = document.getElementById("player-infos");
 
     let questionNumberHtml;
     let questionHtml;
@@ -103,6 +106,29 @@ window.onload = function() {
                     } else if (msg[0] == DEL_PLAYER) {
                         playersNumber--;
                         connectedPlayersCountHtml.innerHTML = playersNumber;
+                    } else if (msg[0] == START_GAME_COUNTDOWN) {
+                        console.log("countdown");
+
+                        let startCountDownInfo = document.createElement("div");
+                        startCountDownInfo.id = "start-countdown-info";
+                        startCountDownInfo.innerHTML = "La partie commence dans ";
+
+                        let count = msg[1];
+
+                        let startCountDown = document.createElement("span");
+                        startCountDown.innerHTML = count;
+
+                        startCountDownInfo.appendChild(startCountDown);
+                        document.body.insertBefore(startCountDownInfo, playersInfosContainer);
+
+                        let countDown = setInterval(function() {
+                            count--;
+                            startCountDown.innerHTML = count;
+
+                            if(count == 0) {
+                                clearInterval(countDown);
+                            }
+                        }, 1000)
                     } else if (msg[0] == START_GAME) {
                         displayGame();
                         state = State.GAME;
