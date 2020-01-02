@@ -1,3 +1,5 @@
+"use strict";
+
 const CLIENT_TYPE_PLAYER = 0;
 
 const ADD_PLAYER = 0;
@@ -57,7 +59,7 @@ window.onload = function() {
     let questionNumberHtml;
     let remainingTimeHtml;
 
-    let answersButtons;
+    let answersButtonsHtml;
     let answersStatsHtml;
 
     let clickedAnswerButton;
@@ -91,13 +93,13 @@ window.onload = function() {
 		questionNumberHtml = document.getElementById("question-number");
 		remainingTimeHtml = document.getElementById("remaining-time-value");
 
-        answersButtons = document.getElementsByClassName("answer-button");
-        answersStats = document.getElementsByClassName("answer-stat");
+        answersButtonsHtml = document.getElementsByClassName("answer-button");
+        answersStatsHtml = document.getElementsByClassName("answer-stat");
 
         for(let i = 0; i < 4; i++) {
-            answersButtons[i].onclick = function() {
+            answersButtonsHtml[i].onclick = function() {
                 if(clickedAnswerButton === undefined) {
-                    clickedAnswerButton = answersButtons[i];
+                    clickedAnswerButton = answersButtonsHtml[i];
                     clickedAnswerButton.style.border = "solid 2px #fefefe";
 
                     sock.send(JSON.stringify([i])); // on envoit le numéro de la réponse sélectionnée
@@ -133,7 +135,7 @@ window.onload = function() {
 
                     meId = msg[2];
 
-                    for (player of players) {
+                    for (let player of players) {
                         player.htmlLine = document.createElement("div");
                         player.htmlLine.classList.add("player-list-player");
                         player.htmlLine.innerHTML = player.pseudo;
@@ -164,7 +166,7 @@ window.onload = function() {
 
                         connectedPlayersCount.innerHTML = players.length;
                     } else if (msg[0] == SET_PSEUDO) {
-                        for (player of players) { // on récupère le joueur concerné grâce à son id
+                        for (let player of players) { // on récupère le joueur concerné grâce à son id
                             if (player.id == msg[1]) {
                                 player.pseudo = msg[2]; // on change le pseudo du joueur
                                 player.htmlLine.innerHTML = player.pseudo; // on met à jour la liste des joueurs HTML
@@ -177,7 +179,7 @@ window.onload = function() {
                             }
                         }
                     } else if (msg[0] == DEL_PLAYER) {
-                        for (player of players) {
+                        for (let player of players) {
                             if (player.id == msg[1]) {
                                 player.htmlLine.remove();
                                 players.splice(players.indexOf(player), 1);
@@ -202,8 +204,8 @@ window.onload = function() {
 
                         clickedAnswerButton = undefined;
 
-                        for(answerStat of answersStats) {
-                            answerStat.innerHTML = "";
+                        for(let answerStatHtml of answersStatsHtml) {
+                            answerStatHtml.innerHTML = "";
                         }
 
                         actualQuestion++;
@@ -224,7 +226,7 @@ window.onload = function() {
                         }, 1000);
                     } else if(msg[0] == ANSWERS_STATS) {
                         for(let i = 0; i < 4; i++) {
-                            answersStats[i].innerHTML = msg[1][i] + "%";
+                            answersStatsHtml[i].innerHTML = msg[1][i] + "%";
                         }
                     }
 

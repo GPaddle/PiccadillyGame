@@ -1,3 +1,5 @@
+"use strict";
+
 const ws = require("ws");
 
 const CLIENT_TYPE_PLAYER = 0;
@@ -101,7 +103,7 @@ module.exports = function(httpServer) {
     let gameWillStart = false;
 
     function startGame() {
-        for(playerSock of playersSocks) {
+        for(let playerSock of playersSocks) {
             playerSock.send(JSON.stringify([START_GAME])); // on dit aux joueurs que la partie commence (pour qu'ils affichent l'interface des questions)
         }
 
@@ -110,7 +112,7 @@ module.exports = function(httpServer) {
         function nextQuestion() {
             actualQuestion++;
 
-            for(playerSock of playersSocks) {
+            for(let playerSock of playersSocks) {
                 playerSock.send(JSON.stringify([NEW_QUESTION, questions[actualQuestion][3]]));
             }
 
@@ -153,7 +155,7 @@ module.exports = function(httpServer) {
 
                                     let players = [];
 
-                                    for (playerSock of playersSocks) {
+                                    for (let playerSock of playersSocks) {
                                         players.push(playerSock.player);
                                         playerSock.send(JSON.stringify([ADD_PLAYER, sock.player.id, sock.player.pseudo]));
                                     }
@@ -178,7 +180,7 @@ module.exports = function(httpServer) {
                             case State.PSEUDO:
                                 let isPseudoFree = true;
 
-                                for (playerSock of playersSocks) {
+                                for (let playerSock of playersSocks) {
                                     if (msg[0] == playerSock.player.pseudo) {
                                         isPseudoFree = false;
                                         break;
@@ -188,7 +190,7 @@ module.exports = function(httpServer) {
                                 if (isPseudoFree) {
                                     sock.player.pseudo = msg[0];
 
-                                    for (playerSock of playersSocks) {
+                                    for (let playerSock of playersSocks) {
                                         playerSock.send(JSON.stringify([SET_PSEUDO, sock.player.id, sock.player.pseudo]));
                                     }
 
@@ -208,7 +210,7 @@ module.exports = function(httpServer) {
 
                             let stats = [0, 0, 0, 0];
 
-                            for(playerSock of playersSocks) {
+                            for(let playerSock of playersSocks) {
                                 if(playerSock.player.answers[actualQuestion] !== undefined) {
                                     stats[playerSock.player.answers[actualQuestion]]++;
                                 }
@@ -221,7 +223,7 @@ module.exports = function(httpServer) {
                                 stats[3] / playersSocks.length * 100
                             ];
 
-                            for(playerSock of playersSocks) {
+                            for(let playerSock of playersSocks) {
                                 if(playerSock.player.answers[actualQuestion] !== undefined) { // on envoit les statistiques de réponse aux joueurs seulement s'il a déjà répondu à la question
                                     playerSock.send(JSON.stringify([ANSWERS_STATS, percentStats]));
                                 }
@@ -238,7 +240,7 @@ module.exports = function(httpServer) {
 
                     screenSock.send(JSON.stringify([DEL_PLAYER]));
 
-                    for (playerSock of playersSocks) {
+                    for (let playerSock of playersSocks) {
                         playerSock.send(JSON.stringify([DEL_PLAYER, sock.player.id]));
                     }
                 }

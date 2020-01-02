@@ -1,3 +1,5 @@
+"use strict";
+
 const CLIENT_TYPE_SCREEN = 1;
 
 const SECRET_SCREEN_KEY = "7116dd23254dc1a8";
@@ -88,8 +90,8 @@ window.onload = function() {
                     minPlayersCount = msg[0];
                     minPlayersCountHtml.innerHTML = minPlayersCount;
 
-                    connectedPlayersCount = msg[1];
-                    connectedPlayersCountHtml.innerHTML = connectedPlayersCount;
+                    playersNumber = msg[1];
+                    connectedPlayersCountHtml.innerHTML = playersNumber;
 
                     state = State.WAITING_ROOM;
                     break;
