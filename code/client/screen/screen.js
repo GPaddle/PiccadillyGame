@@ -126,7 +126,7 @@ window.onload = function() {
                         count--;
                         remainingTimeHtml.innerHTML = count;
 
-                        if(questionCountDown == 0) {
+                        if(count == 0) {
                             clearInterval(questionCountDown);
                         }
                     }, 1000);

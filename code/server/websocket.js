@@ -9,6 +9,9 @@ const DEL_PLAYER = 2;
 const PSEUDO_ALREADY_USED = 3;
 const START_GAME = 4; 
 
+const NEW_QUESTION = 0;
+const ANSWERS_STATS = 1;
+
 const State = {
     NONE: 0,
     WAITING_ROOM: 1,
@@ -108,7 +111,7 @@ module.exports = function(httpServer) {
             actualQuestion++;
 
             for(playerSock of playersSocks) {
-                playerSock.send(JSON.stringify([questions[actualQuestion][3]]));
+                playerSock.send(JSON.stringify([NEW_QUESTION, questions[actualQuestion][3]]));
             }
 
             screenSock.send(JSON.stringify(questions[actualQuestion]));
@@ -119,6 +122,8 @@ module.exports = function(httpServer) {
         }
 
         nextQuestion(); // on envoit la première question
+
+        state = State.GAME;
     }
 
     wss.on("connection", function(sock) {
@@ -134,8 +139,11 @@ module.exports = function(httpServer) {
                             case State.AUTH:
                                 if (msg[0] == CLIENT_TYPE_PLAYER) {
                                     sock.player = {};
+
                                     sock.player.id = nextPlayerId;
                                     nextPlayerId++;
+
+                                    sock.player.answers = [];
 
                                     sock.player.pseudo = "???";
 
@@ -193,11 +201,39 @@ module.exports = function(httpServer) {
                         }
 
                         break;
+
+                    case State.GAME:
+                        if(sock.player.answers[actualQuestion] === undefined && msg[0] >= 0 && msg[0] <= 3) { // si le joueur n'a pas encore donné de réponse et si le code de réponse est 0, 1, 2 ou 3
+                            sock.player.answers[actualQuestion] = msg[0] // on enregistre la réponse envoyée par le joueur
+
+                            let stats = [0, 0, 0, 0];
+
+                            for(playerSock of playersSocks) {
+                                if(playerSock.player.answers[actualQuestion] !== undefined) {
+                                    stats[playerSock.player.answers[actualQuestion]]++;
+                                }
+                            }
+
+                            let percentStats = [
+                                stats[0] / playersSocks.length * 100,
+                                stats[1] / playersSocks.length * 100,
+                                stats[2] / playersSocks.length * 100,
+                                stats[3] / playersSocks.length * 100
+                            ];
+
+                            for(playerSock of playersSocks) {
+                                if(playerSock.player.answers[actualQuestion] !== undefined) { // on envoit les statistiques de réponse aux joueurs seulement s'il a déjà répondu à la question
+                                    playerSock.send(JSON.stringify([ANSWERS_STATS, percentStats]));
+                                }
+                            }
+                        }
+
+                        break;
                 }
             });
 
             sock.on("close", function() {
-                if (state == State.WAITING_ROOM && sock.player) {
+                if (state == State.WAITING_ROOM && sock.player !== undefined) {
                     playersSocks.splice(playersSocks.indexOf(sock), 1);
 
                     screenSock.send(JSON.stringify([DEL_PLAYER]));

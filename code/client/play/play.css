@@ -130,11 +130,18 @@ button {
     background-color: #a65050;
     margin: 0px auto 20px auto;
     cursor: pointer;
+    display: flex;
 }
 
 .answer-letter {
     font-weight: bold;
     font-size: 24px;
+    margin-right: auto;
+}
+
+.answer-stat {
+    font-size: 24px;
+    font-weight: bold;
 }
 
 /* Classement */

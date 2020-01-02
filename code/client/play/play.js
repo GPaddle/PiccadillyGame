@@ -6,6 +6,9 @@ const DEL_PLAYER = 2;
 const PSEUDO_ALREADY_USED = 3;
 const START_GAME = 4;
 
+const NEW_QUESTION = 0;
+const ANSWERS_STATS = 1;
+
 const State = {
     NONE: 0,
     GAME_INFO: 1,
@@ -41,8 +44,23 @@ window.onload = function() {
     let playerPseudoHtml = document.getElementById("player-pseudo-value");
     let playersHtmlList = document.getElementById("player-list");
 
+    pseudoInput.onfocus = function() {
+        pseudoError.innerHTML = "";
+    }
+
+    sendPseudoButton.onclick = function() {
+        sock.send(JSON.stringify([pseudoInput.value]));
+        pseudoError.innerHTML = "";
+    };
+
+
     let questionNumberHtml;
     let remainingTimeHtml;
+
+    let answersButtons;
+    let answersStatsHtml;
+
+    let clickedAnswerButton;
 
     let sock = new WebSocket("ws://" + window.location.host);
 
@@ -54,20 +72,38 @@ window.onload = function() {
 		<div id="remaining-time">Temps restant : <span id="remaining-time-value"></span></div>
 		<div class="answer-button">
 			<div class="answer-letter">A</div>
+            <div class="answer-stat">0%</div>
 		</div>
 		<div class="answer-button">
 			<div class="answer-letter">B</div>
+            <div class="answer-stat">0%</div>
 		</div>
 		<div class="answer-button">
 			<div class="answer-letter">C</div>
+            <div class="answer-stat">0%</div>
 		</div>
 		<div class="answer-button">
 			<div class="answer-letter">D</div>
+            <div class="answer-stat">0%</div>
 		</div>
 		`;
 
 		questionNumberHtml = document.getElementById("question-number");
 		remainingTimeHtml = document.getElementById("remaining-time-value");
+
+        answersButtons = document.getElementsByClassName("answer-button");
+        answersStats = document.getElementsByClassName("answer-stat");
+
+        for(let i = 0; i < 4; i++) {
+            answersButtons[i].onclick = function() {
+                if(clickedAnswerButton === undefined) {
+                    clickedAnswerButton = answersButtons[i];
+                    clickedAnswerButton.style.border = "solid 2px #fefefe";
+
+                    sock.send(JSON.stringify([i])); // on envoit le numéro de la réponse sélectionnée
+                }
+            }
+        }
 	}
 
     sock.onopen = function() {
@@ -78,7 +114,8 @@ window.onload = function() {
 
         let meId;
 
-        let questionNumber = 1;
+        let actualQuestion = 0;
+        let questionCountDown;
 
         sock.send(JSON.stringify([CLIENT_TYPE_PLAYER]));
 
@@ -158,30 +195,41 @@ window.onload = function() {
                     break;
 
                 case State.GAME:
-                    let count = msg[0];
-                    remainingTimeHtml.innerHTML = count;
+                    if(msg[0] == NEW_QUESTION) {
+                        if(clickedAnswerButton !== undefined) {
+                            clickedAnswerButton.style.border = "";
+                        }
 
-                    let countDown = setInterval(function() {
-                        count--;
+                        clickedAnswerButton = undefined;
+
+                        for(answerStat of answersStats) {
+                            answerStat.innerHTML = "";
+                        }
+
+                        actualQuestion++;
+                        questionNumberHtml.innerHTML = "Question " + actualQuestion;
+
+                        clearInterval(questionCountDown);
+
+                        let count = msg[1];
                         remainingTimeHtml.innerHTML = count;
 
-                        if(count == 0) {
-                            clearTimeout(countDown);
+                        questionCountDown = setInterval(function() {
+                            count--;
+                            remainingTimeHtml.innerHTML = count;
+
+                            if(count == 0) {
+                                clearTimeout(questionCountDown);
+                            }
+                        }, 1000);
+                    } else if(msg[0] == ANSWERS_STATS) {
+                        for(let i = 0; i < 4; i++) {
+                            answersStats[i].innerHTML = msg[1][i] + "%";
                         }
-                    }, 1000);
+                    }
 
                 	break;
             }
         };
-
-        pseudoInput.onfocus = function() {
-            pseudoError.innerHTML = "";
-        }
-
-        sendPseudoButton.onclick = function() {
-            sock.send(JSON.stringify([pseudoInput.value]));
-            pseudoError.innerHTML = "";
-        };
     };
-
 }
