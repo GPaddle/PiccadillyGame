@@ -74,6 +74,7 @@ window.onload = function() {
         let gameWillStart = false;
 
         let questionNumber = 0;
+        let questionCountDown;
 
         let stats = [0, 0, 0, 0];
 
@@ -107,6 +108,8 @@ window.onload = function() {
 
                     break;
                 case State.GAME:
+                    clearInterval(questionCountDown);
+
                     questionNumber++;
                     questionNumberHtml.innerHTML = "Question " + questionNumber;
 
@@ -119,12 +122,12 @@ window.onload = function() {
                     let count = msg[3];
                     remainingTimeHtml.innerHTML = count;
 
-                    let countDown = setInterval(function() {
+                    questionCountDown = setInterval(function() {
                         count--;
                         remainingTimeHtml.innerHTML = count;
 
-                        if(count == 0) {
-                            clearInterval(countDown);
+                        if(questionCountDown == 0) {
+                            clearInterval(questionCountDown);
                         }
                     }, 1000);
 

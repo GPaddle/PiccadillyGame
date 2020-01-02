@@ -93,18 +93,32 @@ module.exports = function(httpServer) {
 
     let nextPlayerId = 0;
 
-    let actualQuestion = 0;
+    let actualQuestion = -1;
 
     let gameWillStart = false;
 
     function startGame() {
         for(playerSock of playersSocks) {
             playerSock.send(JSON.stringify([START_GAME])); // on dit aux joueurs que la partie commence (pour qu'ils affichent l'interface des questions)
-            playerSock.send(JSON.stringify([questions[actualQuestion][3]])); // on envoit le temps de réponses à la première question aux joueurs (on ne leur envoit pas l'intitulé ni les réponses car elles s'afficheront sur les grands écrans, le joueur aura uniquement 4 boutons A, B, C et D)
         }
 
         screenSock.send(JSON.stringify([START_GAME]));
-        screenSock.send(JSON.stringify(questions[actualQuestion])); // on envoit toutes les infos de la question au grand écran
+
+        function nextQuestion() {
+            actualQuestion++;
+
+            for(playerSock of playersSocks) {
+                playerSock.send(JSON.stringify([questions[actualQuestion][3]]));
+            }
+
+            screenSock.send(JSON.stringify(questions[actualQuestion]));
+
+            if(actualQuestion < questions.length - 1) {
+                setTimeout(nextQuestion, questions[actualQuestion][3] * 1000);
+            }
+        }
+
+        nextQuestion(); // on envoit la première question
     }
 
     wss.on("connection", function(sock) {
