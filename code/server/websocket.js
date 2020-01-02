@@ -7,6 +7,7 @@ const ADD_PLAYER = 0;
 const SET_PSEUDO = 1;
 const DEL_PLAYER = 2;
 const PSEUDO_ALREADY_USED = 3;
+const START_GAME = 4; 
 
 const State = {
     NONE: 0,
@@ -15,6 +16,68 @@ const State = {
     PSEUDO: 3,
     GAME: 4,
 };
+
+const questions = [
+    [
+        "Comment s'appelait le président des États-Unis en 1995 ?", // intitulé de la question
+        [ // réponses possibles
+            "Barack Obama",
+            "Jimmy Carter",
+            "Georges H. W. Bush",
+            "Bill Clinton"
+        ],
+        4, // numéro de la bonne réponse
+        20 // temps en secondes que les joueurs ont pour répondre à cette question
+    ],
+
+    [
+        "En quelle année le premier iPhone est sorti ?",
+        [
+            2005,
+            2007,
+            2013,
+            2009
+        ],
+        2,
+        15
+    ],
+
+    [
+        "Quel est le plus haut bâtiment de Paris ?",
+        [
+            "l'hôtel Hyatt Regency",
+            "la Tour Eiffel",
+            "la tour Montparnasse",
+            "le dôme des Invalides"
+        ],
+        2,
+        10,
+    ],
+
+    [
+        "Combien de fois la chanson All I Want for Christmas Is You de Mariah Carey a-t-elle été écoutée sur Spotify ?",
+        [
+            "entre 200 millions et 400 millions",
+            "entre 500 millions et 600 millions",
+            "entre 1 milliard et 2 milliards",
+            "entre 600 et 700 millions"
+        ],
+        4,
+        6
+    ],
+
+    [
+        "De quelle région, pays ou ville vient la raclette ?",
+        [
+            "Annecy",
+            "Haute-Savoie",
+            "Savoie",
+            "Suisse"
+        ],
+        4,
+        5
+    ]
+];
 
 const SCREEN_SECRET_KEY = "7116dd23254dc1a8";
 
@@ -30,13 +93,27 @@ module.exports = function(httpServer) {
 
     let nextPlayerId = 0;
 
+    let actualQuestion = 0;
+
+    let gameWillStart = false;
+
+    function startGame() {
+        for(playerSock of playersSocks) {
+            playerSock.send(JSON.stringify([START_GAME])); // on dit aux joueurs que la partie commence (pour qu'ils affichent l'interface des questions)
+            playerSock.send(JSON.stringify([questions[actualQuestion][3]])); // on envoit le temps de réponses à la première question aux joueurs (on ne leur envoit pas l'intitulé ni les réponses car elles s'afficheront sur les grands écrans, le joueur aura uniquement 4 boutons A, B, C et D)
+        }
+
+        screenSock.send(JSON.stringify([START_GAME]));
+        screenSock.send(JSON.stringify(questions[actualQuestion])); // on envoit toutes les infos de la question au grand écran
+    }
+
     wss.on("connection", function(sock) {
         if (state == State.WAITING_ROOM) {
             sock.state = State.AUTH;
 
             sock.on("message", function(json) {
                 let msg = JSON.parse(json);
-                console.log(msg);
+                
                 switch (state) {
                     case State.WAITING_ROOM:
                         switch (sock.state) {
@@ -60,6 +137,11 @@ module.exports = function(httpServer) {
                                     }
 
                                     sock.send(JSON.stringify([MIN_PLAYER, players, sock.player.id]));
+
+                                    if(playersSocks.length >= MIN_PLAYER && !gameWillStart) {
+                                        setTimeout(startGame, 15000); // quand on a assez de joueurs on lance la partie dans 15 secondes
+                                        gameWillStart = true;
+                                    }
 
                                     sock.state = State.PSEUDO;
                                 } else if (msg[0] == CLIENT_TYPE_SCREEN && msg[1] == SCREEN_SECRET_KEY) {
@@ -96,12 +178,6 @@ module.exports = function(httpServer) {
                                 break;
                         }
 
-                        /*
-                        					case State.GAME:
-                        						switch (sock.state) {
-                        							case State.
-                        						}
-                        */
                         break;
                 }
             });

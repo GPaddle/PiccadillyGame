@@ -4,6 +4,7 @@ const SECRET_SCREEN_KEY = "7116dd23254dc1a8";
 
 const ADD_PLAYER = 0;
 const DEL_PLAYER = 2;
+const START_GAME = 4;
 
 const State = {
     GAME_INFO: 0,
@@ -11,67 +12,56 @@ const State = {
     GAME: 2,
 }
 
-function displayHome() {
-    document.body.innerHTML = `
-	<div id="service-name">Piccadilly Game</div>
-	<div id="join-invitation">Rejoignez la partie sur http://` + window.location.host + `/play</div>
-	<div id="player-infos">
-		<div class="player-info" id="player-info-first">Nombre de joueurs connectés : <span class="player-info-value" id="connected-players">0</span></div>
-		<div class="player-info">Nombre de joueurs minimum nécessaires : <span class="player-info-value" id="min-players">...</span></div>
-	</div>
-	`;
-}
-
-//TODO 
-// Envoyer les questions et réponses lors du chargement de la page de question
-
-const Questions = {
-    Q1: {
-        Q: 'Combien y a t-il eu de présidents aux États-Unis ?',
-        R1: '12',
-        R2: '128',
-        R3: '42',
-        R4: '45'
-    },
-    Q2: {
-        Q: `En quelle année a eu lieu l'exposition universelle durant laquelle la Tour Eiffel a été construite ?`,
-        R1: '1890',
-        R2: '1907',
-        R3: '2020',
-        R4: '1887'
-    }
-}
-
-function displayGame(nb) {
-    let jeu;
-    switch (nb) {
-        case 1:
-            jeu = Questions.Q1;
-            break;
-
-        case 2:
-            jeu = Questions.Q2;
-            break;
-
-        default:
-            break;
-    }
-    document.body.innerHTML = `
-	<div id="service-name">Piccadilly Game</div>
-	<div id="player-infos">
-        <button id="answer1">` + jeu.R1 + `</button>
-        <button id="answer2">` + jeu.R2 + `</button>
-        <button id="answer3">` + jeu.R3 + `</button>
-        <button id="answer4">` + jeu.R4 + `</button>
-    </div>
-	`;
-}
-
 window.onload = function() {
-    displayHome();
+    document.body.innerHTML = `
+    <div id="service-name">Piccadilly Game</div>
+    <div id="join-invitation">Rejoignez la partie sur http://` + window.location.host + `/play</div>
+    <div id="player-infos">
+        <div class="player-info" id="player-info-first">Nombre de joueurs connectés : <span class="player-info-value" id="connected-players">0</span></div>
+        <div class="player-info">Nombre de joueurs minimum nécessaires : <span class="player-info-value" id="min-players">...</span></div>
+    </div>
+    `;
 
-    const connectedPlayersCountHtml = document.getElementById("connected-players");
-    const minPlayersCountHtml = document.getElementById("min-players");
+    let connectedPlayersCountHtml = document.getElementById("connected-players");
+    let minPlayersCountHtml = document.getElementById("min-players");
+
+    let questionNumberHtml;
+    let questionHtml;
+
+    let remainingTimeHtml;
+
+    let answersHtml;
+
+    function displayGame() {
+        document.body.innerHTML = `
+        <div id="question-number">Question ...</div>
+        <div id="question">...</div>
+        <div id="remaining-time">Temps restant : <span id="remaining-time-value">...</span></div>
+        <div class="answer">
+            <span class="answer-letter">A - </span>
+            <span class="answer-text">...</div>
+        </div>
+        <div class="answer">
+            <span class="answer-letter">B - </span>
+            <span class="answer-text">...</div>
+        </div>
+        <div class="answer">
+            <span class="answer-letter">C - </span>
+            <span class="answer-text">...</div>
+        </div>
+        <div class="answer">
+            <span class="answer-letter">D - </span>
+            <span class="answer-text">...</div>
+        </div>
+        `;
+
+        questionNumberHtml = document.getElementById("question-number");
+        questionHtml = document.getElementById("question");
+
+        remainingTimeHtml = document.getElementById("remaining-time-value");
+
+        answersHtml = document.getElementsByClassName("answer-text");
+    }
 
     const sock = new WebSocket("ws://" + window.location.host);
 
@@ -81,7 +71,9 @@ window.onload = function() {
         let playersNumber = 0;
         let minPlayersCount = 0;
 
-        let questionNumber = 1;
+        let gameWillStart = false;
+
+        let questionNumber = 0;
 
         let stats = [0, 0, 0, 0];
 
@@ -90,12 +82,10 @@ window.onload = function() {
         sock.onmessage = function(json) {
             let msg = JSON.parse(json.data);
 
-            console.log(msg);
             switch (state) {
                 case State.GAME_INFO:
                     minPlayersCount = msg[0];
                     minPlayersCountHtml.innerHTML = minPlayersCount;
-
 
                     connectedPlayersCount = msg[1];
                     connectedPlayersCountHtml.innerHTML = connectedPlayersCount;
@@ -107,30 +97,37 @@ window.onload = function() {
                     if (msg[0] == ADD_PLAYER) {
                         playersNumber++;
                         connectedPlayersCountHtml.innerHTML = playersNumber;
-
-                        if (playersNumber >= minPlayersCount && minPlayersCount != 0) {
-                            state = State.GAME;
-                            console.log("JEU");
-                            displayGame(questionNumber);
-                        }
-
-
                     } else if (msg[0] == DEL_PLAYER) {
                         playersNumber--;
                         connectedPlayersCountHtml.innerHTML = playersNumber;
+                    } else if (msg[0] == START_GAME) {
+                        displayGame();
+                        state = State.GAME;
                     }
 
                     break;
-
-                    //TODO
-
-
-                    /**
-                     * JSON :
-                     * question number
-                     * answer number
-                     */
                 case State.GAME:
+                    questionNumber++;
+                    questionNumberHtml.innerHTML = "Question " + questionNumber;
+
+                    questionHtml.innerHTML = msg[0];
+
+                    for(let i = 0; i < 4; i++) {
+                        answersHtml[i].innerHTML = msg[1][i];
+                    }
+
+                    let count = msg[3];
+                    remainingTimeHtml.innerHTML = count;
+
+                    let countDown = setInterval(function() {
+                        count--;
+                        remainingTimeHtml.innerHTML = count;
+
+                        if(count == 0) {
+                            clearInterval(countDown);
+                        }
+                    }, 1000);
+
                     stats[msg[0]]++;
                     console.log(stats);
                     break;

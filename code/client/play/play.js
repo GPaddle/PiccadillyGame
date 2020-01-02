@@ -4,6 +4,7 @@ const ADD_PLAYER = 0;
 const SET_PSEUDO = 1;
 const DEL_PLAYER = 2;
 const PSEUDO_ALREADY_USED = 3;
+const START_GAME = 4;
 
 const State = {
     NONE: 0,
@@ -12,25 +13,7 @@ const State = {
     WAITING_ROOM: 3
 }
 
-
-const Questions = {
-    Q1: {
-        Q: 'Combien y a t-il eu de présidents aux États-Unis ?',
-        R1: '12',
-        R2: '128',
-        R3: '42',
-        R4: '45'
-    },
-    Q2: {
-        Q: `En quelle année a eu lieu l'exposition universelle durant laquelle la Tour Eiffel a été construite ?`,
-        R1: '1890',
-        R2: '1907',
-        R3: '2020',
-        R4: '1887'
-    }
-}
-
-function displayHome() {
+window.onload = function() {
     document.body.innerHTML = `
 	<div id="player-infos">
 		<div class="player-info">Nombre de joueurs connectés : <span class="player-info-value" id="connected-players">...</span></div>
@@ -47,61 +30,46 @@ function displayHome() {
 
 	</div>
 	`;
-}
 
-function displayGame(nb) {
-    let jeu;
-    switch (nb) {
-        case 1:
-            jeu = Questions.Q1;
-            break;
+	let connectedPlayersCount = document.getElementById("connected-players");
+    let minPlayersCountHtml = document.getElementById("min-players");
 
-        case 2:
-            jeu = Questions.Q2;
-            break;
+    let pseudoInput = document.getElementById("pseudo-input");
+    let pseudoError = document.getElementById("pseudo-error");
+    let sendPseudoButton = document.getElementById("send-pseudo-button");
 
-        default:
-            break;
-    }
-    document.body.innerHTML = `
-	
-    <div id="moduleQ">
-        <div id="question">` + jeu.Q + `</div><br>
-        <div id="time">Temps restant</div>
-        <div id="progress">
-            <div id="progress2"></div>
-        </div>
-        <div id="reponses">
-            <button id="answer1">` + jeu.R1 + `</button>
-            <button id="answer2">` + jeu.R2 + `</button>
-            <button id="answer3">` + jeu.R3 + `</button>
-            <button id="answer4">` + jeu.R4 + `</button>
-        </div>
-    </div>
+    let playerPseudoHtml = document.getElementById("player-pseudo-value");
+    let playersHtmlList = document.getElementById("player-list");
 
-	`;
-}
+    let questionNumberHtml;
+    let remainingTimeHtml;
 
-window.onload = function() {
-    displayHome();
+    let sock = new WebSocket("ws://" + window.location.host);
 
-    let questionNumber = 1;
+    let minPlayersCount;
 
-    const connectedPlayersCount = document.getElementById("connected-players");
-    const minPlayersCount = document.getElementById("min-players");
+    function displayGame() {
+		document.body.innerHTML = `
+		<div id="question-number">Question 1</div>
+		<div id="remaining-time">Temps restant : <span id="remaining-time-value"></span></div>
+		<div class="answer-button">
+			<div class="answer-letter">A</div>
+		</div>
+		<div class="answer-button">
+			<div class="answer-letter">B</div>
+		</div>
+		<div class="answer-button">
+			<div class="answer-letter">C</div>
+		</div>
+		<div class="answer-button">
+			<div class="answer-letter">D</div>
+		</div>
+		`;
 
-    const pseudoInput = document.getElementById("pseudo-input");
-    const pseudoError = document.getElementById("pseudo-error");
-    const sendPseudoButton = document.getElementById("send-pseudo-button");
+		questionNumberHtml = document.getElementById("question-number");
+		remainingTimeHtml = document.getElementById("remaining-time-value");
+	}
 
-    const playerPseudoHtml = document.getElementById("player-pseudo-value");
-    const playersHtmlList = document.getElementById("player-list");
-
-    const sock = new WebSocket("ws://" + window.location.host);
-
-    let answers = [];
-
-    let minPlayer = 0;
     sock.onopen = function() {
         let state = State.GAME_INFO;
         let players;
@@ -110,19 +78,19 @@ window.onload = function() {
 
         let meId;
 
+        let questionNumber = 1;
+
         sock.send(JSON.stringify([CLIENT_TYPE_PLAYER]));
 
         sock.onmessage = function(json) {
             let msg = JSON.parse(json.data);
 
-            console.log(msg);
-
             switch (state) {
                 case State.GAME_INFO:
                     players = msg[1];
 
-                    minPlayersCount.innerHTML = msg[0];
-                    minPlayer = msg[0];
+                    minPlayersCount = msg[0];
+                    minPlayersCountHtml.innerHTML = minPlayersCount;
 
                     connectedPlayersCount.innerHTML = players.length;
 
@@ -143,32 +111,6 @@ window.onload = function() {
                     state = State.WAITING_ROOM;
                     break;
 
-                case State.GAME:
-                    displayGame(questionNumber);
-
-                    answers[0] = document.getElementById("answer1");
-                    answers[1] = document.getElementById("answer2");
-                    answers[2] = document.getElementById("answer3");
-                    answers[3] = document.getElementById("answer4");
-
-                    for (let index = 0; index < answers.length; index++) {
-                        const element = answers[index];
-
-                        element.onclick = function(index) {
-                            sock.send(JSON.stringify([questionNumber, index]));
-                            for (let index2 = 0; index2 < answers.length; index2++) {
-                                const element = answers[index2];
-                                element.disabled = true;
-                                element.classList.add("disable");
-                            }
-                        }
-
-                    }
-
-
-
-                    break;
-
                 case State.WAITING_ROOM:
                     if (msg[0] == ADD_PLAYER) {
                         let player = {
@@ -184,12 +126,6 @@ window.onload = function() {
                         playersHtmlList.appendChild(player.htmlLine);
 
                         connectedPlayersCount.innerHTML = players.length;
-
-                        if (players.length >= minPlayer && minPlayer != 0) {
-                            state = State.GAME;
-                            console.log("JEU");
-                        }
-
                     } else if (msg[0] == SET_PSEUDO) {
                         for (player of players) { // on récupère le joueur concerné grâce à son id
                             if (player.id == msg[1]) {
@@ -214,9 +150,27 @@ window.onload = function() {
                         }
                     } else if (msg[0] == PSEUDO_ALREADY_USED) {
                         pseudoError.innerHTML = "Ce pseudo est déjà utilisé";
+                    } else if (msg[0] == START_GAME) {
+                    	displayGame();
+                    	state = State.GAME;
                     }
 
                     break;
+
+                case State.GAME:
+                    let count = msg[0];
+                    remainingTimeHtml.innerHTML = count;
+
+                    let countDown = setInterval(function() {
+                        count--;
+                        remainingTimeHtml.innerHTML = count;
+
+                        if(count == 0) {
+                            clearTimeout(countDown);
+                        }
+                    }, 1000);
+
+                	break;
             }
         };
 
