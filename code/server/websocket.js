@@ -13,16 +13,17 @@ const PSEUDO_ALREADY_USED = 3;
 const START_GAME_COUNTDOWN = 4;
 const START_GAME = 5;
 
-const NEW_QUESTION = 0;
-const ANSWERS_STATS = 1;
+const ANSWERS_STATS = 0,
+	END_QUESTION = 1;
 
-const State = {
-	NONE: 0,
-	WAITING_ROOM: 1,
-	AUTH: 2,
-	PSEUDO: 3,
-	GAME: 4,
-};
+const BAD_RESULT = 0;
+const GOOD_RESULT = 1;
+
+const STATE_NONE = 0,
+	STATE_WAITING_ROOM = 1,
+	STATE_AUTH = 2,
+	STATE_PSEUDO = 3,
+	STATE_GAME = 4;
 
 const questions = JSON.parse(fs.readFileSync("questions.json"));
 
@@ -38,7 +39,7 @@ module.exports = function(httpServer) {
 	let screensSocks = [];
 	const playersSocks = [];
 
-	let state = State.WAITING_ROOM;
+	let state = STATE_WAITING_ROOM;
 
 	let nextPlayerId = 0;
 
@@ -56,10 +57,12 @@ module.exports = function(httpServer) {
 		}
 
 		function nextQuestion() {
+			state = STATE_GAME;
+
 			actualQuestion++;
 
 			for(let playerSock of playersSocks) {
-				playerSock.send(JSON.stringify([NEW_QUESTION, questions[actualQuestion][3]])); // on envoit uniquement le temps de la question aux joueurs, l'intitulé de la question sera affiché sur les grands écrans
+				playerSock.send(JSON.stringify([questions[actualQuestion][3]])); // on envoit uniquement le temps de la question aux joueurs, l'intitulé de la question sera affiché sur les grands écrans
 			}
 
 			let screenSockQuestion = [ // on envoit aux grands écrans : l'intitulé de la question, les réponses possibles et le temps de la question
@@ -72,19 +75,31 @@ module.exports = function(httpServer) {
 				screenSock.send(JSON.stringify(screenSockQuestion));
 			}
 
-			if(actualQuestion < questions.length - 1) {
-				setTimeout(nextQuestion, questions[actualQuestion][3] * 1000);
-			}
+			setTimeout(function() {
+				state = STATE_NONE;
+
+				for(let screenSock of screensSocks) {
+					screenSock.send(JSON.stringify([questions[actualQuestion][2]]));
+				}
+
+				for(let playerSock of playersSocks) {
+					let result = playerSock.player.answers[actualQuestion] == questions[actualQuestion][2];
+
+					playerSock.send(JSON.stringify([END_QUESTION, result]));
+				}
+
+				if(actualQuestion < questions.length - 1) {
+					setTimeout(nextQuestion, 6000);
+				}
+			}, questions[actualQuestion][3] * 1000);
 		}
 
 		nextQuestion(); // on envoit la première question
-
-		state = State.GAME;
 	}
 
 	wss.on("connection", function(sock) {
-		if (state == State.WAITING_ROOM) {
-			sock.state = State.AUTH;
+		if (state == STATE_WAITING_ROOM) {
+			sock.state = STATE_AUTH;
 
 			let authTimeout = setTimeout(function() {
 				sock.close();
@@ -94,9 +109,9 @@ module.exports = function(httpServer) {
 				let msg = JSON.parse(json);
 				
 				switch (state) {
-					case State.WAITING_ROOM:
+					case STATE_WAITING_ROOM: {
 						switch (sock.state) {
-							case State.AUTH:
+							case STATE_AUTH: {
 								if (msg[0] == CLIENT_TYPE_PLAYER) {
 									clearTimeout(authTimeout);
 
@@ -122,7 +137,7 @@ module.exports = function(httpServer) {
 									}
 
 									sock.send(JSON.stringify([MIN_PLAYER, players, sock.player.id]));
-									sock.state = State.PSEUDO;
+									sock.state = STATE_PSEUDO;
 
 									playersSocks.push(sock);
 
@@ -141,7 +156,7 @@ module.exports = function(httpServer) {
 									clearTimeout(authTimeout);
 
 									sock.send(JSON.stringify([MIN_PLAYER, playersSocks.length]));
-									sock.state = State.NONE;
+									sock.state = STATE_NONE;
 
 									screensSocks.push(sock);
 								} else {
@@ -149,8 +164,9 @@ module.exports = function(httpServer) {
 								}
 
 								break;
+							}
 
-							case State.PSEUDO:
+							case STATE_PSEUDO: {
 								let isPseudoFree = true;
 
 								for (let playerSock of playersSocks) {
@@ -167,17 +183,19 @@ module.exports = function(httpServer) {
 										playerSock.send(JSON.stringify([SET_PSEUDO, sock.player.id, sock.player.pseudo]));
 									}
 
-									sock.state = State.NONE;
+									sock.state = STATE_NONE;
 								} else {
 									sock.send(JSON.stringify([PSEUDO_ALREADY_USED]));
 								}
 
 								break;
+							}
 						}
 
 						break;
+					}
 
-					case State.GAME:
+					case STATE_GAME: {
 						if(sock.player.answers[actualQuestion] === undefined && msg[0] >= 0 && msg[0] <= 3) { // si le joueur n'a pas encore donné de réponse et si le code de réponse est 0, 1, 2 ou 3
 							sock.player.answers[actualQuestion] = msg[0] // on enregistre la réponse envoyée par le joueur
 
@@ -201,6 +219,7 @@ module.exports = function(httpServer) {
 						}
 
 						break;
+					}
 				}
 			});
 
@@ -211,7 +230,7 @@ module.exports = function(httpServer) {
 					playersSocks.splice(playersSocks.indexOf(sock), 1);
 				}
 
-				if(state == State.WAITING_ROOM) {
+				if(state == STATE_WAITING_ROOM) {
 					for(let screenSock of screensSocks) {
 						screenSock.send(JSON.stringify([DEL_PLAYER]));
 					}

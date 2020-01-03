@@ -9,11 +9,10 @@ const START_GAME = 5;
 
 const SECRET_SCREEN_KEY = "7116dd23254dc1a8";
 
-const State = {
-	GAME_INFO: 0,
-	WAITING_ROOM: 1,
-	GAME: 2,
-}
+const STATE_GAME_INFO = 0,
+	STATE_WAITING_ROOM = 1,
+	STATE_WAIT_QUESTION = 2,
+	STATE_ANSWER = 3;
 
 window.onload = function() {
 	document.body.innerHTML = `
@@ -30,8 +29,7 @@ window.onload = function() {
 
 	let questionNumberHtml;
 	let questionHtml;
-
-	let questionCountdownHtml;
+	let questionInfoHtml;
 
 	let answersHtml;
 
@@ -39,7 +37,7 @@ window.onload = function() {
 		document.body.innerHTML = `
 		<div id="question-number">Question ...</div>
 		<div id="question">...</div>
-		<div id="question-countdown-info">Temps restant : <span id="question-countdown">...</span></div>
+		<div id="question-info"></div>
 		<div class="answer">
 			<span class="answer-letter">A - </span>
 			<span class="answer-text">...</div>
@@ -60,8 +58,7 @@ window.onload = function() {
 
 		questionNumberHtml = document.getElementById("question-number");
 		questionHtml = document.getElementById("question");
-
-		questionCountdownHtml = document.getElementById("question-countdown");
+		questionInfoHtml = document.getElementById("question-info");
 
 		answersHtml = document.getElementsByClassName("answer-text");
 	}
@@ -69,10 +66,12 @@ window.onload = function() {
 	const sock = new WebSocket("ws://" + window.location.host);
 
 	sock.onopen = function() {
-		let state = State.GAME_INFO;
+		let state = STATE_GAME_INFO;
 
 		let playersCount = 0;
 		let minPlayersCount = 0;
+
+		let question;
 
 		let questionNumber = 0;
 		let questionCountdown;
@@ -83,17 +82,18 @@ window.onload = function() {
 			let msg = JSON.parse(json.data);
 
 			switch (state) {
-				case State.GAME_INFO:
+				case STATE_GAME_INFO: {
 					minPlayersCount = msg[0];
 					minPlayersCountHtml.innerHTML = minPlayersCount;
 
 					playersCount = msg[1];
 					playersCountHtml.innerHTML = playersCount;
 
-					state = State.WAITING_ROOM;
+					state = STATE_WAITING_ROOM;
 					break;
+				}
 
-				case State.WAITING_ROOM:
+				case STATE_WAITING_ROOM: {
 					if (msg[0] == ADD_PLAYER) {
 						playersCount++;
 						playersCountHtml.innerHTML = playersCount;
@@ -123,23 +123,31 @@ window.onload = function() {
 						}, 1000)
 					} else if (msg[0] == START_GAME) {
 						displayGame();
-						state = State.GAME;
+						state = STATE_WAIT_QUESTION;
 					}
 
 					break;
-				case State.GAME:
+				}
+
+				case STATE_WAIT_QUESTION: {
 					clearInterval(questionCountdown);
+
+					question = msg;
 
 					questionNumber++;
 					questionNumberHtml.innerHTML = "Question " + questionNumber;
 
-					questionHtml.innerHTML = msg[0];
+					questionHtml.innerHTML = question[0];
 
 					for(let i = 0; i < 4; i++) {
-						answersHtml[i].innerHTML = msg[1][i];
+						answersHtml[i].innerHTML = question[1][i];
 					}
 
-					let time = msg[2];
+					let time = question[2];
+
+					questionInfoHtml.innerHTML = "Temps restant : <span id=\"question-countdown\">...</span>";
+
+					let questionCountdownHtml = document.getElementById("question-countdown");
 					questionCountdownHtml.innerHTML = time;
 
 					questionCountdown = setInterval(function() {
@@ -150,7 +158,16 @@ window.onload = function() {
 							clearInterval(questionCountdown);
 						}
 					}, 1000);
+
+					state = STATE_ANSWER;
 					break;
+				}
+
+				case STATE_ANSWER: {
+					questionInfoHtml.innerHTML = "La bonne réponse était \"" + question[1][msg[0]] + "\"";
+					state = STATE_WAIT_QUESTION;
+					break;
+				}
 			}
 		}
 	}

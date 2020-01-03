@@ -9,15 +9,15 @@ const PSEUDO_ALREADY_USED = 3;
 const START_GAME_COUNTDOWN = 4;
 const START_GAME = 5;
 
-const NEW_QUESTION = 0;
-const ANSWERS_STATS = 1;
+const ANSWERS_STATS = 0;
+const END_QUESTION = 1;
 
-const State = {
-	NONE: 0,
-	GAME_INFO: 1,
-	PLAYER_LIST: 2,
-	WAITING_ROOM: 3
-}
+const STATE_NONE = 0,
+	STATE_GAME_INFO = 1,
+	STATE_PLAYER_LIST = 2,
+	STATE_WAITING_ROOM = 3,
+	STATE_WAIT_QUESTION = 4,
+	STATE_ANSWER = 5;
 
 window.onload = function() {
 	document.body.innerHTML = `
@@ -56,9 +56,8 @@ window.onload = function() {
 		pseudoErrorHtml.innerHTML = "";
 	};
 
-
 	let questionNumberHtml;
-	let questionCountdownHtml;
+	let questionInfoHtml;
 
 	let answersButtonsHtml;
 	let answersStatsHtml;
@@ -69,48 +68,8 @@ window.onload = function() {
 
 	let minPlayersCount;
 
-	function displayGame() {
-		document.body.innerHTML = `
-		<div id="question-number">Question 1</div>
-		<div id="question-countdown-info">Temps restant : <span id="question-countdown"></span></div>
-		<div class="answer-button">
-			<div class="answer-letter">A</div>
-			<div class="answer-stat">0%</div>
-		</div>
-		<div class="answer-button">
-			<div class="answer-letter">B</div>
-			<div class="answer-stat">0%</div>
-		</div>
-		<div class="answer-button">
-			<div class="answer-letter">C</div>
-			<div class="answer-stat">0%</div>
-		</div>
-		<div class="answer-button">
-			<div class="answer-letter">D</div>
-			<div class="answer-stat">0%</div>
-		</div>
-		`;
-
-		questionNumberHtml = document.getElementById("question-number");
-		questionCountdownHtml = document.getElementById("question-countdown");
-
-		answersButtonsHtml = document.getElementsByClassName("answer-button");
-		answersStatsHtml = document.getElementsByClassName("answer-stat");
-
-		for(let i = 0; i < 4; i++) {
-			answersButtonsHtml[i].onclick = function() {
-				if(clickedAnswerButtonHtml === undefined) {
-					clickedAnswerButtonHtml = answersButtonsHtml[i];
-					clickedAnswerButtonHtml.style.border = "solid 2px #fefefe";
-
-					sock.send(JSON.stringify([i])); // on envoit le numéro de la réponse sélectionnée
-				}
-			}
-		}
-	}
-
 	sock.onopen = function() {
-		let state = State.GAME_INFO;
+		let state = STATE_GAME_INFO;
 		let players; // tableau des pseudos de joueurs
 
 		let minPlayersCount = 0;
@@ -122,11 +81,51 @@ window.onload = function() {
 
 		sock.send(JSON.stringify([CLIENT_TYPE_PLAYER]));
 
+		function displayGame() {
+			document.body.innerHTML = `
+			<div id="question-number">Question 1</div>
+			<div id="question-info"></div>
+			<div class="answer-button">
+				<div class="answer-letter">A</div>
+				<div class="answer-stat">0%</div>
+			</div>
+			<div class="answer-button">
+				<div class="answer-letter">B</div>
+				<div class="answer-stat">0%</div>
+			</div>
+			<div class="answer-button">
+				<div class="answer-letter">C</div>
+				<div class="answer-stat">0%</div>
+			</div>
+			<div class="answer-button">
+				<div class="answer-letter">D</div>
+				<div class="answer-stat">0%</div>
+			</div>
+			`;
+
+			questionNumberHtml = document.getElementById("question-number");
+			questionInfoHtml = document.getElementById("question-info");
+
+			answersButtonsHtml = document.getElementsByClassName("answer-button");
+			answersStatsHtml = document.getElementsByClassName("answer-stat");
+
+			for(let i = 0; i < 4; i++) {
+				answersButtonsHtml[i].onclick = function() {
+					if(clickedAnswerButtonHtml === undefined && state == STATE_ANSWER) {
+						clickedAnswerButtonHtml = answersButtonsHtml[i];
+						clickedAnswerButtonHtml.style.border = "solid 2px #fefefe";
+
+						sock.send(JSON.stringify([i])); // on envoit le numéro de la réponse sélectionnée
+					}
+				}
+			}
+		}
+
 		sock.onmessage = function(json) {
 			let msg = JSON.parse(json.data);
 
 			switch (state) {
-				case State.GAME_INFO:
+				case STATE_GAME_INFO: {
 					minPlayersCount = msg[0];
 					minPlayersCountHtml.innerHTML = minPlayersCount;
 
@@ -147,10 +146,11 @@ window.onload = function() {
 						}
 					}
 
-					state = State.WAITING_ROOM;
+					state = STATE_WAITING_ROOM;
 					break;
+				}
 
-				case State.WAITING_ROOM:
+				case STATE_WAITING_ROOM: {
 					if (msg[0] == ADD_PLAYER) {
 						let player = {
 							id: msg[1],
@@ -216,45 +216,64 @@ window.onload = function() {
 						}, 1000);
 					} else if (msg[0] == START_GAME) {
 						displayGame();
-						state = State.GAME;
+						state = STATE_WAIT_QUESTION;
 					}
 
 					break;
+				}
 
-				case State.GAME:
-					if(msg[0] == NEW_QUESTION) {
-						if(clickedAnswerButtonHtml !== undefined) {
-							clickedAnswerButtonHtml.style.border = "";
-							clickedAnswerButtonHtml = undefined;
-						}
+				case STATE_WAIT_QUESTION: {
+					if(clickedAnswerButtonHtml !== undefined) {
+						clickedAnswerButtonHtml.style.border = "";
+						clickedAnswerButtonHtml = undefined;
+					}
 
-						for(let answerStatHtml of answersStatsHtml) {
-							answerStatHtml.innerHTML = "";
-						}
+					for(let answerStatHtml of answersStatsHtml) {
+						answerStatHtml.innerHTML = "";
+					}
 
-						actualQuestion++;
-						questionNumberHtml.innerHTML = "Question " + actualQuestion;
+					actualQuestion++;
+					questionNumberHtml.innerHTML = "Question " + actualQuestion;
 
-						clearInterval(questionCountdown);
+					clearInterval(questionCountdown);
 
-						let time = msg[1];
+					let time = msg[0];
+
+					questionInfoHtml.innerHTML = "Temps restant : <span id=\"question-countdown\"></span>"
+
+					let questionCountdownHtml = document.getElementById("question-countdown");
+					questionCountdownHtml.innerHTML = time;
+
+					questionCountdown = setInterval(function() {
+						time--;
 						questionCountdownHtml.innerHTML = time;
 
-						questionCountdown = setInterval(function() {
-							time--;
-							questionCountdownHtml.innerHTML = time;
+						if(time == 0) {
+							clearTimeout(questionCountdown);
+						}
+					}, 1000);
 
-							if(time == 0) {
-								clearTimeout(questionCountdown);
-							}
-						}, 1000);
-					} else if(msg[0] == ANSWERS_STATS) {
+					state = STATE_ANSWER;
+					break;
+				}
+
+				case STATE_ANSWER: {
+					if(msg[0] == ANSWERS_STATS) {
 						for(let i = 0; i < 4; i++) {
 							answersStatsHtml[i].innerHTML = msg[1][i] + "%";
 						}
+					} else if(msg[0] == END_QUESTION) {
+						if(msg[1]) {
+							questionInfoHtml.innerHTML = "Bonne réponse !";
+						} else {
+							questionInfoHtml.innerHTML = "Mauvaise réponse...";
+						}
+
+						state = STATE_WAIT_QUESTION;
 					}
 
 					break;
+				}
 			}
 		};
 	};
