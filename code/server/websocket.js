@@ -61,11 +61,17 @@ module.exports = function(httpServer) {
 			actualQuestion++;
 
 			for(let playerSock of playersSocks) {
-				playerSock.send(JSON.stringify([NEW_QUESTION, questions[actualQuestion][3]]));
+				playerSock.send(JSON.stringify([NEW_QUESTION, questions[actualQuestion][3]])); // on envoit uniquement le temps de la question aux joueurs, l'intitulé de la question sera affiché sur les grands écrans
 			}
 
+			let screenSockQuestion = [ // on envoit aux grands écrans : l'intitulé de la question, les réponses possibles et le temps de la question
+				questions[actualQuestion][0],
+				questions[actualQuestion][1],
+				questions[actualQuestion][3]
+			]
+
 			for(let screenSock of screensSocks) {
-				screenSock.send(JSON.stringify(questions[actualQuestion]));
+				screenSock.send(JSON.stringify(screenSockQuestion));
 			}
 
 			answerStats = [0, 0, 0, 0];

@@ -139,7 +139,7 @@ window.onload = function() {
 						answersHtml[i].innerHTML = msg[1][i];
 					}
 
-					let time = msg[3];
+					let time = msg[2];
 					questionCountdownHtml.innerHTML = time;
 
 					questionCountdown = setInterval(function() {
