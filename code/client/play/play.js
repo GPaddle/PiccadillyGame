@@ -13,14 +13,14 @@ const ANSWERS_STATS = 0;
 const END_QUESTION = 1;
 
 const STATE_NONE = 0,
-	STATE_GAME_INFO = 1,
-	STATE_PLAYER_LIST = 2,
-	STATE_WAITING_ROOM = 3,
-	STATE_WAIT_QUESTION = 4,
-	STATE_ANSWER = 5;
+    STATE_GAME_INFO = 1,
+    STATE_PLAYER_LIST = 2,
+    STATE_WAITING_ROOM = 3,
+    STATE_WAIT_QUESTION = 4,
+    STATE_ANSWER = 5;
 
 window.onload = function() {
-	document.body.innerHTML = `
+    document.body.innerHTML = `
 	<div id="players-info">Nombre de joueurs connectés : <span id="players-count">...</span></div>
 	<div id="min-players-info">Nombre de joueurs minimum nécessaires : <span id="min-players-count">...</span></div>
 
@@ -35,246 +35,292 @@ window.onload = function() {
 	</div>
 	`;
 
-	let playersCountHtml = document.getElementById("players-count");
-	let minPlayersCountHtml = document.getElementById("min-players-count");
+    let playersCountHtml = document.getElementById("players-count");
+    let minPlayersCountHtml = document.getElementById("min-players-count");
 
-	let playerPseudoInfoHtml = document.getElementById("player-pseudo-info");
+    let playerPseudoInfoHtml = document.getElementById("player-pseudo-info");
 
-	let pseudoInputHtml = document.getElementById("pseudo-input");
-	let pseudoErrorHtml = document.getElementById("pseudo-error");
-	let sendPseudoButtonHtml = document.getElementById("send-pseudo-button");
+    let pseudoInputHtml = document.getElementById("pseudo-input");
+    let pseudoErrorHtml = document.getElementById("pseudo-error");
+    let sendPseudoButtonHtml = document.getElementById("send-pseudo-button");
 
-	let playerPseudoHtml = document.getElementById("player-pseudo");
-	let playersListHtml = document.getElementById("player-list");
+    let playerPseudoHtml = document.getElementById("player-pseudo");
+    let playersListHtml = document.getElementById("player-list");
 
-	pseudoInputHtml.onfocus = function() {
-		pseudoErrorHtml.innerHTML = "";
-	}
+    pseudoInputHtml.onfocus = function() {
+        pseudoErrorHtml.innerHTML = "";
+    }
 
-	sendPseudoButtonHtml.onclick = function() {
-		sock.send(JSON.stringify([pseudoInputHtml.value]));
-		pseudoErrorHtml.innerHTML = "";
-	};
+    sendPseudoButtonHtml.onclick = function() {
+        sock.send(JSON.stringify([pseudoInputHtml.value]));
+        pseudoErrorHtml.innerHTML = "";
+    };
 
-	let questionNumberHtml;
-	let questionInfoHtml;
+    let questionNumberHtml;
+    let questionInfoHtml;
 
-	let answersButtonsHtml;
-	let answersStatsHtml;
+    let answersButtonsHtml;
+    let answersStatsHtml;
 
-	let clickedAnswerButtonHtml;
+    let clickedAnswerButtonHtml;
 
-	let sock = new WebSocket("ws://" + window.location.host);
+    let sock = new WebSocket("ws://" + window.location.host);
 
-	let minPlayersCount;
+    let minPlayersCount;
 
-	sock.onopen = function() {
-		let state = STATE_GAME_INFO;
-		let players; // tableau des pseudos de joueurs
+    sock.onopen = function() {
+        let state = STATE_GAME_INFO;
+        let players; // tableau des pseudos de joueurs
 
-		let minPlayersCount = 0;
+        let minPlayersCount = 0;
 
-		let meId; // mon identifiant de joueur
+        let meId; // mon identifiant de joueur
 
-		let actualQuestion = 0;
-		let questionCountdown;
+        let actualQuestion = 0;
+        let questionCountdown;
 
-		sock.send(JSON.stringify([CLIENT_TYPE_PLAYER]));
+        sock.send(JSON.stringify([CLIENT_TYPE_PLAYER]));
 
-		function displayGame() {
-			document.body.innerHTML = `
+        function displayGame() {
+            document.body.innerHTML = `
 			<div id="question-number">Question 1</div>
 			<div id="question-info"></div>
-			<div class="answer-button">
+			<div id="answer-button1"class="answer-button">
 				<div class="answer-letter">A</div>
 				<div class="answer-stat">0%</div>
 			</div>
-			<div class="answer-button">
+			<div id="answer-button2"class="answer-button">
 				<div class="answer-letter">B</div>
 				<div class="answer-stat">0%</div>
 			</div>
-			<div class="answer-button">
+			<div id="answer-button3"class="answer-button">
 				<div class="answer-letter">C</div>
 				<div class="answer-stat">0%</div>
 			</div>
-			<div class="answer-button">
+			<div id="answer-button4"class="answer-button">
 				<div class="answer-letter">D</div>
 				<div class="answer-stat">0%</div>
 			</div>
-			`;
+            `;
 
-			questionNumberHtml = document.getElementById("question-number");
-			questionInfoHtml = document.getElementById("question-info");
+            resetAnswers();
 
-			answersButtonsHtml = document.getElementsByClassName("answer-button");
-			answersStatsHtml = document.getElementsByClassName("answer-stat");
+            questionNumberHtml = document.getElementById("question-number");
+            questionInfoHtml = document.getElementById("question-info");
 
-			for(let i = 0; i < 4; i++) {
-				answersButtonsHtml[i].onclick = function() {
-					if(clickedAnswerButtonHtml === undefined && state == STATE_ANSWER) {
-						clickedAnswerButtonHtml = answersButtonsHtml[i];
-						clickedAnswerButtonHtml.style.border = "solid 2px #fefefe";
+            answersButtonsHtml = document.getElementsByClassName("answer-button");
+            answersStatsHtml = document.getElementsByClassName("answer-stat");
 
-						sock.send(JSON.stringify([i])); // on envoit le numéro de la réponse sélectionnée
-					}
-				}
-			}
-		}
+            for (let i = 0; i < 4; i++) {
+                answersButtonsHtml[i].onclick = function() {
+                    if (clickedAnswerButtonHtml === undefined && state == STATE_ANSWER) {
+                        clickedAnswerButtonHtml = answersButtonsHtml[i];
+                        clickedAnswerButtonHtml.style.border = "solid 2px #fefefe";
 
-		sock.onmessage = function(json) {
-			let msg = JSON.parse(json.data);
+                        sock.send(JSON.stringify([i])); // on envoit le numéro de la réponse sélectionnée
+                    }
+                }
+            }
+        }
 
-			switch (state) {
-				case STATE_GAME_INFO: {
-					minPlayersCount = msg[0];
-					minPlayersCountHtml.innerHTML = minPlayersCount;
+        sock.onmessage = function(json) {
+            let msg = JSON.parse(json.data);
 
-					players = msg[1];
-					playersCountHtml.innerHTML = players.length;
+            switch (state) {
+                case STATE_GAME_INFO:
+                    {
+                        minPlayersCount = msg[0];
+                        minPlayersCountHtml.innerHTML = minPlayersCount;
 
-					meId = msg[2];
+                        players = msg[1];
+                        playersCountHtml.innerHTML = players.length;
 
-					for (let player of players) {
-						player.lineHtml = document.createElement("div");
-						player.lineHtml.classList.add("player-list-player");
-						player.lineHtml.innerHTML = player.pseudo;
+                        meId = msg[2];
 
-						playersListHtml.appendChild(player.lineHtml);
+                        for (let player of players) {
+                            player.lineHtml = document.createElement("div");
+                            player.lineHtml.classList.add("player-list-player");
+                            player.lineHtml.innerHTML = player.pseudo;
 
-						if (player.id == meId) {
-							playerPseudoHtml.innerHTML = player.pseudo;
-						}
-					}
+                            playersListHtml.appendChild(player.lineHtml);
 
-					state = STATE_WAITING_ROOM;
-					break;
-				}
+                            if (player.id == meId) {
+                                playerPseudoHtml.innerHTML = player.pseudo;
+                            }
+                        }
 
-				case STATE_WAITING_ROOM: {
-					if (msg[0] == ADD_PLAYER) {
-						let player = {
-							id: msg[1],
-							pseudo: msg[2]
-						};
+                        state = STATE_WAITING_ROOM;
+                        break;
+                    }
 
-						players.push(player);
+                case STATE_WAITING_ROOM:
+                    {
+                        if (msg[0] == ADD_PLAYER) {
+                            let player = {
+                                id: msg[1],
+                                pseudo: msg[2]
+                            };
 
-						player.lineHtml = document.createElement("div");
-						player.lineHtml.classList.add("player-list-player");
-						player.lineHtml.innerHTML = player.pseudo;
+                            players.push(player);
 
-						playersListHtml.appendChild(player.lineHtml);
+                            player.lineHtml = document.createElement("div");
+                            player.lineHtml.classList.add("player-list-player");
+                            player.lineHtml.innerHTML = player.pseudo;
 
-						playersCountHtml.innerHTML = players.length;
-					} else if (msg[0] == SET_PSEUDO) {
-						for (let player of players) { // on récupère le joueur concerné grâce à son id
-							if (player.id == msg[1]) {
-								player.pseudo = msg[2]; // on change le pseudo du joueur
-								player.lineHtml.innerHTML = player.pseudo; // on met à jour la liste des joueurs HTML
+                            playersListHtml.appendChild(player.lineHtml);
 
-								if (player.id == meId) {
-									playerPseudoHtml.innerHTML = player.pseudo;
-								}
+                            playersCountHtml.innerHTML = players.length;
+                        } else if (msg[0] == SET_PSEUDO) {
+                            for (let player of players) { // on récupère le joueur concerné grâce à son id
+                                if (player.id == msg[1]) {
+                                    player.pseudo = msg[2]; // on change le pseudo du joueur
+                                    player.lineHtml.innerHTML = player.pseudo; // on met à jour la liste des joueurs HTML
 
-								break;
-							}
-						}
-					} else if (msg[0] == DEL_PLAYER) {
-						for (let player of players) {
-							if (player.id == msg[1]) {
-								player.lineHtml.remove();
-								players.splice(players.indexOf(player), 1);
+                                    if (player.id == meId) {
+                                        playerPseudoHtml.innerHTML = player.pseudo;
+                                    }
 
-								playersCountHtml.innerHTML = players.length;
-							}
-						}
-					} else if (msg[0] == PSEUDO_ALREADY_USED) {
-						pseudoError.innerHTML = "Ce pseudo est déjà utilisé";
-					} else if (msg[0] == START_GAME_COUNTDOWN) {
-						let countdownInfoHtml = document.createElement("div");
-						countdownInfoHtml.id = "start-countdown-info";
+                                    break;
+                                }
+                            }
+                        } else if (msg[0] == DEL_PLAYER) {
+                            for (let player of players) {
+                                if (player.id == msg[1]) {
+                                    player.lineHtml.remove();
+                                    players.splice(players.indexOf(player), 1);
 
-						let textNode = document.createTextNode("La partie commence dans ");
-						countdownInfoHtml.appendChild(textNode);
+                                    playersCountHtml.innerHTML = players.length;
+                                }
+                            }
+                        } else if (msg[0] == PSEUDO_ALREADY_USED) {
+                            pseudoError.innerHTML = "Ce pseudo est déjà utilisé";
+                        } else if (msg[0] == START_GAME_COUNTDOWN) {
+                            let countdownInfoHtml = document.createElement("div");
+                            countdownInfoHtml.id = "start-countdown-info";
 
-						let time = msg[1];
+                            let textNode = document.createTextNode("La partie commence dans ");
+                            countdownInfoHtml.appendChild(textNode);
 
-						let countdownHtml = document.createElement("span");
-						countdownHtml.id = "start-countdown";
-						countdownHtml.innerHTML = time;
+                            let time = msg[1];
 
-						countdownInfoHtml.appendChild(countdownHtml);
-						document.body.insertBefore(countdownInfoHtml, playerPseudoInfoHtml)
+                            let countdownHtml = document.createElement("span");
+                            countdownHtml.id = "start-countdown";
+                            countdownHtml.innerHTML = time;
 
-						let countdown = setInterval(function() {
-							time--;
-							countdownHtml.innerHTML = time;
+                            countdownInfoHtml.appendChild(countdownHtml);
+                            document.body.insertBefore(countdownInfoHtml, playerPseudoInfoHtml)
 
-							if(time == 0) {
-								clearInterval(countdown);
-							}
-						}, 1000);
-					} else if (msg[0] == START_GAME) {
-						displayGame();
-						state = STATE_WAIT_QUESTION;
-					}
+                            let countdown = setInterval(function() {
+                                time--;
+                                countdownHtml.innerHTML = time;
 
-					break;
-				}
+                                if (time == 0) {
+                                    clearInterval(countdown);
+                                }
+                            }, 1000);
+                        } else if (msg[0] == START_GAME) {
+                            displayGame();
+                            state = STATE_WAIT_QUESTION;
+                        }
 
-				case STATE_WAIT_QUESTION: {
-					if(clickedAnswerButtonHtml !== undefined) {
-						clickedAnswerButtonHtml.style.border = "";
-						clickedAnswerButtonHtml = undefined;
-					}
+                        break;
+                    }
 
-					for(let answerStatHtml of answersStatsHtml) {
-						answerStatHtml.innerHTML = "";
-					}
+                case STATE_WAIT_QUESTION:
+                    {
+                        if (clickedAnswerButtonHtml !== undefined) {
+                            clickedAnswerButtonHtml.style.border = "";
+                            clickedAnswerButtonHtml = undefined;
+                        }
 
-					actualQuestion++;
-					questionNumberHtml.innerHTML = "Question " + actualQuestion;
+                        for (let answerStatHtml of answersStatsHtml) {
+                            answerStatHtml.innerHTML = "";
+                        }
 
-					clearInterval(questionCountdown);
+                        actualQuestion++;
+                        questionNumberHtml.innerHTML = "Question " + actualQuestion;
 
-					let time = msg[0];
+                        resetAnswers();
 
-					questionInfoHtml.innerHTML = "Temps restant : <span id=\"question-countdown\"></span>"
+                        clearInterval(questionCountdown);
 
-					let questionCountdownHtml = document.getElementById("question-countdown");
-					questionCountdownHtml.innerHTML = time;
+                        let time = msg[0];
 
-					questionCountdown = setInterval(function() {
-						time--;
-						questionCountdownHtml.innerHTML = time;
+                        questionInfoHtml.innerHTML = "Temps restant : <span id=\"question-countdown\"></span>"
 
-						if(time == 0) {
-							clearTimeout(questionCountdown);
-						}
-					}, 1000);
+                        let questionCountdownHtml = document.getElementById("question-countdown");
+                        questionCountdownHtml.innerHTML = time;
 
-					state = STATE_ANSWER;
-					break;
-				}
+                        questionCountdown = setInterval(function() {
+                            time--;
+                            questionCountdownHtml.innerHTML = time;
 
-				case STATE_ANSWER: {
-					if(msg[0] == ANSWERS_STATS) {
-						for(let i = 0; i < 4; i++) {
-							answersStatsHtml[i].innerHTML = msg[1][i] + "%";
-						}
-					} else if(msg[0] == END_QUESTION) {
-						if(msg[1]) {
-							questionInfoHtml.innerHTML = "Bonne réponse !";
-						} else {
-							questionInfoHtml.innerHTML = "Mauvaise réponse...";
-						}
+                            if (time == 0) {
+                                clearTimeout(questionCountdown);
+                            }
+                        }, 1000);
 
-						state = STATE_WAIT_QUESTION;
-					}
+                        state = STATE_ANSWER;
+                        break;
+                    }
 
-					break;
-				}
-			}
-		};
-	};
+                case STATE_ANSWER:
+                    {
+                        if (msg[0] == ANSWERS_STATS) {
+                            for (let i = 0; i < 4; i++) {
+                                answersStatsHtml[i].innerHTML = msg[1][i] + "%";
+                            }
+                        } else if (msg[0] == END_QUESTION) {
+
+                            answerDisplay(msg);
+
+                            if (msg[1]) {
+                                questionInfoHtml.innerHTML = "Bonne réponse !";
+                            } else {
+                                questionInfoHtml.innerHTML = "Mauvaise réponse...";
+                            }
+
+                            state = STATE_WAIT_QUESTION;
+                        }
+
+                        break;
+                    }
+            }
+        };
+    };
+}
+
+
+
+//Changement de la couleur des boutons selon la réponse
+function answerDisplay(msg) {
+    let buttonList = getLabels();
+    colorButtons(buttonList, "#f00");
+
+    buttonList[msg[2]].style.backgroundColor = "#0f0";
+}
+
+//Changement de la couleur des boutons avec la couleur par défaut
+function resetAnswers() {
+    let buttonList = getLabels();
+    colorButtons(buttonList, "#a65050");
+}
+
+//Remplissage d'une liste de boutons
+function getLabels() {
+    let buttonList = Array();
+    buttonList[0] = document.getElementById("answer-button1");
+    buttonList[1] = document.getElementById("answer-button2");
+    buttonList[2] = document.getElementById("answer-button3");
+    buttonList[3] = document.getElementById("answer-button4");
+
+    return buttonList;
+}
+
+//Coloration des boutons
+function colorButtons(buttonList, color) {
+    for (const bouton in buttonList) {
+        const element = buttonList[bouton];
+        element.style.backgroundColor = color;
+    }
 }

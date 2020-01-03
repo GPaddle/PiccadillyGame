@@ -1,254 +1,257 @@
 @font-face {
-	font-family: lato;
-	src: url("fonts/lato");
+    font-family: lato;
+    src: url("fonts/lato");
 }
 
 @font-face {
-	font-family: lato;
-	font-weight: bold;
-	src: url("fonts/lato-bold");
+    font-family: lato;
+    font-weight: bold;
+    src: url("fonts/lato-bold");
 }
 
 :root {
-	--back-colB: #242235;
-	--rep-colB: #4c486f;
-	--hov-colB: #151329;
-	--back-colR: #7a2c2c;
-	--rep-colR: #a65050;
-	--hov-colR: #571616;
+    --back-colB: #242235;
+    --rep-colB: #4c486f;
+    --hov-colB: #151329;
+    --back-colR: #7a2c2c;
+    --rep-colR: #a65050;
+    --hov-colR: #571616;
 }
 
 body {
-	background-color: #7a2c2c;
-	color: #fefefe;
-	font-family: lato;
-	padding: 100px 20px 20px 20px;
+    background-color: #7a2c2c;
+    color: #fefefe;
+    font-family: lato;
+    padding: 100px 20px 20px 20px;
 }
+
 
 /* Page d'accueil - ajout du pseudo */
 
 #players-info {
-	text-align: center;
-	font-size: 22px;
-	margin-bottom: 15px;
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 15px;
 }
 
 #players-count {
-	font-weight: bold;
+    font-weight: bold;
 }
 
 #min-players-info {
-	text-align: center;
-	font-size: 22px;
-	margin-bottom: 30px;
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 30px;
 }
 
 #min-players-count {
-	font-weight: bold;
+    font-weight: bold;
 }
 
 #start-countdown-info {
-	font-size: 18px;
-	text-align: center;
-	margin-bottom: 20px;
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 20px;
 }
 
 #start-countdown {
-	font-weight: bold;
+    font-weight: bold;
 }
 
 #player-pseudo-info {
-	text-align: center;
-	font-size: 20px;
-	margin-bottom: 20px;
+    text-align: center;
+    font-size: 20px;
+    margin-bottom: 20px;
 }
 
 #player-pseudo {
-	font-weight: bold;
+    font-weight: bold;
 }
 
 #pseudo-input {
-	display: block;
-	padding: 5px;
-	width: 250px;
-	text-align: center;
-	margin: auto;
-	font-size: 18px;
-	background: #7a2c2c;
-	border: 2px solid white;
-	border-radius: 8px;
-	color: #fefefe;
+    display: block;
+    padding: 5px;
+    width: 250px;
+    text-align: center;
+    margin: auto;
+    font-size: 18px;
+    background: #7a2c2c;
+    border: 2px solid white;
+    border-radius: 8px;
+    color: #fefefe;
 }
 
 #pseudo-error {
-	text-align: center;
-	margin-bottom: 20px;
+    text-align: center;
+    margin-bottom: 20px;
 }
 
 #send-pseudo-button {
-	width: 100px;
-	background-color: #a65050;
-	border: none;
-	color: white;
-	padding: 8px 32px;
-	text-align: center;
-	text-decoration: none;
-	font-size: 16px;
-	margin: 0px auto 30px auto;
+    width: 100px;
+    background-color: #a65050;
+    border: none;
+    color: white;
+    padding: 8px 32px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    margin: 0px auto 30px auto;
 }
 
 #player-list-header {
-	text-align: center;
-	font-size: 26px;
-	margin-bottom: 20px;
+    text-align: center;
+    font-size: 26px;
+    margin-bottom: 20px;
 }
 
 #player-list {
-	max-width: 500px;
-	padding: 10px;
-	margin: auto;
-	background: #a65050;
+    max-width: 500px;
+    padding: 10px;
+    margin: auto;
+    background: #a65050;
 }
 
 .player-list-player {
-	text-align: center;
-	font-weight: bold;
-	font-size: 17px;
-	margin-bottom: 5px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 17px;
+    margin-bottom: 5px;
 }
+
 
 /* Questions */
 
 #question-number {
-	font-size: 30px;
-	font-weight: bold;
-	text-align: center;
-	margin-bottom: 30px;
+    font-size: 30px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 30px;
 }
 
 #question-info {
-	font-size: 26px;
-	text-align: center;
-	margin-bottom: 30px;
+    font-size: 26px;
+    text-align: center;
+    margin-bottom: 30px;
 }
 
 #question-countdown {
-	font-weight: bold;
+    font-weight: bold;
 }
 
 .answer-button {
-	max-width: 400px;
-	padding: 10px 20px;
-	border-radius: 5px;
-	background-color: #a65050;
-	margin: 0px auto 20px auto;
-	cursor: pointer;
-	display: flex;
+    max-width: 400px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    background-color: #a65050;
+    margin: 0px auto 20px auto;
+    cursor: pointer;
+    display: flex;
 }
 
 .answer-letter {
-	font-weight: bold;
-	font-size: 24px;
-	margin-right: auto;
+    font-weight: bold;
+    font-size: 24px;
+    margin-right: auto;
 }
 
 .answer-stat {
-	font-size: 24px;
-	font-weight: bold;
+    font-size: 24px;
+    font-weight: bold;
 }
+
 
 /* Classement */
 
 #top {
-	margin: auto;
-	text-align: center;
-	width: 20%;
-	display: grid;
-	grid-template: "a b""c d""e f""g h""i j""k l""m n";
+    margin: auto;
+    text-align: center;
+    width: 20%;
+    display: grid;
+    grid-template: "a b""c d""e f""g h""i j""k l""m n";
 }
 
 #titreMJ {
-	margin: auto;
-	margin-top: 10%;
-	margin-bottom: 5%;
-	text-align: center;
-	font-size: 2em;
-	font-weight: bold;
+    margin: auto;
+    margin-top: 10%;
+    margin-bottom: 5%;
+    text-align: center;
+    font-size: 2em;
+    font-weight: bold;
 }
 
 .classement {
-	text-align: right;
+    text-align: right;
 }
 
 .num {
-	text-align: left;
+    text-align: left;
 }
 
 #mp {
-	margin-top: 5%;
-	text-align: center;
-	font-size: 2em;
+    margin-top: 5%;
+    text-align: center;
+    font-size: 2em;
 }
 
 
 /* Page question */
 
 #moduleQ {
-	margin: auto;
-	margin-top: 25%;
-	text-align: center;
-	width: 60%;
+    margin: auto;
+    margin-top: 25%;
+    text-align: center;
+    width: 60%;
 }
 
 #question {
-	font-size: 2em;
-	padding: 4%;
+    font-size: 2em;
+    padding: 4%;
 }
 
 #reponses button {
-	border: none;
-	color: #fff;
+    border: none;
+    color: #fff;
 }
 
 #reponses {
-	display: grid;
-	grid-template: "a b""c d";
+    display: grid;
+    grid-template: "a b""c d";
 }
 
 #reponse {
-	padding: 15px;
-	margin: 10px;
-	border-radius: 10px 10px 10px 10px;
-	background-color: #a65050;
-	transition: background-color .45s;
+    padding: 15px;
+    margin: 10px;
+    border-radius: 10px 10px 10px 10px;
+    background-color: #a65050;
+    transition: background-color .45s;
 }
 
 #reponse:hover {
-	background-color: #571616;
+    background-color: #571616;
 }
 
 #time {
-	margin-bottom: 5px;
+    margin-bottom: 5px;
 }
 
 
 /* Page play */
 
 #progress {
-	width: 250px;
-	background-color: #571616;
-	margin: auto;
-	z-index: 10;
+    width: 250px;
+    background-color: #571616;
+    margin: auto;
+    z-index: 10;
 }
 
 #progress2 {
-	height: 20px;
-	margin: 0px;
-	width: 100px;
-	background-color: #a65050;
-	z-index: 12;
+    height: 20px;
+    margin: 0px;
+    width: 100px;
+    background-color: #a65050;
+    z-index: 12;
 }
 
 .disable {
-	background: #0005 !important;
+    background: #0005 !important;
 }
