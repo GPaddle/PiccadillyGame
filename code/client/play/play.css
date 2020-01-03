@@ -1,12 +1,12 @@
 @font-face {
 	font-family: lato;
-	src: url("/fonts/lato");
+	src: url("fonts/lato");
 }
 
 @font-face {
 	font-family: lato;
 	font-weight: bold;
-	src: url("/fonts/lato-bold");
+	src: url("fonts/lato-bold");
 }
 
 :root {

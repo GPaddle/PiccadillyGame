@@ -23,7 +23,7 @@ httpServer.on("request", function(req, res) {
 			break;
 		}
 
-		case "/screen/" + SCREEN_SECRET_KEY: {
+		case "/" + SCREEN_SECRET_KEY + "/screen": {
 			res.setHeader("Content-Type", "text/html");
 			let file = fs.createReadStream("client/screen/screen.html");
 			file.pipe(res);
@@ -44,14 +44,14 @@ httpServer.on("request", function(req, res) {
 			break;
 		}
 
-		case "/screen.js": {
+		case "/" + SCREEN_SECRET_KEY + "/screen.js": {
 			res.setHeader("Content-Type", "application/javascript");
 			let file = fs.createReadStream("client/screen/screen.js");
 			file.pipe(res);
 			break;
 		}
 
-		case "/screen.css": {
+		case "/" + SCREEN_SECRET_KEY + "/screen.css": {
 			res.setHeader("Content-Type", "text/css");
 			let file = fs.createReadStream("client/screen/screen.css");
 			file.pipe(res);
