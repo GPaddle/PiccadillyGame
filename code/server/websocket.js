@@ -46,8 +46,6 @@ module.exports = function(httpServer) {
 
 	let startCountdown;
 
-	let answerStats;
-
 	function startGame() {
 		for(let playerSock of playersSocks) {
 			playerSock.send(JSON.stringify([START_GAME])); // on dit aux joueurs que la partie commence (pour qu'ils affichent l'interface des questions)
@@ -73,8 +71,6 @@ module.exports = function(httpServer) {
 			for(let screenSock of screensSocks) {
 				screenSock.send(JSON.stringify(screenSockQuestion));
 			}
-
-			answerStats = [0, 0, 0, 0];
 
 			if(actualQuestion < questions.length - 1) {
 				setTimeout(nextQuestion, questions[actualQuestion][3] * 1000);
@@ -185,7 +181,11 @@ module.exports = function(httpServer) {
 						if(sock.player.answers[actualQuestion] === undefined && msg[0] >= 0 && msg[0] <= 3) { // si le joueur n'a pas encore donné de réponse et si le code de réponse est 0, 1, 2 ou 3
 							sock.player.answers[actualQuestion] = msg[0] // on enregistre la réponse envoyée par le joueur
 
-							answerStats[sock.player.answers[actualQuestion]]++;
+							let answerStats = [0, 0, 0, 0];
+
+							for(let playerSock of playersSocks) {
+								answerStats[playerSock.player.answers[actualQuestion]]++;
+							}
 
 							let percentStats = [];
 
