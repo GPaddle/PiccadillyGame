@@ -3,35 +3,48 @@
 const fs = require("fs");
 const ws = require("ws");
 
-const CLIENT_TYPE_PLAYER = 0;
-const CLIENT_TYPE_SCREEN = 1;
+//Changer l'état à true pour aller plus vite
+const TEST_MODE = true;
 
-const ADD_PLAYER = 0;
-const SET_PSEUDO = 1;
-const DEL_PLAYER = 2;
-const PSEUDO_ALREADY_USED = 3;
-const START_GAME_COUNTDOWN = 4;
-const START_GAME = 5;
+const CLIENT_TYPE_PLAYER = 0,
+    CLIENT_TYPE_SCREEN = 1;
+
+const ADD_PLAYER = 0,
+    SET_PSEUDO = 1,
+    DEL_PLAYER = 2,
+    PSEUDO_ALREADY_USED = 3,
+    START_GAME_COUNTDOWN = 4,
+    START_GAME = 5;
 
 const ANSWERS_STATS = 0,
     END_QUESTION = 1;
 
-const BAD_RESULT = 0;
-const GOOD_RESULT = 1;
+const BAD_RESULT = 0,
+    GOOD_RESULT = 1;
+
+const RESULTS = 0;
 
 const STATE_NONE = 0,
     STATE_WAITING_ROOM = 1,
     STATE_AUTH = 2,
     STATE_PSEUDO = 3,
-    STATE_GAME = 4;
+    STATE_GAME = 4,
+    STATE_RESULTS = 5;
 
-const questions = JSON.parse(fs.readFileSync("questions.json"));
+
+
+let file;
+
+TEST_MODE ? file = "questions2.json" : file = "questions.json";
+const questions = JSON.parse(fs.readFileSync(file));
+
 
 const SCREEN_SECRET_KEY = "7116dd23254dc1a8";
 
 const MIN_PLAYER = 2;
+let GAME_COUNT_DOWN_TIME;
 
-const GAME_COUNT_DOWN_TIME = 15;
+TEST_MODE ? GAME_COUNT_DOWN_TIME = 5 : GAME_COUNT_DOWN_TIME = 15;
 
 module.exports = function(httpServer) {
     const wss = new ws.Server({ server: httpServer });
@@ -79,6 +92,7 @@ module.exports = function(httpServer) {
                 state = STATE_NONE;
 
                 for (let screenSock of screensSocks) {
+                    //PB Lors des résultats ici 
                     screenSock.send(JSON.stringify([questions[actualQuestion][2]]));
                 }
 
@@ -91,7 +105,17 @@ module.exports = function(httpServer) {
                 }
 
                 if (actualQuestion < questions.length - 1) {
-                    setTimeout(nextQuestion, 6000);
+                    //TODO
+                    //DUREE TEST
+                    //
+                    TEST_MODE ? setTimeout(nextQuestion, 1000) : setTimeout(nextQuestion, 6000);;
+
+                } else {
+                    //ICI
+                    for (let screenSock of screensSocks) {
+                        screenSock.send(JSON.stringify([END_QUESTION])); // on dit aux écrans que la partie est terminée
+                    }
+                    ResultState(playersSocks, screensSocks);
                 }
             }, questions[actualQuestion][3] * 1000);
         }
@@ -203,7 +227,7 @@ module.exports = function(httpServer) {
                     case STATE_GAME:
                         {
                             if (sock.player.answers[actualQuestion] === undefined && msg[0] >= 0 && msg[0] <= 3) { // si le joueur n'a pas encore donné de réponse et si le code de réponse est 0, 1, 2 ou 3
-                                sock.player.answers[actualQuestion] = msg[0] // on enregistre la réponse envoyée par le joueur
+                                sock.player.answers[actualQuestion] = msg[0]; // on enregistre la réponse envoyée par le joueur
 
                                 let answerStats = [0, 0, 0, 0];
 
@@ -226,6 +250,7 @@ module.exports = function(httpServer) {
 
                             break;
                         }
+
                 }
             });
 
@@ -250,4 +275,24 @@ module.exports = function(httpServer) {
             sock.close();
         }
     });
+}
+
+function ResultState(playersSocks, screensSocks) {
+    let list = new Array(),
+        scores = new Array();
+    for (let playerSock of playersSocks) {
+        list.push(playerSock.player.pseudo);
+        let score = playerSock.player.answers;
+        let countScore = 0;
+        for (let index = 0; index < score.length; index++) {
+            const element = score[index];
+            if (element == questions[index][2]) {
+                countScore++;
+            }
+        }
+        scores.push(countScore);
+    }
+    for (let screenSock of screensSocks) {
+        screenSock.send(JSON.stringify([RESULTS, list, scores]));
+    }
 }
