@@ -1,5 +1,6 @@
 "use strict";
 
+const fs = require("fs");
 const ws = require("ws");
 
 const CLIENT_TYPE_PLAYER = 0;
@@ -23,67 +24,7 @@ const State = {
 	GAME: 4,
 };
 
-const questions = [
-	[
-		"Comment s'appelait le président des États-Unis en 1995 ?", // intitulé de la question
-		[ // réponses possibles
-			"Barack Obama",
-			"Jimmy Carter",
-			"Georges H. W. Bush",
-			"Bill Clinton"
-		],
-		4, // numéro de la bonne réponse
-		20 // temps en secondes que les joueurs ont pour répondre à cette question
-	],
-
-	[
-		"En quelle année le premier iPhone est sorti ?",
-		[
-			2005,
-			2007,
-			2013,
-			2009
-		],
-		2,
-		15
-	],
-
-	[
-		"Quel est le plus haut bâtiment de Paris ?",
-		[
-			"l'hôtel Hyatt Regency",
-			"la Tour Eiffel",
-			"la tour Montparnasse",
-			"le dôme des Invalides"
-		],
-		2,
-		10,
-	],
-
-	[
-		"Combien de fois la chanson All I Want for Christmas Is You de Mariah Carey a-t-elle été écoutée sur Spotify ?",
-		[
-			"entre 200 millions et 400 millions",
-			"entre 500 millions et 600 millions",
-			"entre 1 milliard et 2 milliards",
-			"entre 600 et 700 millions"
-		],
-		4,
-		6
-	],
-
-	[
-		"De quelle région, pays ou ville vient la raclette ?",
-		[
-			"Annecy",
-			"Haute-Savoie",
-			"Savoie",
-			"Suisse"
-		],
-		4,
-		5
-	]
-];
+const questions = JSON.parse(fs.readFileSync("questions.json"));
 
 const SCREEN_SECRET_KEY = "7116dd23254dc1a8";
 
