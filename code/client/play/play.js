@@ -101,7 +101,7 @@ window.onload = function() {
 				<div class="answer-letter">D</div>
 				<div class="answer-stat">0%</div>
 			</div>
-            `;
+			`;
 
             resetAnswers();
 
@@ -295,9 +295,9 @@ window.onload = function() {
 //Changement de la couleur des boutons selon la réponse
 function answerDisplay(msg) {
     let buttonList = getLabels();
-    colorButtons(buttonList, "#f00");
+    colorButtons(buttonList, "#BB0B0B");
 
-    buttonList[msg[2]].style.backgroundColor = "#0f0";
+    buttonList[msg[2]].style.backgroundColor = "#22780F";
 }
 
 //Changement de la couleur des boutons avec la couleur par défaut
@@ -308,7 +308,7 @@ function resetAnswers() {
 
 //Remplissage d'une liste de boutons
 function getLabels() {
-    let buttonList = Array();
+    let buttonList = new Array();
     buttonList[0] = document.getElementById("answer-button1");
     buttonList[1] = document.getElementById("answer-button2");
     buttonList[2] = document.getElementById("answer-button3");

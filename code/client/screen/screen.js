@@ -7,12 +7,16 @@ const DEL_PLAYER = 2;
 const START_GAME_COUNTDOWN = 4;
 const START_GAME = 5;
 
+//TODO changer cette constante
+const MAX_QUESTION = 2;
+
 const SECRET_SCREEN_KEY = "7116dd23254dc1a8";
 
 const STATE_GAME_INFO = 0,
     STATE_WAITING_ROOM = 1,
     STATE_WAIT_QUESTION = 2,
-    STATE_ANSWER = 3;
+    STATE_ANSWER = 3,
+    STATE_RESULTS = 4;
 
 window.onload = function() {
     document.body.innerHTML = `
@@ -32,6 +36,8 @@ window.onload = function() {
     let questionInfoHtml;
 
     let answersHtml;
+
+    let results;
 
     function displayGame() {
         document.body.innerHTML = `
@@ -61,6 +67,17 @@ window.onload = function() {
         questionInfoHtml = document.getElementById("question-info");
 
         answersHtml = document.getElementsByClassName("answer-text");
+    }
+
+    function displayResults() {
+        document.body.innerHTML = `
+		<div id="service-name">Résultats</div>
+		
+		<div id="results" class="results">
+		</div>
+		`;
+
+        results = document.getElementById("results");
     }
 
     const sock = new WebSocket("ws://" + window.location.host);
@@ -133,6 +150,7 @@ window.onload = function() {
 
                 case STATE_WAIT_QUESTION:
                     {
+
                         clearInterval(questionCountdown);
 
                         //Début du timming, remise à zéro des infos pour la question suivante
@@ -164,21 +182,56 @@ window.onload = function() {
                             }
                         }, 1000);
 
+                        console.log(questionNumber + " " + MAX_QUESTION);
+
                         state = STATE_ANSWER;
+
                         break;
+
                     }
 
                 case STATE_ANSWER:
                     {
+
                         questionInfoHtml.innerHTML = "La bonne réponse était \"" + question[1][msg[0]] + "\"";
 
                         //Fin du timming, mise en couleur des résultats
                         answerDisplay(msg);
 
+                        if (msg[0] == 1 && questionNumber >= MAX_QUESTION) {
+                            state = STATE_RESULTS;
+                            break;
+                        }
 
                         state = STATE_WAIT_QUESTION;
                         break;
                     }
+
+                case STATE_RESULTS:
+                    {
+                        displayResults();
+
+                        console.log("Res " + msg);
+
+                        try {
+
+                            let players = msg[1];
+                            let playersScore = msg[2];
+                            for (let playerIndex = 0; playerIndex < players.length; playerIndex++) {
+                                let player = players[playerIndex];
+                                let playerScore = playersScore[playerIndex];
+
+                                results.innerHTML =
+                                    results.innerHTML + "<div class='resultContener'><span class = 'playerName'>" + player + "</span> <span class ='playerScore'>" + playerScore + "</span></div>";
+
+                            }
+
+                        } catch (error) {
+                            console.log("PB");
+                        }
+                    }
+
+                    break;
             }
         }
     }
@@ -186,12 +239,14 @@ window.onload = function() {
 
 
 
+
+
 //Changement de la couleur des labels selon la réponse
 function answerDisplay(msg) {
     let labelList = getLabels();
-    colorLabels(labelList, "#f00");
+    colorLabels(labelList, "#BB0B0B");
 
-    labelList[msg[0]].style.backgroundColor = "#0f0";
+    labelList[msg[0]].style.backgroundColor = "#22780F";
 }
 
 //Changement de la couleur des boutons avec la couleur par défaut
@@ -202,7 +257,7 @@ function resetAnswers() {
 
 //Remplissage d'une liste de boutons
 function getLabels() {
-    let labelList = Array();
+    let labelList = new Array();
     labelList[0] = document.getElementById("answer1");
     labelList[1] = document.getElementById("answer2");
     labelList[2] = document.getElementById("answer3");
