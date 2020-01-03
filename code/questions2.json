@@ -1,0 +1,22 @@
+[
+    [
+        "Comment s'appelait le président des États-Unis en 1995 ?", [
+            "Barack Obama",
+            "Jimmy Carter",
+            "Georges H. W. Bush",
+            "Bill Clinton"
+        ],
+        3,
+        5
+    ],
+    [
+        "En quelle année le premier iPhone est sorti ?", [
+            2005,
+            2007,
+            2013,
+            2009
+        ],
+        1,
+        5
+    ]
+]
