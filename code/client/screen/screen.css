@@ -1,12 +1,12 @@
 @font-face {
-    font-family: lato;
-    src: url("/fonts/lato");
+	font-family: lato;
+	src: url("/fonts/lato");
 }
 
 @font-face {
-    font-family: lato;
-    font-weight: bold;
-    src: url("/fonts/lato-bold");
+	font-family: lato;
+	font-weight: bold;
+	src: url("/fonts/lato-bold");
 }
 
 body {
@@ -46,12 +46,20 @@ body {
 	font-size: 40px;
 }
 
-.player-info {
+#players-info {
 	font-size: 30px;
 }
 
-#player-info-first {
-	margin-bottom: 30px;
+#players-count {
+	font-weight: bold;
+}
+
+#min-players-info {
+	font-size: 30px;
+}
+
+#min-players-count {
+	font-weight: bold;
 }
 
 #question-number {
@@ -66,7 +74,7 @@ body {
 	text-align: center;
 }
 
-#remaining-time {
+#question-countdown-info {
 	font-size: 40px;
 	margin-bottom: 40px;
 }

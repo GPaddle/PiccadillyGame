@@ -13,258 +13,249 @@ const NEW_QUESTION = 0;
 const ANSWERS_STATS = 1;
 
 const State = {
-    NONE: 0,
-    GAME_INFO: 1,
-    PLAYER_LIST: 2,
-    WAITING_ROOM: 3
+	NONE: 0,
+	GAME_INFO: 1,
+	PLAYER_LIST: 2,
+	WAITING_ROOM: 3
 }
 
 window.onload = function() {
-    document.body.innerHTML = `
-	<div id="game-infos">
-		<div class="game-info">Nombre de joueurs connectés : <span class="game-info-value" id="connected-players">...</span></div>
-		<div class="game-info">Nombre de joueurs minimum nécessaires : <span class="game-info-value" id="min-players">...</span></div>
-	</div>
-	<div id="player-pseudo">Votre pseudo est <span id="player-pseudo-value">...</span></div>
-	<div id="new-player-form">
-		<input type="text" placeholder="Entrez votre pseudo" id="pseudo-input" required autofocus><br>
-		<div id="pseudo-error"></div>
-		<button id="send-pseudo-button">Envoyer</button>
-	</div>
+	document.body.innerHTML = `
+	<div id="players-info">Nombre de joueurs connectés : <span id="players-count">...</span></div>
+	<div id="min-players-info">Nombre de joueurs minimum nécessaires : <span id="min-players-count">...</span></div>
+
+	<div id="player-pseudo-info">Votre pseudo est <span id="player-pseudo">...</span></div>
+	<input id="pseudo-input" type="text" placeholder="Entrez votre pseudo" required autofocus>
+	<div id="pseudo-error"></div>
+	<div id="send-pseudo-button">Envoyer</div>
+
 	<div id="player-list-header">Joueurs connectés</div>
 	<div id="player-list">
 
 	</div>
 	`;
 
-    let gameInfosContainerHtml = document.getElementById("game-infos");
+	let playersCountHtml = document.getElementById("players-count");
+	let minPlayersCountHtml = document.getElementById("min-players-count");
 
-	let connectedPlayersCount = document.getElementById("connected-players");
-    let minPlayersCountHtml = document.getElementById("min-players");
+	let playerPseudoInfoHtml = document.getElementById("player-pseudo-info");
 
-    let pseudoInput = document.getElementById("pseudo-input");
-    let pseudoError = document.getElementById("pseudo-error");
-    let sendPseudoButton = document.getElementById("send-pseudo-button");
+	let pseudoInputHtml = document.getElementById("pseudo-input");
+	let pseudoErrorHtml = document.getElementById("pseudo-error");
+	let sendPseudoButtonHtml = document.getElementById("send-pseudo-button");
 
-    let playerPseudoHtml = document.getElementById("player-pseudo-value");
-    let playersHtmlList = document.getElementById("player-list");
+	let playerPseudoHtml = document.getElementById("player-pseudo");
+	let playersListHtml = document.getElementById("player-list");
 
-    let gameStartRemainingTimeHtml;
+	pseudoInputHtml.onfocus = function() {
+		pseudoErrorHtml.innerHTML = "";
+	}
 
-    pseudoInput.onfocus = function() {
-        pseudoError.innerHTML = "";
-    }
-
-    sendPseudoButton.onclick = function() {
-        sock.send(JSON.stringify([pseudoInput.value]));
-        pseudoError.innerHTML = "";
-    };
+	sendPseudoButtonHtml.onclick = function() {
+		sock.send(JSON.stringify([pseudoInputHtml.value]));
+		pseudoErrorHtml.innerHTML = "";
+	};
 
 
-    let questionNumberHtml;
-    let remainingTimeHtml;
+	let questionNumberHtml;
+	let questionCountdownHtml;
 
-    let answersButtonsHtml;
-    let answersStatsHtml;
+	let answersButtonsHtml;
+	let answersStatsHtml;
 
-    let clickedAnswerButton;
+	let clickedAnswerButtonHtml;
 
-    let sock = new WebSocket("ws://" + window.location.host);
+	let sock = new WebSocket("ws://" + window.location.host);
 
-    let minPlayersCount;
+	let minPlayersCount;
 
-    function displayGame() {
+	function displayGame() {
 		document.body.innerHTML = `
 		<div id="question-number">Question 1</div>
-		<div id="remaining-time">Temps restant : <span id="remaining-time-value"></span></div>
+		<div id="question-countdown-info">Temps restant : <span id="question-countdown"></span></div>
 		<div class="answer-button">
 			<div class="answer-letter">A</div>
-            <div class="answer-stat">0%</div>
+			<div class="answer-stat">0%</div>
 		</div>
 		<div class="answer-button">
 			<div class="answer-letter">B</div>
-            <div class="answer-stat">0%</div>
+			<div class="answer-stat">0%</div>
 		</div>
 		<div class="answer-button">
 			<div class="answer-letter">C</div>
-            <div class="answer-stat">0%</div>
+			<div class="answer-stat">0%</div>
 		</div>
 		<div class="answer-button">
 			<div class="answer-letter">D</div>
-            <div class="answer-stat">0%</div>
+			<div class="answer-stat">0%</div>
 		</div>
 		`;
 
 		questionNumberHtml = document.getElementById("question-number");
-		remainingTimeHtml = document.getElementById("remaining-time-value");
+		questionCountdownHtml = document.getElementById("question-countdown");
 
-        answersButtonsHtml = document.getElementsByClassName("answer-button");
-        answersStatsHtml = document.getElementsByClassName("answer-stat");
+		answersButtonsHtml = document.getElementsByClassName("answer-button");
+		answersStatsHtml = document.getElementsByClassName("answer-stat");
 
-        for(let i = 0; i < 4; i++) {
-            answersButtonsHtml[i].onclick = function() {
-                if(clickedAnswerButton === undefined) {
-                    clickedAnswerButton = answersButtonsHtml[i];
-                    clickedAnswerButton.style.border = "solid 2px #fefefe";
+		for(let i = 0; i < 4; i++) {
+			answersButtonsHtml[i].onclick = function() {
+				if(clickedAnswerButtonHtml === undefined) {
+					clickedAnswerButtonHtml = answersButtonsHtml[i];
+					clickedAnswerButtonHtml.style.border = "solid 2px #fefefe";
 
-                    sock.send(JSON.stringify([i])); // on envoit le numéro de la réponse sélectionnée
-                }
-            }
-        }
+					sock.send(JSON.stringify([i])); // on envoit le numéro de la réponse sélectionnée
+				}
+			}
+		}
 	}
 
-    sock.onopen = function() {
-        let state = State.GAME_INFO;
-        let players;
+	sock.onopen = function() {
+		let state = State.GAME_INFO;
+		let players; // tableau des pseudos de joueurs
 
-        let minPlayersCount = 0;
+		let minPlayersCount = 0;
 
-        let meId;
+		let meId; // mon identifiant de joueur
 
-        let actualQuestion = 0;
-        let questionCountDown;
+		let actualQuestion = 0;
+		let questionCountdown;
 
-        sock.send(JSON.stringify([CLIENT_TYPE_PLAYER]));
+		sock.send(JSON.stringify([CLIENT_TYPE_PLAYER]));
 
-        sock.onmessage = function(json) {
-            let msg = JSON.parse(json.data);
+		sock.onmessage = function(json) {
+			let msg = JSON.parse(json.data);
 
-            switch (state) {
-                case State.GAME_INFO:
-                    minPlayersCount = msg[0];
-                    minPlayersCountHtml.innerHTML = minPlayersCount;
+			switch (state) {
+				case State.GAME_INFO:
+					minPlayersCount = msg[0];
+					minPlayersCountHtml.innerHTML = minPlayersCount;
 
-                    players = msg[1];
+					players = msg[1];
+					playersCountHtml.innerHTML = players.length;
 
-                    connectedPlayersCount.innerHTML = players.length;
+					meId = msg[2];
 
-                    meId = msg[2];
+					for (let player of players) {
+						player.lineHtml = document.createElement("div");
+						player.lineHtml.classList.add("player-list-player");
+						player.lineHtml.innerHTML = player.pseudo;
 
-                    for (let player of players) {
-                        player.htmlLine = document.createElement("div");
-                        player.htmlLine.classList.add("player-list-player");
-                        player.htmlLine.innerHTML = player.pseudo;
+						playersListHtml.appendChild(player.lineHtml);
 
-                        playersHtmlList.appendChild(player.htmlLine);
+						if (player.id == meId) {
+							playerPseudoHtml.innerHTML = player.pseudo;
+						}
+					}
 
-                        if (player.id == meId) {
-                            playerPseudoHtml.innerHTML = player.pseudo;
-                        }
-                    }
+					state = State.WAITING_ROOM;
+					break;
 
-                    state = State.WAITING_ROOM;
-                    break;
+				case State.WAITING_ROOM:
+					if (msg[0] == ADD_PLAYER) {
+						let player = {
+							id: msg[1],
+							pseudo: msg[2]
+						};
 
-                case State.WAITING_ROOM:
-                    if (msg[0] == ADD_PLAYER) {
-                        let player = {
-                            id: msg[1],
-                            pseudo: msg[2]
-                        };
-                        players.push(player);
+						players.push(player);
 
-                        player.htmlLine = document.createElement("div");
-                        player.htmlLine.classList.add("player-list-player");
-                        player.htmlLine.innerHTML = player.pseudo;
+						player.lineHtml = document.createElement("div");
+						player.lineHtml.classList.add("player-list-player");
+						player.lineHtml.innerHTML = player.pseudo;
 
-                        playersHtmlList.appendChild(player.htmlLine);
+						playersListHtml.appendChild(player.lineHtml);
 
-                        connectedPlayersCount.innerHTML = players.length;
+						playersCountHtml.innerHTML = players.length;
+					} else if (msg[0] == SET_PSEUDO) {
+						for (let player of players) { // on récupère le joueur concerné grâce à son id
+							if (player.id == msg[1]) {
+								player.pseudo = msg[2]; // on change le pseudo du joueur
+								player.lineHtml.innerHTML = player.pseudo; // on met à jour la liste des joueurs HTML
 
-                        if(players.length > minPlayersCount) {
-                            startGameCountDown();
-                        }
-                    } else if (msg[0] == SET_PSEUDO) {
-                        for (let player of players) { // on récupère le joueur concerné grâce à son id
-                            if (player.id == msg[1]) {
-                                player.pseudo = msg[2]; // on change le pseudo du joueur
-                                player.htmlLine.innerHTML = player.pseudo; // on met à jour la liste des joueurs HTML
+								if (player.id == meId) {
+									playerPseudoHtml.innerHTML = player.pseudo;
+								}
 
-                                if (player.id == meId) {
-                                    playerPseudoHtml.innerHTML = player.pseudo;
-                                }
+								break;
+							}
+						}
+					} else if (msg[0] == DEL_PLAYER) {
+						for (let player of players) {
+							if (player.id == msg[1]) {
+								player.lineHtml.remove();
+								players.splice(players.indexOf(player), 1);
 
-                                break;
-                            }
-                        }
-                    } else if (msg[0] == DEL_PLAYER) {
-                        for (let player of players) {
-                            if (player.id == msg[1]) {
-                                player.htmlLine.remove();
-                                players.splice(players.indexOf(player), 1);
+								playersCountHtml.innerHTML = players.length;
+							}
+						}
+					} else if (msg[0] == PSEUDO_ALREADY_USED) {
+						pseudoError.innerHTML = "Ce pseudo est déjà utilisé";
+					} else if (msg[0] == START_GAME_COUNTDOWN) {
+						let countdownInfoHtml = document.createElement("div");
+						countdownInfoHtml.id = "start-countdown-info";
 
-                                connectedPlayersCount.innerHTML = players.length;
-                            }
-                        }
-                    } else if (msg[0] == PSEUDO_ALREADY_USED) {
-                        pseudoError.innerHTML = "Ce pseudo est déjà utilisé";
-                    } else if (msg[0] == START_GAME_COUNTDOWN) {
-                        console.log("countdown !");
-                        let gameInfo = document.createElement("div");
-                        gameInfo.classList.add("game-info");
+						let textNode = document.createTextNode("La partie commence dans ");
+						countdownInfoHtml.appendChild(textNode);
 
-                        let textNode = document.createTextNode("La partie commence dans ");
-                        gameInfo.appendChild(textNode);
+						let time = msg[1];
 
-                        let gameStartCount = msg[1];
+						let countdownHtml = document.createElement("span");
+						countdownHtml.id = "start-countdown";
+						countdownHtml.innerHTML = time;
 
-                        gameStartRemainingTimeHtml = document.createElement("span");
-                        gameStartRemainingTimeHtml.innerHTML = gameStartCount;
-                        gameInfo.appendChild(gameStartRemainingTimeHtml);
+						countdownInfoHtml.appendChild(countdownHtml);
+						document.body.insertBefore(countdownInfoHtml, playerPseudoInfoHtml)
 
-                        gameInfosContainerHtml.appendChild(gameInfo);
+						let countdown = setInterval(function() {
+							time--;
+							countdownHtml.innerHTML = time;
 
-                        let gameStartCountDown = setInterval(function() {
-                            gameStartCount--;
-                            gameStartRemainingTimeHtml.innerHTML = gameStartCount;
+							if(time == 0) {
+								clearInterval(countdown);
+							}
+						}, 1000);
+					} else if (msg[0] == START_GAME) {
+						displayGame();
+						state = State.GAME;
+					}
 
-                            if(gameStartCount == 0) {
-                                clearInterval(gameStartCountDown);
-                            }
-                        }, 1000);
-                    } else if (msg[0] == START_GAME) {
-                    	displayGame();
-                    	state = State.GAME;
-                    }
+					break;
 
-                    break;
+				case State.GAME:
+					if(msg[0] == NEW_QUESTION) {
+						if(clickedAnswerButtonHtml !== undefined) {
+							clickedAnswerButtonHtml.style.border = "";
+							clickedAnswerButtonHtml = undefined;
+						}
 
-                case State.GAME:
-                    if(msg[0] == NEW_QUESTION) {
-                        if(clickedAnswerButton !== undefined) {
-                            clickedAnswerButton.style.border = "";
-                        }
+						for(let answerStatHtml of answersStatsHtml) {
+							answerStatHtml.innerHTML = "";
+						}
 
-                        clickedAnswerButton = undefined;
+						actualQuestion++;
+						questionNumberHtml.innerHTML = "Question " + actualQuestion;
 
-                        for(let answerStatHtml of answersStatsHtml) {
-                            answerStatHtml.innerHTML = "";
-                        }
+						clearInterval(questionCountdown);
 
-                        actualQuestion++;
-                        questionNumberHtml.innerHTML = "Question " + actualQuestion;
+						let time = msg[1];
+						questionCountdownHtml.innerHTML = time;
 
-                        clearInterval(questionCountDown);
+						questionCountdown = setInterval(function() {
+							time--;
+							questionCountdownHtml.innerHTML = time;
 
-                        let count = msg[1];
-                        remainingTimeHtml.innerHTML = count;
+							if(time == 0) {
+								clearTimeout(questionCountdown);
+							}
+						}, 1000);
+					} else if(msg[0] == ANSWERS_STATS) {
+						for(let i = 0; i < 4; i++) {
+							answersStatsHtml[i].innerHTML = msg[1][i] + "%";
+						}
+					}
 
-                        questionCountDown = setInterval(function() {
-                            count--;
-                            remainingTimeHtml.innerHTML = count;
-
-                            if(count == 0) {
-                                clearTimeout(questionCountDown);
-                            }
-                        }, 1000);
-                    } else if(msg[0] == ANSWERS_STATS) {
-                        for(let i = 0; i < 4; i++) {
-                            answersStatsHtml[i].innerHTML = msg[1][i] + "%";
-                        }
-                    }
-
-                	break;
-            }
-        };
-    };
+					break;
+			}
+		};
+	};
 }
