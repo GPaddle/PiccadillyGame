@@ -152,7 +152,7 @@ body {
     position: absolute;
     width: 0%;
     height: 100%;
-    background: #c86060;
+    background: rgba(255, 255, 255, 0.15);
     transition: 300ms;
 }
 
