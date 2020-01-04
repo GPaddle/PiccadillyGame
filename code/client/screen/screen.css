@@ -97,6 +97,10 @@ body {
     font-size: 24px;
 }
 
+.result:nth-child(n+2) {
+    border-top: 1px solid white;
+}
+
 .result {
     display: flex;
     width: 500px;
