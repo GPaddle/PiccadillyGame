@@ -126,36 +126,32 @@ window.onload = function() {
 				case STATE_WAIT_QUESTION: {
 					if(msg[0] == NEW_QUESTION) {
 						clearInterval(questionCountdown);
-
-						let answers = document.getElementsByClassName("answer");
-
-						for(let answer of answers) {
-							answer.style.backgroundColor = "";
-						}
-
-						questionAnswers = msg[1][1];
-
 						questionNumber++;
 
 						let questionNumberDiv = document.getElementById("question-number");
 						questionNumberDiv.innerHTML = "Question " + questionNumber;
 
 						let questionDiv = document.getElementById("question");
-						questionDiv.innerHTML = msg[1][0];
+						questionDiv.innerHTML = msg[1];
 
+						let answers = document.getElementsByClassName("answer");
 						let answersText = document.getElementsByClassName("answer-text");
 
+						questionAnswers = [];
+
 						for(let i = 0; i < 4; i++) {
+							questionAnswers[i] = msg[2 + i];
+
+							answers[i].style.backgroundColor = "";
 							answersText[i].innerHTML = questionAnswers[i];
 						}
 
-						let time = msg[1][2];
+						let time = msg[6];
 
 						let questionInfo = document.getElementById("question-info");
-						questionInfo.innerHTML = "Temps restant : <span id=\"question-countdown\">...</span>";
+						questionInfo.innerHTML = "Temps restant : <span id=\"question-countdown\">" + time + "</span>";
 
 						let questionCountdownSpan = document.getElementById("question-countdown");
-						questionCountdownSpan.innerHTML = time;
 
 						questionCountdown = setInterval(function() {
 							time--;
@@ -168,16 +164,17 @@ window.onload = function() {
 
 						state = STATE_ANSWER;
 					} else if(msg[0] == END_GAME) {
+						let scoresCount = msg[1];
+
 						document.body.innerHTML = `
 						<div id="results-header">Résultats</div>
 						<div id="results"></div>
 						`;
 
 						let resultsDiv = document.getElementById("results");
-						let scores = msg[1];
 
-						for(let i = 0; i < scores.length; i++) {
-							resultsDiv.innerHTML += "<div class=\"resultContener\"><span class=\"playerName\">" + scores[i][0] + "</span><span class=\"playerScore\">" + scores[i][1] + "</span></div>";
+						for(let i = 0; i < scoresCount; i++) {
+							resultsDiv.innerHTML += "<div class=\"resultContener\"><span class=\"playerName\">" + msg[2 + i * 2] + "</span><span class=\"playerScore\">" + msg[3 + i * 2] + "</span></div>";
 						}
 					}
 

@@ -4,7 +4,7 @@ const fs = require("fs");
 const ws = require("ws");
 
 //Changer l'état à true pour aller plus vite
-const TEST_MODE = false;
+const TEST_MODE = true;
 
 const CLIENT_TYPE_PLAYER = 0,
 	CLIENT_TYPE_SCREEN = 1;
@@ -70,45 +70,44 @@ module.exports = function(httpServer) {
 			actualQuestion++;
 
 			if(actualQuestion == questions.length) {
-				let scores = [];
+				let screensSocksScores = [END_GAME, playersSocks.length];
 
-				for(let playerSock of playersSocks) {
-					playerSock.send(JSON.stringify([END_GAME])); // on envoit la bonne réponse aux joueurs
+				for(let i = 0; i < playersSocks.length; i++) {
+					playersSocks[i].send(JSON.stringify([END_GAME])); // on envoit la bonne réponse aux joueurs
 
-					// on calcule le score de ce joueur
-
-					let score = [];
-					score[0] = playerSock.player.pseudo;
+					screensSocksScores[2 + i * 2] = playersSocks[i].player.pseudo;
 
 					let points = 0;
 
-					for(let i = 0; i < playerSock.player.answers.length; i++) {
-						if(playerSock.player.answers[i] == questions[i][2]) {
+					for(let j = 0; j < playersSocks[i].player.answers.length; j++) {
+						if(playersSocks[i].player.answers[j] == questions[j][2]) {
 							points++;
 						}
 					}
 
-					score[1] = points;
-
-					scores.push(score);
+					screensSocksScores[3 + i * 2] = points;
 				}
 
 				for(let screenSock of screensSocks) {
-					screenSock.send(JSON.stringify([END_GAME, scores]));
+					screenSock.send(JSON.stringify(screensSocksScores));
 				}
 			} else {
 				for(let playerSock of playersSocks) {
 					playerSock.send(JSON.stringify([NEW_QUESTION, questions[actualQuestion][3]])); // on envoit uniquement le temps de la question aux joueurs, l'intitulé de la question sera affiché sur les grands écrans
 				}
 
-				let screenSockQuestion = [ // on envoit aux grands écrans : l'intitulé de la question, les réponses possibles et le temps de la question
-					questions[actualQuestion][0],
-					questions[actualQuestion][1],
-					questions[actualQuestion][3]
-				]
+				let question = questions[actualQuestion];
+
+				let screenSockQuestion = [NEW_QUESTION, question[0]];
+
+				for(let i = 0; i < 4; i++) {
+					screenSockQuestion[2 + i] = question[1][i];
+				}
+
+				screenSockQuestion[6] = question[3];
 
 				for(let screenSock of screensSocks) {
-					screenSock.send(JSON.stringify([NEW_QUESTION, screenSockQuestion]));
+					screenSock.send(JSON.stringify(screenSockQuestion));
 				}
 
 				setTimeout(function() {

@@ -55,7 +55,7 @@ window.onload = function() {
 
 	sock.onopen = function() {
 		let state = STATE_GAME_INFO;
-		let players = []; // tableau des pseudos de joueurs
+		let players; // tableau des pseudos de joueurs
 
 		let meId; // mon identifiant de joueur
 
@@ -119,6 +119,8 @@ window.onload = function() {
 
 					let playersList = document.getElementById("players-list");
 					let playerPseudo = document.getElementById("player-pseudo")
+
+					players = [];
 
 					for(let i = 0; i < playersCount; i++) {
 						players[i] = {};
