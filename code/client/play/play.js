@@ -9,8 +9,10 @@ const PSEUDO_ALREADY_USED = 3;
 const START_GAME_COUNTDOWN = 4;
 const START_GAME = 5;
 
-const ANSWERS_STATS = 0;
-const END_QUESTION = 1;
+const NEW_QUESTION = 0,
+    ANSWERS_STATS = 1,
+    END_QUESTION = 2,
+    END_GAME = 3;
 
 const STATE_NONE = 0,
     STATE_GAME_INFO = 1,
@@ -62,6 +64,7 @@ window.onload = function() {
     let answersButtonsHtml;
     let answersStatsHtml;
 
+    let chosenAnswer;
     let clickedAnswerButtonHtml;
 
     let sock = new WebSocket("ws://" + window.location.host);
@@ -85,25 +88,23 @@ window.onload = function() {
             document.body.innerHTML = `
 			<div id="question-number">Question 1</div>
 			<div id="question-info"></div>
-			<div id="answer-button1"class="answer-button">
+			<div class="answer-button">
 				<div class="answer-letter">A</div>
 				<div class="answer-stat">0%</div>
 			</div>
-			<div id="answer-button2"class="answer-button">
+			<div class="answer-button">
 				<div class="answer-letter">B</div>
 				<div class="answer-stat">0%</div>
 			</div>
-			<div id="answer-button3"class="answer-button">
+			<div class="answer-button">
 				<div class="answer-letter">C</div>
 				<div class="answer-stat">0%</div>
 			</div>
-			<div id="answer-button4"class="answer-button">
+			<div class="answer-button">
 				<div class="answer-letter">D</div>
 				<div class="answer-stat">0%</div>
 			</div>
 			`;
-
-            resetAnswers();
 
             questionNumberHtml = document.getElementById("question-number");
             questionInfoHtml = document.getElementById("question-info");
@@ -113,11 +114,12 @@ window.onload = function() {
 
             for (let i = 0; i < 4; i++) {
                 answersButtonsHtml[i].onclick = function() {
-                    if (clickedAnswerButtonHtml === undefined && state == STATE_ANSWER) {
-                        clickedAnswerButtonHtml = answersButtonsHtml[i];
+                    if (chosenAnswer === undefined && state == STATE_ANSWER) {
+                        chosenAnswer = i;
+                        clickedAnswerButtonHtml = answersButtonsHtml[chosenAnswer];
                         clickedAnswerButtonHtml.style.border = "solid 2px #fefefe";
 
-                        sock.send(JSON.stringify([i])); // on envoit le numéro de la réponse sélectionnée
+                        sock.send(JSON.stringify([chosenAnswer])); // on envoit le numéro de la réponse sélectionnée
                     }
                 }
             }
@@ -228,40 +230,45 @@ window.onload = function() {
 
                 case STATE_WAIT_QUESTION:
                     {
-                        if (clickedAnswerButtonHtml !== undefined) {
-                            clickedAnswerButtonHtml.style.border = "";
-                            clickedAnswerButtonHtml = undefined;
-                        }
+                        if(msg[0] == NEW_QUESTION) {
+                            chosenAnswer = undefined;
 
-                        for (let answerStatHtml of answersStatsHtml) {
-                            answerStatHtml.innerHTML = "";
-                        }
+                            if (clickedAnswerButtonHtml !== undefined) {
+                                clickedAnswerButtonHtml.style.border = "";
+                            }
 
-                        actualQuestion++;
-                        questionNumberHtml.innerHTML = "Question " + actualQuestion;
+                            for (let answerStatHtml of answersStatsHtml) {
+                                answerStatHtml.innerHTML = "";
+                            }
 
-                        resetAnswers();
+                            actualQuestion++;
+                            questionNumberHtml.innerHTML = "Question " + actualQuestion;
 
-                        clearInterval(questionCountdown);
+                            for(let answerButtonHtml of answersButtonsHtml) {
+                                answerButtonHtml.style.backgroundColor = "";
+                            }
 
-                        let time = msg[0];
+                            clearInterval(questionCountdown);
 
-                        questionInfoHtml.innerHTML = "Temps restant : <span id=\"question-countdown\"></span>"
+                            let time = msg[1];
 
-                        let questionCountdownHtml = document.getElementById("question-countdown");
-                        questionCountdownHtml.innerHTML = time;
+                            questionInfoHtml.innerHTML = "Temps restant : <span id=\"question-countdown\"></span>"
 
-                        questionCountdown = setInterval(function() {
-                            time--;
+                            let questionCountdownHtml = document.getElementById("question-countdown");
                             questionCountdownHtml.innerHTML = time;
 
-                            if (time == 0) {
-                                clearTimeout(questionCountdown);
-                            }
-                        }, 1000);
+                            questionCountdown = setInterval(function() {
+                                time--;
+                                questionCountdownHtml.innerHTML = time;
 
-                        state = STATE_ANSWER;
-                        break;
+                                if (time == 0) {
+                                    clearTimeout(questionCountdown);
+                                }
+                            }, 1000);
+
+                            state = STATE_ANSWER;
+                            break;
+                        }
                     }
 
                 case STATE_ANSWER:
@@ -271,16 +278,21 @@ window.onload = function() {
                                 answersStatsHtml[i].innerHTML = msg[1][i] + "%";
                             }
                         } else if (msg[0] == END_QUESTION) {
+                            for (let answerButtonHtml of answersButtonsHtml) {
+                                answerButtonHtml.backgroundColor = "#a65050";
+                            }
 
-                            answerDisplay(msg);
+                            answersButtonsHtml[msg[1]].style.backgroundColor = "#22780F";
 
-                            if (msg[1]) {
+                            if(chosenAnswer == msg[1]) {
                                 questionInfoHtml.innerHTML = "Bonne réponse !";
                             } else {
                                 questionInfoHtml.innerHTML = "Mauvaise réponse...";
                             }
 
                             state = STATE_WAIT_QUESTION;
+                        } else if(msg[0] == END_GAME) {
+                            questionInfoHtml.innerHTML = "Fin de la partie";
                         }
 
                         break;
@@ -288,39 +300,4 @@ window.onload = function() {
             }
         };
     };
-}
-
-
-
-//Changement de la couleur des boutons selon la réponse
-function answerDisplay(msg) {
-    let buttonList = getLabels();
-    colorButtons(buttonList, "#BB0B0B");
-
-    buttonList[msg[2]].style.backgroundColor = "#22780F";
-}
-
-//Changement de la couleur des boutons avec la couleur par défaut
-function resetAnswers() {
-    let buttonList = getLabels();
-    colorButtons(buttonList, "#a65050");
-}
-
-//Remplissage d'une liste de boutons
-function getLabels() {
-    let buttonList = new Array();
-    buttonList[0] = document.getElementById("answer-button1");
-    buttonList[1] = document.getElementById("answer-button2");
-    buttonList[2] = document.getElementById("answer-button3");
-    buttonList[3] = document.getElementById("answer-button4");
-
-    return buttonList;
-}
-
-//Coloration des boutons
-function colorButtons(buttonList, color) {
-    for (const bouton in buttonList) {
-        const element = buttonList[bouton];
-        element.style.backgroundColor = color;
-    }
 }

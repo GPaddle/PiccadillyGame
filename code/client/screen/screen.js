@@ -7,8 +7,8 @@ const DEL_PLAYER = 2;
 const START_GAME_COUNTDOWN = 4;
 const START_GAME = 5;
 
-//TODO changer cette constante
-const MAX_QUESTION = 2;
+const NEW_QUESTION = 0,
+    END_GAME = 3;
 
 const SECRET_SCREEN_KEY = "7116dd23254dc1a8";
 
@@ -36,8 +36,7 @@ window.onload = function() {
     let questionInfoHtml;
 
     let answersHtml;
-
-    let results;
+    let answersTextHtml;
 
     function displayGame() {
         document.body.innerHTML = `
@@ -66,18 +65,12 @@ window.onload = function() {
         questionHtml = document.getElementById("question");
         questionInfoHtml = document.getElementById("question-info");
 
-        answersHtml = document.getElementsByClassName("answer-text");
+        answersHtml = document.getElementsByClassName("answer");
+        answersTextHtml = document.getElementsByClassName("answer-text");
     }
 
     function displayResults() {
-        document.body.innerHTML = `
-		<div id="service-name">Résultats</div>
-		
-		<div id="results" class="results">
-		</div>
-		`;
-
-        results = document.getElementById("results");
+        
     }
 
     const sock = new WebSocket("ws://" + window.location.host);
@@ -150,41 +143,54 @@ window.onload = function() {
 
                 case STATE_WAIT_QUESTION:
                     {
+                        if(msg[0] == NEW_QUESTION) {
+                            clearInterval(questionCountdown);
 
-                        clearInterval(questionCountdown);
+                            for(let answerHtml of answersHtml) {
+                                answerHtml.style.backgroundColor = "";
+                            }
 
-                        //Début du timming, remise à zéro des infos pour la question suivante
-                        resetAnswers();
-                        question = msg;
+                            question = msg[1];
 
-                        questionNumber++;
-                        questionNumberHtml.innerHTML = "Question " + questionNumber;
+                            questionNumber++;
+                            questionNumberHtml.innerHTML = "Question " + questionNumber;
 
-                        questionHtml.innerHTML = question[0];
+                            questionHtml.innerHTML = question[0];
 
-                        for (let i = 0; i < 4; i++) {
-                            answersHtml[i].innerHTML = question[1][i];
-                        }
+                            for (let i = 0; i < 4; i++) {
+                                answersTextHtml[i].innerHTML = question[1][i];
+                            }
 
-                        let time = question[2];
+                            let time = question[2];
 
-                        questionInfoHtml.innerHTML = "Temps restant : <span id=\"question-countdown\">...</span>";
+                            questionInfoHtml.innerHTML = "Temps restant : <span id=\"question-countdown\">...</span>";
 
-                        let questionCountdownHtml = document.getElementById("question-countdown");
-                        questionCountdownHtml.innerHTML = time;
-
-                        questionCountdown = setInterval(function() {
-                            time--;
+                            let questionCountdownHtml = document.getElementById("question-countdown");
                             questionCountdownHtml.innerHTML = time;
 
-                            if (time == 0) {
-                                clearInterval(questionCountdown);
+                            questionCountdown = setInterval(function() {
+                                time--;
+                                questionCountdownHtml.innerHTML = time;
+
+                                if (time == 0) {
+                                    clearInterval(questionCountdown);
+                                }
+                            }, 1000);
+
+                            state = STATE_ANSWER;
+                        } else if(msg[0] == END_GAME) {
+                            document.body.innerHTML = `
+                            <div id="results-header">Résultats</div>
+                            <div id="results"></div>
+                            `;
+
+                            let resultsHtml = document.getElementById("results");
+                            let scores = msg[1];
+
+                            for(let i = 0; i < scores.length; i++) {
+                                resultsHtml.innerHTML += "<div class=\"resultContener\"><span class=\"playerName\">" + scores[i][0] + "</span><span class=\"playerScore\">" + scores[i][1] + "</span></div>";
                             }
-                        }, 1000);
-
-                        console.log(questionNumber + " " + MAX_QUESTION);
-
-                        state = STATE_ANSWER;
+                        }
 
                         break;
 
@@ -192,84 +198,18 @@ window.onload = function() {
 
                 case STATE_ANSWER:
                     {
-
                         questionInfoHtml.innerHTML = "La bonne réponse était \"" + question[1][msg[0]] + "\"";
 
-                        //Fin du timming, mise en couleur des résultats
-                        answerDisplay(msg);
-
-                        if (msg[0] == 1 && questionNumber >= MAX_QUESTION) {
-                            state = STATE_RESULTS;
-                            break;
+                        for(let answerHtml of answersHtml) {
+                            answerHtml.style.backgroundColor = "#bb0b0b";
                         }
+
+                        answersHtml[msg[0]].style.backgroundColor = "#22780f";
 
                         state = STATE_WAIT_QUESTION;
                         break;
                     }
-
-                case STATE_RESULTS:
-                    {
-                        displayResults();
-
-                        console.log("Res " + msg);
-
-                        try {
-
-                            let players = msg[1];
-                            let playersScore = msg[2];
-                            for (let playerIndex = 0; playerIndex < players.length; playerIndex++) {
-                                let player = players[playerIndex];
-                                let playerScore = playersScore[playerIndex];
-
-                                results.innerHTML =
-                                    results.innerHTML + "<div class='resultContener'><span class = 'playerName'>" + player + "</span> <span class ='playerScore'>" + playerScore + "</span></div>";
-
-                            }
-
-                        } catch (error) {
-                            console.log("PB");
-                        }
-                    }
-
-                    break;
             }
         }
-    }
-}
-
-
-
-
-
-//Changement de la couleur des labels selon la réponse
-function answerDisplay(msg) {
-    let labelList = getLabels();
-    colorLabels(labelList, "#BB0B0B");
-
-    labelList[msg[0]].style.backgroundColor = "#22780F";
-}
-
-//Changement de la couleur des boutons avec la couleur par défaut
-function resetAnswers() {
-    let labelList = getLabels();
-    colorLabels(labelList, "#a65050");
-}
-
-//Remplissage d'une liste de boutons
-function getLabels() {
-    let labelList = new Array();
-    labelList[0] = document.getElementById("answer1");
-    labelList[1] = document.getElementById("answer2");
-    labelList[2] = document.getElementById("answer3");
-    labelList[3] = document.getElementById("answer4");
-
-    return labelList;
-}
-
-//Coloration des boutons
-function colorLabels(labelList, color) {
-    for (const bouton in labelList) {
-        const element = labelList[bouton];
-        element.style.backgroundColor = color;
     }
 }
