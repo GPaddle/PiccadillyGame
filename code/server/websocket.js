@@ -56,6 +56,8 @@ module.exports = function(httpServer) {
 
 	let startCountdown;
 
+	let questionEndTime;
+
 	function nextQuestion() {
 		state = STATE_GAME;
 		actualQuestion++;
@@ -64,19 +66,10 @@ module.exports = function(httpServer) {
 			let screensSocksScores = [END_GAME, playersSocks.length];
 
 			for(let i = 0; i < playersSocks.length; i++) {
-				playersSocks[i].send(JSON.stringify([END_GAME])); // on envoit la bonne réponse aux joueurs
+				playersSocks[i].send(JSON.stringify([END_GAME]));
 
 				screensSocksScores[2 + i * 2] = playersSocks[i].player.pseudo;
-
-				let points = 0;
-
-				for(let j = 0; j < playersSocks[i].player.answers.length; j++) {
-					if(playersSocks[i].player.answers[j] == questions[j].correctAnswer) {
-						points++;
-					}
-				}
-
-				screensSocksScores[3 + i * 2] = points;
+				screensSocksScores[3 + i * 2] = playersSocks[i].player.score;
 			}
 
 			for(let screenSock of screensSocks) {
@@ -96,6 +89,8 @@ module.exports = function(httpServer) {
 			}
 
 			screenSockQuestion[6] = question.time;
+
+			questionEndTime = Date.now() + question.time * 1000;
 
 			for(let screenSock of screensSocks) {
 				screenSock.send(JSON.stringify(screenSockQuestion));
@@ -179,6 +174,7 @@ module.exports = function(httpServer) {
 
 									startCountdown = setTimeout(function() {
 										for(let playerSock of playersSocks) {
+											playerSock.player.score = 0;
 											playerSock.send(JSON.stringify([START_GAME])); // on dit aux joueurs que la partie commence (pour qu'ils affichent l'interface des questions)
 										}
 
@@ -234,6 +230,10 @@ module.exports = function(httpServer) {
 
 				case STATE_GAME: {
 					if(sock.player.answers[actualQuestion] === undefined && msg[0] >= 0 && msg[0] <= 3) { // si le joueur n'a pas encore donné de réponse et si le code de réponse est 0, 1, 2 ou 3
+						if(msg[0] == questions[actualQuestion].correctAnswer) {
+							sock.player.score += questionEndTime - Date.now();
+						}
+
 						sock.player.answers[actualQuestion] = msg[0]; // on enregistre la réponse envoyée par le joueur
 
 						let answerStats = [0, 0, 0, 0];
