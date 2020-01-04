@@ -26,30 +26,6 @@ window.onload = function() {
 	<div id="min-players-info">Nombre de joueurs minimum nécessaires : <span id="min-players-count">...</span></div>
 	`;
 
-	function displayGame() {
-		document.body.innerHTML = `
-		<div id="question-number">Question ...</div>
-		<div id="question">...</div>
-		<div id="question-info"></div>
-		<div id="answer1" class="answer">
-			<span class="answer-letter">A - </span>
-			<span class="answer-text">...</div>
-		</div>
-		<div id="answer2" class="answer">
-			<span class="answer-letter">B - </span>
-			<span class="answer-text">...</div>
-		</div>
-		<div id="answer3" class="answer">
-			<span class="answer-letter">C - </span>
-			<span class="answer-text">...</div>
-		</div>
-		<div id="answer4" class="answer">
-			<span class="answer-letter">D - </span>
-			<span class="answer-text">...</div>
-		</div>
-		`;
-	}
-
 	const sock = new WebSocket("ws://" + window.location.host);
 
 	sock.onopen = function() {
@@ -116,7 +92,28 @@ window.onload = function() {
 							}
 						}, 1000)
 					} else if(msg[0] == START_GAME) {
-						displayGame();
+						document.body.innerHTML = `
+						<div id="question-number">Question ...</div>
+						<div id="question">...</div>
+						<div id="question-info"></div>
+						<div id="answer1" class="answer">
+							<span class="answer-letter">A - </span>
+							<span class="answer-text">...</div>
+						</div>
+						<div id="answer2" class="answer">
+							<span class="answer-letter">B - </span>
+							<span class="answer-text">...</div>
+						</div>
+						<div id="answer3" class="answer">
+							<span class="answer-letter">C - </span>
+							<span class="answer-text">...</div>
+						</div>
+						<div id="answer4" class="answer">
+							<span class="answer-letter">D - </span>
+							<span class="answer-text">...</div>
+						</div>
+						`;
+
 						state = STATE_WAIT_QUESTION;
 					}
 
@@ -164,17 +161,16 @@ window.onload = function() {
 
 						state = STATE_ANSWER;
 					} else if(msg[0] == END_GAME) {
-						let scoresCount = msg[1];
-
-						document.body.innerHTML = `
-						<div id="results-header">Résultats</div>
-						<div id="results"></div>
-						`;
+						document.body.innerHTML = `<div id="results-header">Résultats</div><div id="results"></div>`;
 
 						let resultsDiv = document.getElementById("results");
 
-						for(let i = 0; i < scoresCount; i++) {
-							resultsDiv.innerHTML += "<div class=\"resultContener\"><span class=\"playerName\">" + msg[2 + i * 2] + "</span><span class=\"playerScore\">" + msg[3 + i * 2] + "</span></div>";
+						for(let i = 0; i < msg[1]; i++) {
+							resultsDiv.innerHTML += `
+							<div class="result">
+								<div class="result-pseudo">` + msg[2 + i * 2] + `</div>
+								<div class="result-score">` + msg[3 + i * 2] + `</div>
+							</div>`;
 						}
 					}
 

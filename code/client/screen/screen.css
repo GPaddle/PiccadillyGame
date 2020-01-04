@@ -87,17 +87,28 @@ body {
     font-weight: bold;
 }
 
+#results-header {
+    font-size: 50px;
+    font-weight: bold;
+    margin-bottom: 50px;
+}
+
 #results {
-    width: 50vw;
-    font-size: 2em;
+    font-size: 24px;
 }
 
-.resultContener {
+.result {
     display: flex;
-    width: 100%;
-    border-bottom: 1px solid #fff;
+    width: 500px;
 }
 
-.playerName {
+.result-pseudo {
+    padding: 10px;
+    background: #551d1d;
     flex: 1;
+}
+
+.result-score {
+    padding: 10px;
+    background: #351212;
 }
