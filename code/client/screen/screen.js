@@ -56,7 +56,8 @@ window.onload = function() {
 		let state = STATE_GAME_INFO;
 
 		let playersCount = 0;
-		let question;
+
+		let questionAnswers;
 
 		let questionNumber = 0;
 		let questionCountdown;
@@ -132,7 +133,7 @@ window.onload = function() {
 							answer.style.backgroundColor = "";
 						}
 
-						question = msg[1];
+						questionAnswers = msg[1][1];
 
 						questionNumber++;
 
@@ -140,15 +141,15 @@ window.onload = function() {
 						questionNumberDiv.innerHTML = "Question " + questionNumber;
 
 						let questionDiv = document.getElementById("question");
-						questionDiv.innerHTML = question[0];
+						questionDiv.innerHTML = msg[1][0];
 
 						let answersText = document.getElementsByClassName("answer-text");
 
 						for(let i = 0; i < 4; i++) {
-							answersText[i].innerHTML = question[1][i];
+							answersText[i].innerHTML = questionAnswers[i];
 						}
 
-						let time = question[2];
+						let time = msg[1][2];
 
 						let questionInfo = document.getElementById("question-info");
 						questionInfo.innerHTML = "Temps restant : <span id=\"question-countdown\">...</span>";
@@ -186,7 +187,7 @@ window.onload = function() {
 
 				case STATE_ANSWER: {
 					let questionInfo = document.getElementById("question-info");
-					questionInfo.innerHTML = "La bonne réponse était \"" + question[1][msg[0]] + "\"";
+					questionInfo.innerHTML = "La bonne réponse était \"" + questionAnswers[msg[0]] + "\"";
 
 					let answers = document.getElementsByClassName("answer");
 
