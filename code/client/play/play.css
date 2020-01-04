@@ -98,20 +98,20 @@ body {
     margin: 0px auto 30px auto;
 }
 
-#player-list-header {
+#players-list-header {
     text-align: center;
     font-size: 26px;
     margin-bottom: 20px;
 }
 
-#player-list {
+#players-list {
     max-width: 500px;
     padding: 10px;
     margin: auto;
     background: #a65050;
 }
 
-.player-list-player {
+.players-list-player {
     text-align: center;
     font-weight: bold;
     font-size: 17px;
