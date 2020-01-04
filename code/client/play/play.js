@@ -71,20 +71,32 @@ window.onload = function() {
 			<div id="question-number">Question 1</div>
 			<div id="question-info"></div>
 			<div class="answer-button">
-				<div class="answer-letter">A</div>
-				<div class="answer-stat">0%</div>
+				<div class="answer-stat-bar"></div>
+				<div class="answer-button-content">
+					<div class="answer-letter">A</div>
+					<div class="answer-stat">0%</div>
+				</div>
 			</div>
 			<div class="answer-button">
-				<div class="answer-letter">B</div>
-				<div class="answer-stat">0%</div>
+				<div class="answer-stat-bar"></div>
+				<div class="answer-button-content">
+					<div class="answer-letter">B</div>
+					<div class="answer-stat">0%</div>
+				</div>
 			</div>
 			<div class="answer-button">
-				<div class="answer-letter">C</div>
-				<div class="answer-stat">0%</div>
+				<div class="answer-stat-bar"></div>
+				<div class="answer-button-content">
+					<div class="answer-letter">C</div>
+					<div class="answer-stat">0%</div>
+				</div>
 			</div>
 			<div class="answer-button">
-				<div class="answer-letter">D</div>
-				<div class="answer-stat">0%</div>
+				<div class="answer-stat-bar"></div>
+				<div class="answer-button-content">
+					<div class="answer-letter">D</div>
+					<div class="answer-stat">0%</div>
+				</div>
 			</div>
 			`;
 
@@ -137,8 +149,6 @@ window.onload = function() {
 							playerPseudo.innerHTML = players[i].pseudo;
 						}
 					}
-
-
 
 					state = STATE_WAITING_ROOM;
 					break;
@@ -233,9 +243,11 @@ window.onload = function() {
 						chosenAnswer = undefined;
 
 						let answersStats = document.getElementsByClassName("answer-stat");
+						let answersStatsBars = document.getElementsByClassName("answer-stat-bar");
 
-						for(let answerStat of answersStats) {
-							answerStat.innerHTML = "";
+						for(let i = 0; i < 4; i++) {
+							answersStats[i].innerHTML = "";
+							answersStatsBars[i].style.width = "";
 						}
 
 						actualQuestion++;
@@ -276,9 +288,11 @@ window.onload = function() {
 				case STATE_ANSWER: {
 					if(msg[0] == ANSWERS_STATS) {
 						let answersStats = document.getElementsByClassName("answer-stat");
+						let answersStatsBars = document.getElementsByClassName("answer-stat-bar")
 
 						for(let i = 0; i < answersStats.length; i++) {
 							answersStats[i].innerHTML = msg[1 + i] + "%";
+							answersStatsBars[i].style.width = msg[1 + i] + "%";
 						}
 					} else if(msg[0] == END_QUESTION) {
 						let answersButtons = document.getElementsByClassName("answer-button");
