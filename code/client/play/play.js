@@ -39,12 +39,15 @@ window.onload = function() {
 
 	let pseudoInput = document.getElementById("pseudo-input");
 	pseudoInput.onfocus = function() {
+		let pseudoError = document.getElementById("pseudo-error");
 		pseudoError.innerHTML = "";
 	}
 
 	let sendPseudoButton = document.getElementById("send-pseudo-button");
 	sendPseudoButton.onclick = function() {
 		sock.send(JSON.stringify([pseudoInput.value]));
+
+		let pseudoError = document.getElementById("pseudo-error");
 		pseudoError.innerHTML = "";
 	};
 
@@ -52,7 +55,7 @@ window.onload = function() {
 
 	sock.onopen = function() {
 		let state = STATE_GAME_INFO;
-		let players; // tableau des pseudos de joueurs
+		let players = []; // tableau des pseudos de joueurs
 
 		let meId; // mon identifiant de joueur
 
@@ -107,27 +110,33 @@ window.onload = function() {
 					let minPlayersCount = document.getElementById("min-players-count");
 					minPlayersCount.innerHTML = msg[0];
 
-					players = msg[1];
+					let playersCount = msg[1];
 
-					let playersCount = document.getElementById("players-count");
-					playersCount.innerHTML = players.length;
+					let playersCountSpan = document.getElementById("players-count");
+					playersCountSpan.innerHTML = playersCount;
 
-					meId = msg[2];
+					meId = msg[2 + playersCount * 2];
 
 					let playersList = document.getElementById("players-list");
 					let playerPseudo = document.getElementById("player-pseudo")
 
-					for(let player of players) {
-						player.line = document.createElement("div");
-						player.line.classList.add("players-list-player");
-						player.line.innerHTML = player.pseudo;
+					for(let i = 0; i < playersCount; i++) {
+						players[i] = {};
+						players[i].id = msg[2 + i * 2];
+						players[i].pseudo = msg[3 + i * 2];
 
-						playersList.appendChild(player.line);
+						players[i].line = document.createElement("div");
+						players[i].line.classList.add("players-list-player");
+						players[i].line.innerHTML = players[i].pseudo;
 
-						if(player.id == meId) {
-							playerPseudo.innerHTML = player.pseudo;
+						playersList.appendChild(players[i].line);
+
+						if(players[i].id == meId) {
+							playerPseudo.innerHTML = players[i].pseudo;
 						}
 					}
+
+
 
 					state = STATE_WAITING_ROOM;
 					break;
@@ -267,7 +276,7 @@ window.onload = function() {
 						let answersStats = document.getElementsByClassName("answer-stat");
 
 						for(let i = 0; i < answersStats.length; i++) {
-							answersStats[i].innerHTML = msg[1][i] + "%";
+							answersStats[i].innerHTML = msg[1 + i] + "%";
 						}
 					} else if(msg[0] == END_QUESTION) {
 						let answersButtons = document.getElementsByClassName("answer-button");

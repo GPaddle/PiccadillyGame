@@ -4,7 +4,7 @@ const fs = require("fs");
 const ws = require("ws");
 
 //Changer l'état à true pour aller plus vite
-const TEST_MODE = true;
+const TEST_MODE = false;
 
 const CLIENT_TYPE_PLAYER = 0,
 	CLIENT_TYPE_SCREEN = 1;
@@ -157,20 +157,27 @@ module.exports = function(httpServer) {
 									sock.player.answers = [];
 									sock.player.pseudo = "un inconnu";
 
-									let players = [];
-
-									for(let playerSock of playersSocks) {
-										players.push(playerSock.player);
-										playerSock.send(JSON.stringify([ADD_PLAYER, sock.player.id, sock.player.pseudo]));
-									}
-
-									players.push(sock.player);
-
 									for(let screenSock of screensSocks) {
 										screenSock.send(JSON.stringify([ADD_PLAYER]));
 									}
 
-									sock.send(JSON.stringify([MIN_PLAYER, players, sock.player.id]));
+									// format de la trame sérialisée : MIN_PLAYER, nbJoueur, id, "pseudo", id, "pseudo"...id, "pseudo", idPerso
+
+									let gameInfo = [MIN_PLAYER, playersSocks.length + 1];
+
+									for(let i = 0; i < playersSocks.length; i++) {
+										playersSocks[i].send(JSON.stringify([ADD_PLAYER, sock.player.id, sock.player.pseudo]));
+
+										gameInfo[2 + i * 2] = playersSocks[i].player.id;
+										gameInfo[3 + i * 2] = playersSocks[i].player.pseudo;
+									}
+
+									gameInfo[2 + playersSocks.length * 2] = sock.player.id;
+									gameInfo[3 + playersSocks.length * 2] = sock.player.pseudo;
+
+									gameInfo[4 + playersSocks.length * 2] = sock.player.id;
+
+									sock.send(JSON.stringify(gameInfo));
 									sock.state = STATE_PSEUDO;
 
 									playersSocks.push(sock);
@@ -239,15 +246,15 @@ module.exports = function(httpServer) {
 								answerStats[playerSock.player.answers[actualQuestion]]++;
 							}
 
-							let percentStats = [];
+							let stats = [ANSWERS_STATS];
 
 							for(let i = 0; i < answerStats.length; i++) {
-								percentStats[i] = Math.trunc((answerStats[i] / playersSocks.length * 100) * 10) / 10;
+								stats[1 + i] = Math.trunc((answerStats[i] / playersSocks.length * 100) * 10) / 10;
 							}
 
 							for(let playerSock of playersSocks) {
 								if(playerSock.player.answers[actualQuestion] !== undefined) { // on envoit seulements les statistiques de réponse aux joueurs ayant déjà répondu à la question
-									playerSock.send(JSON.stringify([ANSWERS_STATS, percentStats]));
+									playerSock.send(JSON.stringify(stats));
 								}
 							}
 						}
