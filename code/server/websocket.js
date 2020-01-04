@@ -4,7 +4,7 @@ const fs = require("fs");
 const ws = require("ws");
 
 //Changer l'état à true pour aller plus vite
-const TEST_MODE = true;
+const TEST_MODE = false;
 
 const CLIENT_TYPE_PLAYER = 0,
 	CLIENT_TYPE_SCREEN = 1;
@@ -80,7 +80,7 @@ module.exports = function(httpServer) {
 					let points = 0;
 
 					for(let j = 0; j < playersSocks[i].player.answers.length; j++) {
-						if(playersSocks[i].player.answers[j] == questions[j][2]) {
+						if(playersSocks[i].player.answers[j] == questions[j].correctAnswer) {
 							points++;
 						}
 					}
@@ -92,19 +92,19 @@ module.exports = function(httpServer) {
 					screenSock.send(JSON.stringify(screensSocksScores));
 				}
 			} else {
-				for(let playerSock of playersSocks) {
-					playerSock.send(JSON.stringify([NEW_QUESTION, questions[actualQuestion][3]])); // on envoit uniquement le temps de la question aux joueurs, l'intitulé de la question sera affiché sur les grands écrans
-				}
-
 				let question = questions[actualQuestion];
 
-				let screenSockQuestion = [NEW_QUESTION, question[0]];
-
-				for(let i = 0; i < 4; i++) {
-					screenSockQuestion[2 + i] = question[1][i];
+				for(let playerSock of playersSocks) {
+					playerSock.send(JSON.stringify([NEW_QUESTION, question.time])); // on envoit uniquement le temps de la question aux joueurs, l'intitulé de la question sera affiché sur les grands écrans
 				}
 
-				screenSockQuestion[6] = question[3];
+				let screenSockQuestion = [NEW_QUESTION, question.title];
+
+				for(let i = 0; i < 4; i++) {
+					screenSockQuestion[2 + i] = question.answers[i];
+				}
+
+				screenSockQuestion[6] = question.time;
 
 				for(let screenSock of screensSocks) {
 					screenSock.send(JSON.stringify(screenSockQuestion));
@@ -114,16 +114,16 @@ module.exports = function(httpServer) {
 					state = STATE_NONE;
 
 					for(let screenSock of screensSocks) {
-						screenSock.send(JSON.stringify([questions[actualQuestion][2]]));
+						screenSock.send(JSON.stringify([question.correctAnswer]));
 					}
 
 					for(let playerSock of playersSocks) {
-						playerSock.send(JSON.stringify([END_QUESTION, questions[actualQuestion][2]])); // on envoit la bonne réponse aux joueurs
+						playerSock.send(JSON.stringify([END_QUESTION, question.correctAnswer])); // on envoit la bonne réponse aux joueurs
 					}
 
 					let time = TEST_MODE ? 1000 : 6000;
 					setTimeout(nextQuestion, time);
-				}, questions[actualQuestion][3] * 1000);
+				}, question.time * 1000);
 			}
 		}
 
