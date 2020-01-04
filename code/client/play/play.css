@@ -1,12 +1,12 @@
 @font-face {
     font-family: lato;
-    src: url("/fonts/lato");
+    src: url("fonts/lato");
 }
 
 @font-face {
     font-family: lato;
     font-weight: bold;
-    src: url("/fonts/lato-bold");
+    src: url("fonts/lato-bold");
 }
 
 :root {
@@ -28,65 +28,74 @@ body {
 
 /* Page d'accueil - ajout du pseudo */
 
-#player-infos {
-    margin-bottom: 50px;
-}
-
-.player-info {
+#players-info {
     text-align: center;
     font-size: 22px;
     margin-bottom: 15px;
 }
 
-.player-info-value {
+#players-count {
     font-weight: bold;
 }
 
-#player-pseudo {
+#min-players-info {
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 30px;
+}
+
+#min-players-count {
+    font-weight: bold;
+}
+
+#start-countdown-info {
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#start-countdown {
+    font-weight: bold;
+}
+
+#player-pseudo-info {
     text-align: center;
     font-size: 20px;
     margin-bottom: 20px;
 }
 
-#player-pseudo-value {
+#player-pseudo {
     font-weight: bold;
 }
 
-#new-player-form {
-    margin-bottom: 60px;
-}
-
-input {
+#pseudo-input {
     display: block;
     padding: 5px;
     width: 250px;
-    height: 20px;
     text-align: center;
     margin: auto;
     font-size: 18px;
     background: #7a2c2c;
     border: 2px solid white;
     border-radius: 8px;
-    color: white;
+    color: #fefefe;
 }
 
-button {
-    display: block;
+#pseudo-error {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#send-pseudo-button {
+    width: 100px;
     background-color: #a65050;
-    /* Green */
     border: none;
     color: white;
     padding: 8px 32px;
     text-align: center;
     text-decoration: none;
     font-size: 16px;
-    margin: 10px auto 0px auto;
-    border-radius: 0.5em;
-}
-
-#pseudo-error {
-    text-align: center;
-    margin-bottom: 20px;
+    margin: 0px auto 30px auto;
 }
 
 #player-list-header {
@@ -107,6 +116,47 @@ button {
     font-weight: bold;
     font-size: 17px;
     margin-bottom: 5px;
+}
+
+
+/* Questions */
+
+#question-number {
+    font-size: 30px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+#question-info {
+    font-size: 26px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+#question-countdown {
+    font-weight: bold;
+}
+
+.answer-button {
+    max-width: 400px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    background-color: #a65050;
+    margin: 0px auto 20px auto;
+    cursor: pointer;
+    display: flex;
+}
+
+.answer-letter {
+    font-weight: bold;
+    font-size: 24px;
+    margin-right: auto;
+}
+
+.answer-stat {
+    font-size: 24px;
+    font-weight: bold;
 }
 
 

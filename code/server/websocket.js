@@ -1,143 +1,298 @@
+"use strict";
+
+const fs = require("fs");
 const ws = require("ws");
 
-const CLIENT_TYPE_PLAYER = 0;
-const CLIENT_TYPE_SCREEN = 1;
+//Changer l'état à true pour aller plus vite
+const TEST_MODE = true;
 
-const ADD_PLAYER = 0;
-const SET_PSEUDO = 1;
-const DEL_PLAYER = 2;
-const PSEUDO_ALREADY_USED = 3;
+const CLIENT_TYPE_PLAYER = 0,
+    CLIENT_TYPE_SCREEN = 1;
 
-const states = {
-    NONE: 0,
-    WAITING_ROOM: 1,
-    AUTH: 2,
-    PSEUDO: 3,
-    GAME: 4,
-};
+const ADD_PLAYER = 0,
+    SET_PSEUDO = 1,
+    DEL_PLAYER = 2,
+    PSEUDO_ALREADY_USED = 3,
+    START_GAME_COUNTDOWN = 4,
+    START_GAME = 5;
+
+const ANSWERS_STATS = 0,
+    END_QUESTION = 1;
+
+const BAD_RESULT = 0,
+    GOOD_RESULT = 1;
+
+const RESULTS = 0;
+
+const STATE_NONE = 0,
+    STATE_WAITING_ROOM = 1,
+    STATE_AUTH = 2,
+    STATE_PSEUDO = 3,
+    STATE_GAME = 4,
+    STATE_RESULTS = 5;
+
+
+
+let file;
+
+TEST_MODE ? file = "questions2.json" : file = "questions.json";
+const questions = JSON.parse(fs.readFileSync(file));
+
 
 const SCREEN_SECRET_KEY = "7116dd23254dc1a8";
 
-const MIN_PLAYER = 1;
+const MIN_PLAYER = 2;
+let GAME_COUNT_DOWN_TIME;
+
+TEST_MODE ? GAME_COUNT_DOWN_TIME = 5 : GAME_COUNT_DOWN_TIME = 15;
 
 module.exports = function(httpServer) {
     const wss = new ws.Server({ server: httpServer });
 
-    let screenSock;
+    let screensSocks = [];
     const playersSocks = [];
 
-    let state = states.WAITING_ROOM;
+    let state = STATE_WAITING_ROOM;
 
     let nextPlayerId = 0;
 
+    let actualQuestion = -1;
+
+    let startCountdown;
+
+    function startGame() {
+        for (let playerSock of playersSocks) {
+            playerSock.send(JSON.stringify([START_GAME])); // on dit aux joueurs que la partie commence (pour qu'ils affichent l'interface des questions)
+        }
+
+        for (let screenSock of screensSocks) {
+            screenSock.send(JSON.stringify([START_GAME]));
+        }
+
+        function nextQuestion() {
+            state = STATE_GAME;
+
+            actualQuestion++;
+
+            for (let playerSock of playersSocks) {
+                playerSock.send(JSON.stringify([questions[actualQuestion][3]])); // on envoit uniquement le temps de la question aux joueurs, l'intitulé de la question sera affiché sur les grands écrans
+            }
+
+            let screenSockQuestion = [ // on envoit aux grands écrans : l'intitulé de la question, les réponses possibles et le temps de la question
+                questions[actualQuestion][0],
+                questions[actualQuestion][1],
+                questions[actualQuestion][3]
+            ]
+
+            for (let screenSock of screensSocks) {
+                screenSock.send(JSON.stringify(screenSockQuestion));
+            }
+
+            setTimeout(function() {
+                state = STATE_NONE;
+
+                for (let screenSock of screensSocks) {
+                    //PB Lors des résultats ici 
+                    screenSock.send(JSON.stringify([questions[actualQuestion][2]]));
+                }
+
+                for (let playerSock of playersSocks) {
+                    let result = playerSock.player.answers[actualQuestion] == questions[actualQuestion][2];
+
+                    let goodAnswer = questions[actualQuestion][2];
+
+                    playerSock.send(JSON.stringify([END_QUESTION, result, goodAnswer]));
+                }
+
+                if (actualQuestion < questions.length - 1) {
+                    //TODO
+                    //DUREE TEST
+                    //
+                    TEST_MODE ? setTimeout(nextQuestion, 1000) : setTimeout(nextQuestion, 6000);;
+
+                } else {
+                    //ICI
+                    for (let screenSock of screensSocks) {
+                        screenSock.send(JSON.stringify([END_QUESTION])); // on dit aux écrans que la partie est terminée
+                    }
+                    ResultState(playersSocks, screensSocks);
+                }
+            }, questions[actualQuestion][3] * 1000);
+        }
+
+        nextQuestion(); // on envoit la première question
+    }
+
     wss.on("connection", function(sock) {
-        if (state == states.WAITING_ROOM) {
-            sock.state = states.AUTH;
+        if (state == STATE_WAITING_ROOM) {
+            sock.state = STATE_AUTH;
+
+            let authTimeout = setTimeout(function() {
+                sock.close();
+            }, 10000);
 
             sock.on("message", function(json) {
                 let msg = JSON.parse(json);
-                console.log("Websocket : " + msg);
 
                 switch (state) {
-                    case states.WAITING_ROOM:
-                        switch (sock.state) {
-                            case states.AUTH:
-                                if (msg[0] == CLIENT_TYPE_PLAYER) {
-                                    sock.player = {};
-                                    sock.player.id = nextPlayerId;
-                                    nextPlayerId++;
+                    case STATE_WAITING_ROOM:
+                        {
+                            switch (sock.state) {
+                                case STATE_AUTH:
+                                    {
+                                        if (msg[0] == CLIENT_TYPE_PLAYER) {
+                                            clearTimeout(authTimeout);
 
-                                    sock.player.pseudo = "???";
+                                            sock.player = {};
 
-                                    playersSocks.push(sock);
+                                            sock.player.id = nextPlayerId;
+                                            nextPlayerId++;
 
-                                    screenSock.send(JSON.stringify([ADD_PLAYER]));
+                                            sock.player.answers = [];
+                                            sock.player.pseudo = "un inconnu";
 
-                                    let players = [];
+                                            let players = [];
 
-                                    for (playerSock of playersSocks) {
-                                        players.push(playerSock.player);
-                                        playerSock.send(JSON.stringify([ADD_PLAYER, sock.player.id, sock.player.pseudo]));
-                                    }
+                                            for (let playerSock of playersSocks) {
+                                                players.push(playerSock.player);
+                                                playerSock.send(JSON.stringify([ADD_PLAYER, sock.player.id, sock.player.pseudo]));
+                                            }
 
-                                    sock.send(JSON.stringify([MIN_PLAYER, players, sock.player.id]));
+                                            players.push(sock.player);
 
-                                    sock.state = states.PSEUDO;
+                                            for (let screenSock of screensSocks) {
+                                                screenSock.send(JSON.stringify([ADD_PLAYER]));
+                                            }
 
-                                } else if (msg[0] == CLIENT_TYPE_SCREEN && msg[1] == SCREEN_SECRET_KEY) {
-                                    screenSock = sock;
-                                    sock.state = states.NONE;
+                                            sock.send(JSON.stringify([MIN_PLAYER, players, sock.player.id]));
+                                            sock.state = STATE_PSEUDO;
 
-                                    sock.send(JSON.stringify([MIN_PLAYER, playersSocks.length]));
-                                }
+                                            playersSocks.push(sock);
 
-                                break;
+                                            if (playersSocks.length >= MIN_PLAYER && startCountdown === undefined) {
+                                                for (let playerSock of playersSocks) {
+                                                    playerSock.send(JSON.stringify([START_GAME_COUNTDOWN, GAME_COUNT_DOWN_TIME]));
+                                                }
 
-                            case states.PSEUDO:
-                                let isPseudoFree = true;
+                                                for (let screenSock of screensSocks) {
+                                                    screenSock.send(JSON.stringify([START_GAME_COUNTDOWN, GAME_COUNT_DOWN_TIME]));
+                                                }
 
-                                for (playerSock of playersSocks) {
-                                    if (msg[0] == playerSock.player.pseudo) {
-                                        isPseudoFree = false;
+                                                startCountdown = setTimeout(startGame, GAME_COUNT_DOWN_TIME * 1000); // quand on a assez de joueurs on lance la partie dans 15 secondes
+                                            }
+                                        } else if (msg[0] == CLIENT_TYPE_SCREEN && msg[1] == SCREEN_SECRET_KEY) {
+                                            clearTimeout(authTimeout);
+
+                                            sock.send(JSON.stringify([MIN_PLAYER, playersSocks.length]));
+                                            sock.state = STATE_NONE;
+
+                                            screensSocks.push(sock);
+                                        } else {
+                                            sock.close();
+                                        }
+
                                         break;
                                     }
-                                }
 
-                                if (isPseudoFree) {
-                                    sock.player.pseudo = msg[0];
+                                case STATE_PSEUDO:
+                                    {
+                                        let isPseudoFree = true;
 
-                                    for (playerSock of playersSocks) {
-                                        /**
-                                         * JSON
-                                         * 
-                                         * pseudo
-                                         * idPlayer
-                                         * pseudoPlayer
-                                         */
-                                        playerSock.send(JSON.stringify([SET_PSEUDO, sock.player.id, sock.player.pseudo]));
+                                        for (let playerSock of playersSocks) {
+                                            if (msg[0] == playerSock.player.pseudo) {
+                                                isPseudoFree = false;
+                                                break;
+                                            }
+                                        }
+
+                                        if (isPseudoFree) {
+                                            sock.player.pseudo = msg[0];
+
+                                            for (let playerSock of playersSocks) {
+                                                playerSock.send(JSON.stringify([SET_PSEUDO, sock.player.id, sock.player.pseudo]));
+                                            }
+
+                                            sock.state = STATE_NONE;
+                                        } else {
+                                            sock.send(JSON.stringify([PSEUDO_ALREADY_USED]));
+                                        }
+
+                                        break;
                                     }
+                            }
 
-                                    sock.state = states.NONE;
-                                    if (playersSocks.length >= MIN_PLAYER) {
-                                        console.log(state + " -> " + states.GAME);
-                                        state = states.GAME;
-                                    }
-
-                                } else {
-                                    sock.send(JSON.stringify([PSEUDO_ALREADY_USED]));
-                                }
-
-                                break;
-
-
+                            break;
                         }
 
+                    case STATE_GAME:
+                        {
+                            if (sock.player.answers[actualQuestion] === undefined && msg[0] >= 0 && msg[0] <= 3) { // si le joueur n'a pas encore donné de réponse et si le code de réponse est 0, 1, 2 ou 3
+                                sock.player.answers[actualQuestion] = msg[0]; // on enregistre la réponse envoyée par le joueur
 
+                                let answerStats = [0, 0, 0, 0];
 
-                        break;
-                    case states.GAME:
+                                for (let playerSock of playersSocks) {
+                                    answerStats[playerSock.player.answers[actualQuestion]]++;
+                                }
 
-                        for (playerSocks of playersSocks) {
-                            playerSock.state = states.GAME;
+                                let percentStats = [];
+
+                                for (let i = 0; i < answerStats.length; i++) {
+                                    percentStats[i] = Math.trunc((answerStats[i] / playersSocks.length * 100) * 10) / 10;
+                                }
+
+                                for (let playerSock of playersSocks) {
+                                    if (playerSock.player.answers[actualQuestion] !== undefined) { // on envoit seulements les statistiques de réponse aux joueurs ayant déjà répondu à la question
+                                        playerSock.send(JSON.stringify([ANSWERS_STATS, percentStats]));
+                                    }
+                                }
+                            }
+
+                            break;
                         }
 
-                        console.log(msg);
-                        screenSock.send(JSON.stringify(msg));
-                        break;
                 }
             });
 
             sock.on("close", function() {
-                if (state == states.WAITING_ROOM && sock.player) {
+                if (sock.player === undefined) {
+                    screensSocks.splice(screensSocks.indexOf(sock), 1);
+                } else {
                     playersSocks.splice(playersSocks.indexOf(sock), 1);
+                }
 
-                    screenSock.send(JSON.stringify([DEL_PLAYER]));
+                if (state == STATE_WAITING_ROOM) {
+                    for (let screenSock of screensSocks) {
+                        screenSock.send(JSON.stringify([DEL_PLAYER]));
+                    }
 
-                    for (playerSock of playersSocks) {
+                    for (let playerSock of playersSocks) {
                         playerSock.send(JSON.stringify([DEL_PLAYER, sock.player.id]));
                     }
                 }
             });
+        } else {
+            sock.close();
         }
     });
+}
+
+function ResultState(playersSocks, screensSocks) {
+    let list = new Array(),
+        scores = new Array();
+    for (let playerSock of playersSocks) {
+        list.push(playerSock.player.pseudo);
+        let score = playerSock.player.answers;
+        let countScore = 0;
+        for (let index = 0; index < score.length; index++) {
+            const element = score[index];
+            if (element == questions[index][2]) {
+                countScore++;
+            }
+        }
+        scores.push(countScore);
+    }
+    for (let screenSock of screensSocks) {
+        screenSock.send(JSON.stringify([RESULTS, list, scores]));
+    }
 }

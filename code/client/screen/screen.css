@@ -1,12 +1,12 @@
 @font-face {
     font-family: lato;
-    src: url("/fonts/lato");
+    src: url("../fonts/lato");
 }
 
 @font-face {
     font-family: lato;
     font-weight: bold;
-    src: url("/fonts/lato-bold");
+    src: url("../fonts/lato-bold");
 }
 
 body {
@@ -36,26 +36,68 @@ body {
 
 #join-invitation {
     font-size: 40px;
-    margin-bottom: 100px;
-}
-
-.player-info {
-    font-size: 30px;
-}
-
-#player-info-first {
     margin-bottom: 30px;
 }
 
-#player-infos .progressBar {
-    display: inline-block;
-    width: 80vw;
-    height: 2em;
-    background: #000b;
+#start-countdown-info {
+    margin-bottom: 80px;
+    font-size: 40px;
 }
 
-#player-infos .progressBar div {
-    width: 0;
-    height: 100%;
-    background: #f00;
+#players-info {
+    font-size: 30px;
+}
+
+#players-count {
+    font-weight: bold;
+}
+
+#min-players-info {
+    font-size: 30px;
+}
+
+#min-players-count {
+    font-weight: bold;
+}
+
+#question-number {
+    font-size: 40px;
+    margin-bottom: 30px;
+}
+
+#question {
+    font-size: 60px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+#question-info {
+    font-size: 40px;
+    margin-bottom: 40px;
+}
+
+.answer {
+    background-color: #a65050;
+    width: 600px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 40px;
+    font-weight: bold;
+}
+
+#results {
+    width: 50vw;
+    font-size: 2em;
+}
+
+.resultContener {
+    display: flex;
+    width: 100%;
+    border-bottom: 1px solid #fff;
+}
+
+.playerName {
+    flex: 1;
 }

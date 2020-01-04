@@ -1,245 +1,326 @@
+"use strict";
+
 const CLIENT_TYPE_PLAYER = 0;
 
 const ADD_PLAYER = 0;
 const SET_PSEUDO = 1;
 const DEL_PLAYER = 2;
 const PSEUDO_ALREADY_USED = 3;
+const START_GAME_COUNTDOWN = 4;
+const START_GAME = 5;
 
-const State = {
-    NONE: 0,
-    GAME_INFO: 1,
-    PLAYER_LIST: 2,
-    WAITING_ROOM: 3
-}
+const ANSWERS_STATS = 0;
+const END_QUESTION = 1;
 
+const STATE_NONE = 0,
+    STATE_GAME_INFO = 1,
+    STATE_PLAYER_LIST = 2,
+    STATE_WAITING_ROOM = 3,
+    STATE_WAIT_QUESTION = 4,
+    STATE_ANSWER = 5;
 
-const questions = {
-    Q1: {
-        Q: 'Combien y a t-il eu de présidents aux États-Unis ?',
-        R1: '12',
-        R2: '128',
-        R3: '42',
-        R4: '45'
-    },
-    Q2: {
-        Q: `En quelle année a eu lieu l'exposition universelle durant laquelle la Tour Eiffel a été construite ?`,
-        R1: '1890',
-        R2: '1907',
-        R3: '2020',
-        R4: '1887'
-    }
-}
-
-function displayHome() {
+window.onload = function() {
     document.body.innerHTML = `
-	<div id="player-infos">
-		<div class="player-info">Nombre de joueurs connectés : <span class="player-info-value" id="connected-players">...</span></div>
-		<div class="player-info">Nombre de joueurs minimum nécessaires : <span class="player-info-value" id="min-players">...</span></div>
-	</div>
-	<div id="player-pseudo">Votre pseudo est <span id="player-pseudo-value">...</span></div>
-	<div id="new-player-form">
-		<input type="text" placeholder="Entrez votre pseudo" id="pseudo-input" required autofocus><br>
-		<div id="pseudo-error"></div>
-		<button id="send-pseudo-button">Envoyer</button>
-	</div>
+	<div id="players-info">Nombre de joueurs connectés : <span id="players-count">...</span></div>
+	<div id="min-players-info">Nombre de joueurs minimum nécessaires : <span id="min-players-count">...</span></div>
+
+	<div id="player-pseudo-info">Votre pseudo est <span id="player-pseudo">...</span></div>
+	<input id="pseudo-input" type="text" placeholder="Entrez votre pseudo" required autofocus>
+	<div id="pseudo-error"></div>
+	<div id="send-pseudo-button">Envoyer</div>
+
 	<div id="player-list-header">Joueurs connectés</div>
 	<div id="player-list">
 
 	</div>
 	`;
-}
 
-function displayGame(nb) {
-    let jeu;
-    switch (nb) {
-        case 1:
-            jeu = questions.Q1;
-            break;
+    let playersCountHtml = document.getElementById("players-count");
+    let minPlayersCountHtml = document.getElementById("min-players-count");
 
-        case 2:
-            jeu = questions.Q2;
-            break;
+    let playerPseudoInfoHtml = document.getElementById("player-pseudo-info");
 
-        default:
-            break;
+    let pseudoInputHtml = document.getElementById("pseudo-input");
+    let pseudoErrorHtml = document.getElementById("pseudo-error");
+    let sendPseudoButtonHtml = document.getElementById("send-pseudo-button");
+
+    let playerPseudoHtml = document.getElementById("player-pseudo");
+    let playersListHtml = document.getElementById("player-list");
+
+    pseudoInputHtml.onfocus = function() {
+        pseudoErrorHtml.innerHTML = "";
     }
-    document.body.innerHTML = `
-	
-    <div id="moduleQ">
-        <div id="question">` + jeu.Q + `</div><br>
-        <div id="time">Temps restant</div>
-        <div id="progress">
-            <div id="progress2"></div>
-        </div>
-        <div id="reponses">
-            <button id="answer1">` + jeu.R1 + `</button>
-            <button id="answer2">` + jeu.R2 + `</button>
-            <button id="answer3">` + jeu.R3 + `</button>
-            <button id="answer4">` + jeu.R4 + `</button>
-        </div>
-    </div>
 
-    `;
+    sendPseudoButtonHtml.onclick = function() {
+        sock.send(JSON.stringify([pseudoInputHtml.value]));
+        pseudoErrorHtml.innerHTML = "";
+    };
 
-    answers[0] = document.getElementById("answer1");
-    answers[1] = document.getElementById("answer2");
-    answers[2] = document.getElementById("answer3");
-    answers[3] = document.getElementById("answer4");
-}
+    let questionNumberHtml;
+    let questionInfoHtml;
 
-let answers = [];
+    let answersButtonsHtml;
+    let answersStatsHtml;
 
-window.onload = function() {
-    displayHome();
+    let clickedAnswerButtonHtml;
 
-    let questionNumber = 1;
+    let sock = new WebSocket("ws://" + window.location.host);
 
-    const connectedPlayersCount = document.getElementById("connected-players");
-    const minPlayersCount = document.getElementById("min-players");
-
-    const pseudoInput = document.getElementById("pseudo-input");
-    const pseudoError = document.getElementById("pseudo-error");
-    const sendPseudoButton = document.getElementById("send-pseudo-button");
-
-    const playerPseudoHtml = document.getElementById("player-pseudo-value");
-    const playersHtmlList = document.getElementById("player-list");
-
-    const sock = new WebSocket("ws://" + window.location.host);
-
-    let minPlayer = 0;
-    let players;
+    let minPlayersCount;
 
     sock.onopen = function() {
-        let state = State.GAME_INFO;
+        let state = STATE_GAME_INFO;
+        let players; // tableau des pseudos de joueurs
 
         let minPlayersCount = 0;
 
-        let meId;
+        let meId; // mon identifiant de joueur
+
+        let actualQuestion = 0;
+        let questionCountdown;
 
         sock.send(JSON.stringify([CLIENT_TYPE_PLAYER]));
+
+        function displayGame() {
+            document.body.innerHTML = `
+			<div id="question-number">Question 1</div>
+			<div id="question-info"></div>
+			<div id="answer-button1"class="answer-button">
+				<div class="answer-letter">A</div>
+				<div class="answer-stat">0%</div>
+			</div>
+			<div id="answer-button2"class="answer-button">
+				<div class="answer-letter">B</div>
+				<div class="answer-stat">0%</div>
+			</div>
+			<div id="answer-button3"class="answer-button">
+				<div class="answer-letter">C</div>
+				<div class="answer-stat">0%</div>
+			</div>
+			<div id="answer-button4"class="answer-button">
+				<div class="answer-letter">D</div>
+				<div class="answer-stat">0%</div>
+			</div>
+			`;
+
+            resetAnswers();
+
+            questionNumberHtml = document.getElementById("question-number");
+            questionInfoHtml = document.getElementById("question-info");
+
+            answersButtonsHtml = document.getElementsByClassName("answer-button");
+            answersStatsHtml = document.getElementsByClassName("answer-stat");
+
+            for (let i = 0; i < 4; i++) {
+                answersButtonsHtml[i].onclick = function() {
+                    if (clickedAnswerButtonHtml === undefined && state == STATE_ANSWER) {
+                        clickedAnswerButtonHtml = answersButtonsHtml[i];
+                        clickedAnswerButtonHtml.style.border = "solid 2px #fefefe";
+
+                        sock.send(JSON.stringify([i])); // on envoit le numéro de la réponse sélectionnée
+                    }
+                }
+            }
+        }
 
         sock.onmessage = function(json) {
             let msg = JSON.parse(json.data);
 
-            console.log(msg);
-
             switch (state) {
-                case State.GAME_INFO:
-                    players = msg[1];
+                case STATE_GAME_INFO:
+                    {
+                        minPlayersCount = msg[0];
+                        minPlayersCountHtml.innerHTML = minPlayersCount;
 
-                    minPlayersCount.innerHTML = msg[0];
-                    minPlayer = msg[0];
+                        players = msg[1];
+                        playersCountHtml.innerHTML = players.length;
 
-                    connectedPlayersCount.innerHTML = players.length;
+                        meId = msg[2];
 
-                    meId = msg[2];
+                        for (let player of players) {
+                            player.lineHtml = document.createElement("div");
+                            player.lineHtml.classList.add("player-list-player");
+                            player.lineHtml.innerHTML = player.pseudo;
 
-                    for (player of players) {
-                        player.htmlLine = document.createElement("div");
-                        player.htmlLine.classList.add("player-list-player");
-                        player.htmlLine.innerHTML = player.pseudo;
+                            playersListHtml.appendChild(player.lineHtml);
 
-                        playersHtmlList.appendChild(player.htmlLine);
-
-                        if (player.id == meId) {
-                            playerPseudoHtml.innerHTML = player.pseudo;
+                            if (player.id == meId) {
+                                playerPseudoHtml.innerHTML = player.pseudo;
+                            }
                         }
+
+                        state = STATE_WAITING_ROOM;
+                        break;
                     }
 
-                    state = State.WAITING_ROOM;
-                    break;
+                case STATE_WAITING_ROOM:
+                    {
+                        if (msg[0] == ADD_PLAYER) {
+                            let player = {
+                                id: msg[1],
+                                pseudo: msg[2]
+                            };
 
-                case State.GAME:
-                    displayGame(questionNumber);
+                            players.push(player);
 
-                    for (let i = 0; i < answers.length; i++) {
-                        const reponse = answers[i];
-                        reponse.onclick = function() {
-                            sock.send(JSON.stringify([questionNumber, i]));
+                            player.lineHtml = document.createElement("div");
+                            player.lineHtml.classList.add("player-list-player");
+                            player.lineHtml.innerHTML = player.pseudo;
 
-                            questionNumber++;
-                            displayGame(questionNumber);
+                            playersListHtml.appendChild(player.lineHtml);
 
-                            /*for (let j = 0; j < answers.length; j++) {
-                                const element = answers[j];
-                                element.disabled = true;
-                                element.classList.add("disable");
-                            }*/
-                        };
-                    }
+                            playersCountHtml.innerHTML = players.length;
+                        } else if (msg[0] == SET_PSEUDO) {
+                            for (let player of players) { // on récupère le joueur concerné grâce à son id
+                                if (player.id == msg[1]) {
+                                    player.pseudo = msg[2]; // on change le pseudo du joueur
+                                    player.lineHtml.innerHTML = player.pseudo; // on met à jour la liste des joueurs HTML
 
+                                    if (player.id == meId) {
+                                        playerPseudoHtml.innerHTML = player.pseudo;
+                                    }
 
-                    break;
-
-                case State.WAITING_ROOM:
-                    if (msg[0] == ADD_PLAYER) {
-                        let player = {
-                            id: msg[1],
-                            pseudo: msg[2]
-                        };
-                        players.push(player);
-
-                        player.htmlLine = document.createElement("div");
-                        player.htmlLine.classList.add("player-list-player");
-                        player.htmlLine.innerHTML = player.pseudo;
-
-                        playersHtmlList.appendChild(player.htmlLine);
-
-                        connectedPlayersCount.innerHTML = players.length;
-
-                        conditionJeu();
-
-                    } else if (msg[0] == SET_PSEUDO) {
-                        for (player of players) { // on récupère le joueur concerné grâce à son id
-                            if (player.id == msg[1]) {
-                                player.pseudo = msg[2]; // on change le pseudo du joueur
-                                player.htmlLine.innerHTML = player.pseudo; // on met à jour la liste des joueurs HTML
-
-                                if (player.id == meId) {
-                                    playerPseudoHtml.innerHTML = player.pseudo;
-
-
-                                    conditionJeu();
+                                    break;
                                 }
-
-                                break;
                             }
+                        } else if (msg[0] == DEL_PLAYER) {
+                            for (let player of players) {
+                                if (player.id == msg[1]) {
+                                    player.lineHtml.remove();
+                                    players.splice(players.indexOf(player), 1);
+
+                                    playersCountHtml.innerHTML = players.length;
+                                }
+                            }
+                        } else if (msg[0] == PSEUDO_ALREADY_USED) {
+                            pseudoError.innerHTML = "Ce pseudo est déjà utilisé";
+                        } else if (msg[0] == START_GAME_COUNTDOWN) {
+                            let countdownInfoHtml = document.createElement("div");
+                            countdownInfoHtml.id = "start-countdown-info";
+
+                            let textNode = document.createTextNode("La partie commence dans ");
+                            countdownInfoHtml.appendChild(textNode);
+
+                            let time = msg[1];
+
+                            let countdownHtml = document.createElement("span");
+                            countdownHtml.id = "start-countdown";
+                            countdownHtml.innerHTML = time;
+
+                            countdownInfoHtml.appendChild(countdownHtml);
+                            document.body.insertBefore(countdownInfoHtml, playerPseudoInfoHtml)
+
+                            let countdown = setInterval(function() {
+                                time--;
+                                countdownHtml.innerHTML = time;
+
+                                if (time == 0) {
+                                    clearInterval(countdown);
+                                }
+                            }, 1000);
+                        } else if (msg[0] == START_GAME) {
+                            displayGame();
+                            state = STATE_WAIT_QUESTION;
                         }
 
-                    } else if (msg[0] == DEL_PLAYER) {
-                        for (player of players) {
-                            if (player.id == msg[1]) {
-                                player.htmlLine.remove();
-                                players.splice(players.indexOf(player), 1);
-
-                                connectedPlayersCount.innerHTML = players.length;
-                            }
-                        }
-                    } else if (msg[0] == PSEUDO_ALREADY_USED) {
-                        pseudoError.innerHTML = "Ce pseudo est déjà utilisé";
+                        break;
                     }
 
-                    break;
+                case STATE_WAIT_QUESTION:
+                    {
+                        if (clickedAnswerButtonHtml !== undefined) {
+                            clickedAnswerButtonHtml.style.border = "";
+                            clickedAnswerButtonHtml = undefined;
+                        }
+
+                        for (let answerStatHtml of answersStatsHtml) {
+                            answerStatHtml.innerHTML = "";
+                        }
+
+                        actualQuestion++;
+                        questionNumberHtml.innerHTML = "Question " + actualQuestion;
+
+                        resetAnswers();
+
+                        clearInterval(questionCountdown);
+
+                        let time = msg[0];
+
+                        questionInfoHtml.innerHTML = "Temps restant : <span id=\"question-countdown\"></span>"
+
+                        let questionCountdownHtml = document.getElementById("question-countdown");
+                        questionCountdownHtml.innerHTML = time;
+
+                        questionCountdown = setInterval(function() {
+                            time--;
+                            questionCountdownHtml.innerHTML = time;
+
+                            if (time == 0) {
+                                clearTimeout(questionCountdown);
+                            }
+                        }, 1000);
+
+                        state = STATE_ANSWER;
+                        break;
+                    }
+
+                case STATE_ANSWER:
+                    {
+                        if (msg[0] == ANSWERS_STATS) {
+                            for (let i = 0; i < 4; i++) {
+                                answersStatsHtml[i].innerHTML = msg[1][i] + "%";
+                            }
+                        } else if (msg[0] == END_QUESTION) {
+
+                            answerDisplay(msg);
+
+                            if (msg[1]) {
+                                questionInfoHtml.innerHTML = "Bonne réponse !";
+                            } else {
+                                questionInfoHtml.innerHTML = "Mauvaise réponse...";
+                            }
+
+                            state = STATE_WAIT_QUESTION;
+                        }
+
+                        break;
+                    }
             }
         };
-
-        pseudoInput.onfocus = function() {
-            pseudoError.innerHTML = "";
-        }
-
-        sendPseudoButton.onclick = function() {
-            sock.send(JSON.stringify([pseudoInput.value]));
-            pseudoError.innerHTML = "";
-
-            conditionJeu();
-        };
-
-        function conditionJeu() {
-            if (players.length >= minPlayer && minPlayer != 0) {
-                state = State.GAME;
-                console.log("JEU");
-            }
-        }
     };
+}
 
+
+
+//Changement de la couleur des boutons selon la réponse
+function answerDisplay(msg) {
+    let buttonList = getLabels();
+    colorButtons(buttonList, "#BB0B0B");
+
+    buttonList[msg[2]].style.backgroundColor = "#22780F";
+}
+
+//Changement de la couleur des boutons avec la couleur par défaut
+function resetAnswers() {
+    let buttonList = getLabels();
+    colorButtons(buttonList, "#a65050");
+}
+
+//Remplissage d'une liste de boutons
+function getLabels() {
+    let buttonList = new Array();
+    buttonList[0] = document.getElementById("answer-button1");
+    buttonList[1] = document.getElementById("answer-button2");
+    buttonList[2] = document.getElementById("answer-button3");
+    buttonList[3] = document.getElementById("answer-button4");
+
+    return buttonList;
+}
+
+//Coloration des boutons
+function colorButtons(buttonList, color) {
+    for (const bouton in buttonList) {
+        const element = buttonList[bouton];
+        element.style.backgroundColor = color;
+    }
 }

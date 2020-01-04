@@ -1,0 +1,56 @@
+[
+    [
+        "Comment s'appelait le président des États-Unis en 1995 ?", [
+            "Barack Obama",
+            "Jimmy Carter",
+            "Georges H. W. Bush",
+            "Bill Clinton"
+        ],
+        3,
+        15
+    ],
+
+    [
+        "En quelle année le premier iPhone est sorti ?", [
+            2005,
+            2007,
+            2013,
+            2009
+        ],
+        1,
+        15
+    ],
+
+    [
+        "Quel est le plus haut bâtiment de Paris ?", [
+            "l'hôtel Hyatt Regency",
+            "la Tour Eiffel",
+            "la tour Montparnasse",
+            "le dôme des Invalides"
+        ],
+        1,
+        10
+    ],
+
+    [
+        "Combien de fois la chanson All I Want for Christmas Is You de Mariah Carey a-t-elle été écoutée sur Spotify ?", [
+            "entre 200 millions et 400 millions",
+            "entre 500 millions et 600 millions",
+            "entre 1 milliard et 2 milliards",
+            "entre 600 et 700 millions"
+        ],
+        3,
+        6
+    ],
+
+    [
+        "De quelle région, pays ou ville vient la raclette ?", [
+            "Annecy",
+            "Haute-Savoie",
+            "Savoie",
+            "Suisse"
+        ],
+        3,
+        5
+    ]
+]
