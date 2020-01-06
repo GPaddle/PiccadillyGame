@@ -1,100 +1,100 @@
 @font-face {
-    font-family: lato;
-    src: url("../fonts/lato");
+	font-family: lato;
+	src: url("../fonts/lato");
 }
 
 @font-face {
-    font-family: lato;
-    font-weight: bold;
-    src: url("../fonts/lato-bold");
+	font-family: lato;
+	font-weight: bold;
+	src: url("../fonts/lato-bold");
 }
 
 body {
-    background-color: #7a2c2c;
-    color: #fefefe;
-    font-family: lato;
-    height: 100vh;
-    margin: 0px;
-    padding: 20px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+	background-color: #7a2c2c;
+	color: #fefefe;
+	font-family: lato;
+	height: 100vh;
+	margin: 0px;
+	padding: 20px;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
 }
 
 #javascript-error {
-    font-size: 60px;
-    text-align: center;
+	font-size: 60px;
+	text-align: center;
 }
 
 #service-name {
-    font-size: 90px;
-    font-weight: bold;
-    margin-bottom: 50px;
+	font-size: 90px;
+	font-weight: bold;
+	margin-bottom: 50px;
 }
 
 #join-invitation {
-    font-size: 40px;
-    margin-bottom: 30px;
+	font-size: 40px;
+	margin-bottom: 30px;
 }
 
 #start-countdown-info {
-    margin-bottom: 80px;
-    font-size: 40px;
+	margin-bottom: 80px;
+	font-size: 40px;
 }
 
 #players-info {
-    font-size: 30px;
+	font-size: 30px;
 }
 
 #players-count {
-    font-weight: bold;
+	font-weight: bold;
 }
 
 #min-players-info {
-    font-size: 30px;
+	font-size: 30px;
 }
 
 #min-players-count {
-    font-weight: bold;
+	font-weight: bold;
 }
 
 #question-number {
-    font-size: 40px;
-    margin-bottom: 30px;
+	font-size: 40px;
+	margin-bottom: 30px;
 }
 
 #question {
-    font-size: 60px;
-    font-weight: bold;
-    margin-bottom: 30px;
-    text-align: center;
+	font-size: 60px;
+	font-weight: bold;
+	margin-bottom: 30px;
+	text-align: center;
 }
 
 #question-info {
-    font-size: 40px;
-    margin-bottom: 40px;
+	font-size: 40px;
+	margin-bottom: 40px;
 }
 
 .answer {
-    background-color: #a65050;
-    width: 600px;
-    padding: 10px 20px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    font-size: 40px;
-    font-weight: bold;
+	background-color: #a65050;
+	width: 600px;
+	padding: 10px 20px;
+	border-radius: 5px;
+	margin-bottom: 20px;
+	font-size: 40px;
+	font-weight: bold;
 }
 
 #results-header {
-    font-size: 50px;
-    font-weight: bold;
-    margin-bottom: 50px;
+	font-size: 50px;
+	font-weight: bold;
+	margin-bottom: 50px;
 }
 
 #results {
-    font-size: 24px;
+	font-size: 24px;
 }
 
 .result:nth-child(n+2) {
@@ -102,17 +102,17 @@ body {
 }
 
 .result {
-    display: flex;
-    width: 500px;
+	display: flex;
+	width: 500px;
 }
 
 .result-pseudo {
-    padding: 10px;
-    background: #551d1d;
-    flex: 1;
+	padding: 10px;
+	background: #551d1d;
+	flex: 1;
 }
 
 .result-score {
-    padding: 10px;
-    background: #351212;
+	padding: 10px;
+	background: #351212;
 }
