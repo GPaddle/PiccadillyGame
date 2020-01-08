@@ -265,15 +265,15 @@ module.exports = function(httpServer) {
 				screensSocks.splice(screensSocks.indexOf(sock), 1);
 			} else {
 				playersSocks.splice(playersSocks.indexOf(sock), 1);
-			}
 
-			if(state == STATE_WAITING_ROOM) {
-				for(let screenSock of screensSocks) {
-					screenSock.send(JSON.stringify([DEL_PLAYER]));
-				}
+				if(state == STATE_WAITING_ROOM) {
+					for(let screenSock of screensSocks) {
+						screenSock.send(JSON.stringify([DEL_PLAYER]));
+					}
 
-				for(let playerSock of playersSocks) {
-					playerSock.send(JSON.stringify([DEL_PLAYER, sock.player.id]));
+					for(let playerSock of playersSocks) {
+						playerSock.send(JSON.stringify([DEL_PLAYER, sock.player.id]));
+					}
 				}
 			}
 		});
