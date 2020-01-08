@@ -12,11 +12,10 @@ const NEW_QUESTION = 0,
 
 const SECRET_SCREEN_KEY = "7116dd23254dc1a8";
 
-const STATE_GAME_INFO = 0,
-	STATE_WAITING_ROOM = 1,
-	STATE_WAIT_QUESTION = 2,
-	STATE_ANSWER = 3,
-	STATE_RESULTS = 4;
+const WAIT_GAME_INFO = 0,
+	WAIT_WAITING_ROOM_EVENT = 1,
+	WAIT_QUESTION = 2,
+	WAIT_ANSWER = 3;
 
 window.onload = function() {
 	document.body.innerHTML = `
@@ -29,7 +28,7 @@ window.onload = function() {
 	const sock = new WebSocket("ws://" + window.location.host);
 
 	sock.onopen = function() {
-		let state = STATE_GAME_INFO;
+		let state = WAIT_GAME_INFO;
 
 		let playersCount = 0;
 
@@ -44,7 +43,7 @@ window.onload = function() {
 			let msg = JSON.parse(json.data);
 
 			switch (state) {
-				case STATE_GAME_INFO: {
+				case WAIT_GAME_INFO: {
 					let minPlayersCount = document.getElementById("min-players-count");
 					minPlayersCount.innerHTML = msg[0];
 
@@ -53,11 +52,11 @@ window.onload = function() {
 					let playersCountSpan = document.getElementById("players-count");
 					playersCountSpan.innerHTML = playersCount;
 
-					state = STATE_WAITING_ROOM;
+					state = WAIT_WAITING_ROOM_EVENT;
 					break;
 				}
 
-				case STATE_WAITING_ROOM: {
+				case WAIT_WAITING_ROOM_EVENT: {
 					if(msg[0] == ADD_PLAYER) {
 						playersCount++;
 
@@ -114,13 +113,13 @@ window.onload = function() {
 						</div>
 						`;
 
-						state = STATE_WAIT_QUESTION;
+						state = WAIT_QUESTION;
 					}
 
 					break;
 				}
 
-				case STATE_WAIT_QUESTION: {
+				case WAIT_QUESTION: {
 					if(msg[0] == NEW_QUESTION) {
 						clearInterval(questionCountdown);
 						questionNumber++;
@@ -159,7 +158,7 @@ window.onload = function() {
 							}
 						}, 1000);
 
-						state = STATE_ANSWER;
+						state = WAIT_ANSWER;
 					} else if(msg[0] == END_GAME) {
 						document.body.innerHTML = `<div id="results-header">Résultats</div><div id="results"></div>`;
 
@@ -178,7 +177,7 @@ window.onload = function() {
 
 				}
 
-				case STATE_ANSWER: {
+				case WAIT_ANSWER: {
 					let questionInfo = document.getElementById("question-info");
 					questionInfo.innerHTML = "La bonne réponse était \"" + questionAnswers[msg[0]] + "\"";
 
@@ -190,7 +189,7 @@ window.onload = function() {
 
 					answers[msg[0]].style.backgroundColor = "#22780f";
 
-					state = STATE_WAIT_QUESTION;
+					state = WAIT_QUESTION;
 					break;
 				}
 			}

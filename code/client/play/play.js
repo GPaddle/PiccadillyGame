@@ -14,12 +14,11 @@ const NEW_QUESTION = 0,
 	END_QUESTION = 2,
 	END_GAME = 3;
 
-const STATE_NONE = 0,
-	STATE_GAME_INFO = 1,
-	STATE_PLAYER_LIST = 2,
-	STATE_WAITING_ROOM = 3,
-	STATE_WAIT_QUESTION = 4,
-	STATE_ANSWER = 5;
+const WAIT_NOTHING = 0,
+	WAIT_GAME_INFO = 1,
+	WAIT_WAITING_ROOM_EVENT = 2,
+	WAIT_QUESTION = 3,
+	WAIT_QUESTION_EVENT = 4;
 
 window.onload = function() {
 	document.body.innerHTML = `
@@ -54,7 +53,7 @@ window.onload = function() {
 	let sock = new WebSocket("ws://" + window.location.host);
 
 	sock.onopen = function() {
-		let state = STATE_GAME_INFO;
+		let state = WAIT_GAME_INFO;
 		let players; // tableau des pseudos de joueurs
 
 		let meId; // mon identifiant de joueur
@@ -104,7 +103,7 @@ window.onload = function() {
 
 			for(let i = 0; i < 4; i++) {
 				answersButtons[i].onclick = function() {
-					if(chosenAnswer === undefined && state == STATE_ANSWER) {
+					if(chosenAnswer === undefined && state == WAIT_QUESTION_EVENT) {
 						chosenAnswer = i;
 						answersButtons[chosenAnswer].style.border = "solid 2px #fefefe";
 
@@ -118,7 +117,7 @@ window.onload = function() {
 			let msg = JSON.parse(json.data);
 
 			switch (state) {
-				case STATE_GAME_INFO: {
+				case WAIT_GAME_INFO: {
 					let minPlayersCount = document.getElementById("min-players-count");
 					minPlayersCount.innerHTML = msg[0];
 
@@ -150,11 +149,11 @@ window.onload = function() {
 						}
 					}
 
-					state = STATE_WAITING_ROOM;
+					state = WAIT_WAITING_ROOM_EVENT;
 					break;
 				}
 
-				case STATE_WAITING_ROOM: {
+				case WAIT_WAITING_ROOM_EVENT: {
 					if(msg[0] == ADD_PLAYER) {
 						let player = {
 							id: msg[1],
@@ -227,13 +226,13 @@ window.onload = function() {
 						}, 1000);
 					} else if(msg[0] == START_GAME) {
 						displayGame();
-						state = STATE_WAIT_QUESTION;
+						state = WAIT_QUESTION;
 					}
 
 					break;
 				}
 
-				case STATE_WAIT_QUESTION: {
+				case WAIT_QUESTION: {
 					if(msg[0] == NEW_QUESTION) {
 						if(chosenAnswer !== undefined) {
 							let clickedAnswerButton = document.getElementsByClassName("answer-button")[chosenAnswer];
@@ -280,12 +279,12 @@ window.onload = function() {
 							}
 						}, 1000);
 
-						state = STATE_ANSWER;
+						state = WAIT_QUESTION_EVENT;
 						break;
 					}
 				}
 
-				case STATE_ANSWER: {
+				case WAIT_QUESTION_EVENT: {
 					if(msg[0] == ANSWERS_STATS) {
 						let answersStats = document.getElementsByClassName("answer-stat");
 						let answersStatsBars = document.getElementsByClassName("answer-stat-bar")
@@ -311,7 +310,7 @@ window.onload = function() {
 							questionInfo.innerHTML = "Mauvaise réponse...";
 						}
 
-						state = STATE_WAIT_QUESTION;
+						state = WAIT_QUESTION;
 					} else if(msg[0] == END_GAME) {
 						let questionInfo = document.getElementById("question-info");
 						questionInfo.innerHTML = "Fin de la partie";

@@ -23,12 +23,10 @@ const NEW_QUESTION = 0,
 
 const RESULTS = 0;
 
-const STATE_NONE = 0,
-	STATE_WAITING_ROOM = 1,
-	STATE_AUTH = 2,
-	STATE_PSEUDO = 3,
-	STATE_GAME = 4,
-	STATE_RESULTS = 5;
+const WAIT_NOTHING = 0,
+	WAIT_AUTH = 1,
+	WAIT_PSEUDO = 2,
+	WAIT_ANSWER = 3;
 
 let file;
 
@@ -48,8 +46,6 @@ module.exports = function(httpServer) {
 	let screensSocks = [];
 	const playersSocks = [];
 
-	let state = STATE_WAITING_ROOM;
-
 	let nextPlayerId = 0;
 
 	let actualQuestion = -1;
@@ -58,8 +54,9 @@ module.exports = function(httpServer) {
 
 	let questionEndTime;
 
+	let itsWaitingRoom = true;
+
 	function nextQuestion() {
-		state = STATE_GAME;
 		actualQuestion++;
 
 		if(actualQuestion == questions.length) {
@@ -80,6 +77,7 @@ module.exports = function(httpServer) {
 
 			for(let playerSock of playersSocks) {
 				playerSock.send(JSON.stringify([NEW_QUESTION, question.time])); // on envoit uniquement le temps de la question aux joueurs, l'intitulé de la question sera affiché sur les grands écrans
+				playerSock.state = WAIT_ANSWER;
 			}
 
 			let screenSockQuestion = [NEW_QUESTION, question.title];
@@ -97,14 +95,13 @@ module.exports = function(httpServer) {
 			}
 
 			setTimeout(function() {
-				state = STATE_NONE;
-
 				for(let screenSock of screensSocks) {
 					screenSock.send(JSON.stringify([question.correctAnswer]));
 				}
 
 				for(let playerSock of playersSocks) {
 					playerSock.send(JSON.stringify([END_QUESTION, question.correctAnswer])); // on envoit la bonne réponse aux joueurs
+					playerSock.state = WAIT_NOTHING;
 				}
 
 				let time = TEST_MODE ? 1000 : 6000;
@@ -114,7 +111,7 @@ module.exports = function(httpServer) {
 	}
 
 	wss.on("connection", function(sock) {
-		sock.state = STATE_AUTH;
+		sock.state = WAIT_AUTH;
 
 		let authTimeout = setTimeout(function() {
 			sock.close();
@@ -123,112 +120,108 @@ module.exports = function(httpServer) {
 		sock.on("message", function(json) {
 			let msg = JSON.parse(json);
 
-			switch (state) {
-				case STATE_WAITING_ROOM: {
-					switch (sock.state) {
-						case STATE_AUTH: {
-							if(msg[0] == CLIENT_TYPE_PLAYER) {
-								clearTimeout(authTimeout);
+			switch (sock.state) {
+				case WAIT_AUTH: {
+					if(msg[0] == CLIENT_TYPE_PLAYER) {
+						clearTimeout(authTimeout);
 
-								sock.player = {};
+						sock.player = {};
 
-								sock.player.id = nextPlayerId;
-								nextPlayerId++;
+						sock.player.id = nextPlayerId;
+						nextPlayerId++;
 
-								sock.player.answers = [];
-								sock.player.pseudo = "un inconnu";
+						sock.player.answers = [];
+						sock.player.pseudo = "un inconnu";
+
+						for(let screenSock of screensSocks) {
+							screenSock.send(JSON.stringify([ADD_PLAYER]));
+						}
+
+						// format de la trame sérialisée : MIN_PLAYER, nbJoueur, id, "pseudo", id, "pseudo"...id, "pseudo", idPerso
+
+						let gameInfo = [MIN_PLAYER, playersSocks.length + 1];
+
+						for(let i = 0; i < playersSocks.length; i++) {
+							playersSocks[i].send(JSON.stringify([ADD_PLAYER, sock.player.id, sock.player.pseudo]));
+
+							gameInfo[2 + i * 2] = playersSocks[i].player.id;
+							gameInfo[3 + i * 2] = playersSocks[i].player.pseudo;
+						}
+
+						gameInfo[2 + playersSocks.length * 2] = sock.player.id;
+						gameInfo[3 + playersSocks.length * 2] = sock.player.pseudo;
+
+						gameInfo[4 + playersSocks.length * 2] = sock.player.id;
+
+						sock.send(JSON.stringify(gameInfo));
+						sock.state = WAIT_PSEUDO;
+
+						playersSocks.push(sock);
+
+						if(playersSocks.length >= MIN_PLAYER && startCountdown === undefined) {
+							for(let playerSock of playersSocks) {
+								playerSock.send(JSON.stringify([START_GAME_COUNTDOWN, GAME_COUNT_DOWN_TIME]));
+							}
+
+							for(let screenSock of screensSocks) {
+								screenSock.send(JSON.stringify([START_GAME_COUNTDOWN, GAME_COUNT_DOWN_TIME]));
+							}
+
+							startCountdown = setTimeout(function() {
+								for(let playerSock of playersSocks) {
+									playerSock.player.score = 0;
+									playerSock.send(JSON.stringify([START_GAME])); // on dit aux joueurs que la partie commence (pour qu'ils affichent l'interface des questions)
+								}
 
 								for(let screenSock of screensSocks) {
-									screenSock.send(JSON.stringify([ADD_PLAYER]));
+									screenSock.send(JSON.stringify([START_GAME]));
 								}
 
-								// format de la trame sérialisée : MIN_PLAYER, nbJoueur, id, "pseudo", id, "pseudo"...id, "pseudo", idPerso
+								itsWaitingRoom = false;
 
-								let gameInfo = [MIN_PLAYER, playersSocks.length + 1];
-
-								for(let i = 0; i < playersSocks.length; i++) {
-									playersSocks[i].send(JSON.stringify([ADD_PLAYER, sock.player.id, sock.player.pseudo]));
-
-									gameInfo[2 + i * 2] = playersSocks[i].player.id;
-									gameInfo[3 + i * 2] = playersSocks[i].player.pseudo;
-								}
-
-								gameInfo[2 + playersSocks.length * 2] = sock.player.id;
-								gameInfo[3 + playersSocks.length * 2] = sock.player.pseudo;
-
-								gameInfo[4 + playersSocks.length * 2] = sock.player.id;
-
-								sock.send(JSON.stringify(gameInfo));
-								sock.state = STATE_PSEUDO;
-
-								playersSocks.push(sock);
-
-								if(playersSocks.length >= MIN_PLAYER && startCountdown === undefined) {
-									for(let playerSock of playersSocks) {
-										playerSock.send(JSON.stringify([START_GAME_COUNTDOWN, GAME_COUNT_DOWN_TIME]));
-									}
-
-									for(let screenSock of screensSocks) {
-										screenSock.send(JSON.stringify([START_GAME_COUNTDOWN, GAME_COUNT_DOWN_TIME]));
-									}
-
-									startCountdown = setTimeout(function() {
-										for(let playerSock of playersSocks) {
-											playerSock.player.score = 0;
-											playerSock.send(JSON.stringify([START_GAME])); // on dit aux joueurs que la partie commence (pour qu'ils affichent l'interface des questions)
-										}
-
-										for(let screenSock of screensSocks) {
-											screenSock.send(JSON.stringify([START_GAME]));
-										}
-
-										nextQuestion(); // on envoit la première question
-									}, GAME_COUNT_DOWN_TIME * 1000); // quand on a assez de joueurs on lance la partie dans 15 secondes
-								}
-							} else if(msg[0] == CLIENT_TYPE_SCREEN && msg[1] == SCREEN_SECRET_KEY) {
-								clearTimeout(authTimeout);
-
-								sock.send(JSON.stringify([MIN_PLAYER, playersSocks.length]));
-								sock.state = STATE_NONE;
-
-								screensSocks.push(sock);
-							} else {
-								sock.close();
-							}
-
-							break;
+								nextQuestion(); // on envoit la première question
+							}, GAME_COUNT_DOWN_TIME * 1000); // quand on a assez de joueurs on lance la partie dans 15 secondes
 						}
+					} else if(msg[0] == CLIENT_TYPE_SCREEN && msg[1] == SCREEN_SECRET_KEY) {
+						clearTimeout(authTimeout);
 
-						case STATE_PSEUDO: {
-							let isPseudoFree = true;
+						sock.send(JSON.stringify([MIN_PLAYER, playersSocks.length]));
+						sock.state = WAIT_NOTHING;
 
-							for(let playerSock of playersSocks) {
-								if(msg[0] == playerSock.player.pseudo) {
-									isPseudoFree = false;
-									break;
-								}
-							}
-
-							if(isPseudoFree) {
-								sock.player.pseudo = msg[0];
-
-								for(let playerSock of playersSocks) {
-									playerSock.send(JSON.stringify([SET_PSEUDO, sock.player.id, sock.player.pseudo]));
-								}
-
-								sock.state = STATE_NONE;
-							} else {
-								sock.send(JSON.stringify([PSEUDO_ALREADY_USED]));
-							}
-
-							break;
-						}
+						screensSocks.push(sock);
+					} else {
+						sock.close();
 					}
 
 					break;
 				}
 
-				case STATE_GAME: {
+				case WAIT_PSEUDO: {
+					let isPseudoFree = true;
+
+					for(let playerSock of playersSocks) {
+						if(msg[0] == playerSock.player.pseudo) {
+							isPseudoFree = false;
+							break;
+						}
+					}
+
+					if(isPseudoFree) {
+						sock.player.pseudo = msg[0];
+
+						for(let playerSock of playersSocks) {
+							playerSock.send(JSON.stringify([SET_PSEUDO, sock.player.id, sock.player.pseudo]));
+						}
+
+						sock.state = WAIT_NOTHING;
+					} else {
+						sock.send(JSON.stringify([PSEUDO_ALREADY_USED]));
+					}
+
+					break;
+				}
+
+				case WAIT_ANSWER: {
 					if(sock.player.answers[actualQuestion] === undefined && msg[0] >= 0 && msg[0] <= 3) { // si le joueur n'a pas encore donné de réponse et si le code de réponse est 0, 1, 2 ou 3
 						if(msg[0] == questions[actualQuestion].correctAnswer) {
 							sock.player.score += questionEndTime - Date.now();
@@ -266,7 +259,7 @@ module.exports = function(httpServer) {
 			} else {
 				playersSocks.splice(playersSocks.indexOf(sock), 1);
 
-				if(state == STATE_WAITING_ROOM) {
+				if(itsWaitingRoom) {
 					for(let screenSock of screensSocks) {
 						screenSock.send(JSON.stringify([DEL_PLAYER]));
 					}
