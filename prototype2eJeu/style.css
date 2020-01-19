@@ -1,5 +1,89 @@
-#canvas{
-	background: #fdd;
-	width: 700px;
-	height: 300px;
+*{
+	margin: 0;
+	padding: 0;
+}
+.joueur {
+	height: 1.5em;
+	width: 1.5em;
+	border-radius: 25%;
+	filter: blur(0.4px);
+}
+
+.joueur,
+#gate {
+	position: absolute;
+}
+
+#gate {
+	right: 20px;
+	top: 0;
+	bottom: 0;
+	width: 2em;
+	height: inherit;
+	display: flex;
+	flex-direction: column;
+}
+
+#hole {
+	background: transparent;
+	height: 100px;
+}
+
+#topGate,
+#bottomGate {
+	width: 1em;
+	height: 1em;
+	border-radius: 50%;
+	position: absolute;
+	filter: blur(0.4px);
+}
+
+#bottomGate {
+	background: #b33;
+	box-shadow: #b33 -5px 4px 10px -1px;
+}
+
+#topGate {
+	background: #33b;
+	box-shadow: #33b -5px 4px 10px -1px;
+}
+
+#game {
+
+	border: 1px #000 dotted;
+
+	height: 350px;
+	width: 100%;
+}
+
+#j1 {
+	background: #b00;
+	box-shadow: #b00 -5px 3px 6px;
+	left: 2em;
+}
+
+/*
+.joueur::before{
+	content : ' ';
+	position: absolute;
+	top: 5px;
+	left: -5px;
+	bottom: -5px;
+	right: 5px;
+	z-index: -1;
+	filter: blur(20px);
+}
+
+#j2::before{
+	background: #b00 ;
+}
+
+#j2::before{
+	background: #ba5;
+}*/
+
+#j2 {
+	background: #ba5;
+	box-shadow: #ba5 -5px 3px 6px;
+	left: 4.5em;
 }

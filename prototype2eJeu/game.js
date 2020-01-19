@@ -1,24 +1,43 @@
 window.onload = function () {
 
-	canvas = document.getElementById('canvas');
+	playerList.push(this.document.getElementById("j1"));
+	playerList.push(this.document.getElementById("j2"));
+	gates.push(this.document.getElementById("topGate"));
+	gates.push(this.document.getElementById("hole"));
+	gates.push(this.document.getElementById("bottomGate"));
 
-	canvas.height = 300;
-	canvas.width = 700;
+	let game = this.document.getElementById("game");
+	this.console.log(game);
 
-	height = canvas.height;
-	width = canvas.width;
+	height = Math.max(document.documentElement.clientHeight,window.innerHeight || 0)*3/4;
+	width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+	this.console.log(width);
+	let y1 = 20, y2 = 30, x = 20;
 
 	score = document.getElementById('score');
 
 	jeu = new Jeu(2);
 
-	gameLoop = window.setInterval(function () {
-		jeu.majGraph();
-	}, 20);
+	const test = 0;
 
+	if (test) {
+
+		jeu.majGraph();
+
+	} else {
+		gameLoop = window.setInterval(function () {
+			jeu.majGraph();
+		}, 25);
+	}
 }
 
+let gates = [];
+
+let playerList = [];
 let score;
+
+//1.5em 
+const PLAYER_SIZE = 1.5 * 16;
 
 let gameLoop;
 
@@ -46,6 +65,7 @@ let nbVivant;
 
 
 
+const V_MAX = 30;
 
 /**
  * Classe représentant le jeu dans sa globalité (porte + joueurs)
@@ -56,29 +76,40 @@ class Jeu {
 
 	constructor(nbJoueurs) {
 
-		this.joueurs = [new Joueur(0)];
+		this.joueurs = [];
 
-		for (let index = 1; index < nbJoueurs; index++) {
-			this.joueurs.push(new Joueur(index));
+		for (let index = 0; index < nbJoueurs; index++) {
+			this.joueurs.push(new Joueur(index, playerList[index]));
 		}
-		this.porte = new Porte(20, 100);
+
+		let ecart = 150;
+		this.porte = new Porte(Math.floor(Math.random() * height - ecart), ecart, gate);
 
 		nbVivant = nbJoueurs;
 	}
 
 
 	majGraph() {
-		ctx = canvas.getContext('2d');
-		ctx.clearRect(0, 0, width, height);
 
-		if (speed < 25) {
+
+		if (speed < V_MAX) {
 			speed = Math.log2(nbTours + 2) ** 2;
 		}
 
-		//TODO
-		this.porte.avancer(speed * 3);
+		speed = 5;
+		//Avancement des portes
+		//TODO relier à des sockets
+
+
+		//		this.porte.avancer(speed * 3);
+
+
+		this.porte.avancer(speed * 5);
 		this.porte.majGraph();
 
+
+
+		//Avancement des joueurs
 
 		for (const player of this.joueurs) {
 
@@ -92,29 +123,39 @@ class Jeu {
 
 			player.deplacement(Math.floor(Math.random() * 2 * direction * speed / (Math.log2(3) ** 2)));
 
-			if (!this.porte.collision(20 + player.diametre * player.nb, player.y)) {
+			//			console.log(player);
+
+			if (!this.porte.collision(width - (20 + player.diametre * player.nb), player.y)) {
+
+				console.log("EEE");
+				console.log(player.y + " " + this.porte.hautPorte);
+				console.log(this.porte.hautPorte + this.porte.ecart);
+				console.log("EEE");
+
 				player.vivant = false;
 				nbVivant--;
 			}
+
 			player.majGraph();
 
-			
+
+			//Score
+
+
 			score.innerHTML = nbTours;
 
-
-			if (nbVivant == 0) {
-				clearInterval(gameLoop);
-
-				ctx.clearRect(0, 0, width, height);
-				ctx.fillStyle='rgb(100,0,0)';
-				ctx.font = '50px sans-serif';
-				ctx.fillText('Fin du jeu', 10, 50);
-			}
+		}
+		if (nbVivant == 0) {
+			clearInterval(gameLoop);
+			document.body.innerHTML = `
+			<div id="game">
+				<h1>Fin du jeu : meilleur score : `+ nbTours + `</h1>
+			</div>
+			`;
 		}
 
 	}
 }
-
 
 /**
  * Classe représentant le joueur (position + état)
@@ -122,22 +163,14 @@ class Jeu {
 
 class Joueur {
 
-	constructor(nb) {
+	constructor(nb, objetHTML) {
+		this.html = objetHTML;
 		this.nb = nb;
+
+		//ICI
 		this.y = height / 2;
 		this.diametre = 20;
 		this.vivant = true;
-
-		this.img = new Image();
-
-		switch (nb) {
-			case 0:
-				this.img.src = './Ski1.png';
-				break;
-			case 1:
-				this.img.src = './Ski2.png';
-				break;
-		}
 	}
 
 	deplacement(y) {
@@ -148,31 +181,22 @@ class Joueur {
 
 	majGraph() {
 		if (this.vivant) {
-
-			ctx.fillStyle = 'rgb(' + 100 * this.nb + ',0,0)';
-			ctx.beginPath();
-			ctx.arc(20 + this.nb * this.diametre, this.y, this.diametre / 2, 0, 2 * Math.PI);
-			ctx.fill();
-
-			/*
-	
-	ctx.drawImage(this.img, 20 + this.nb * this.diametre, this.y - 20);
-	*/
-
-			//		ctx.arc(20 + this.nb * 20, this.y, 20, 0, Math.PI * 2, false);
-
+			this.html.style.top = this.y - PLAYER_SIZE / 2 + "px";
+		} else {
+			this.html.style.display = "none";
 		}
 	}
 }
 
 
+const DIAMETRE_PORTE = 1;
 
 /**
  * Classe représentant la porte (position)
  */
 
 class Porte {
-	constructor(hautPorte, ecart) {
+	constructor(hautPorte, ecart, objetHTML) {
 
 		this.hautPorte = hautPorte;
 		this.ecart = ecart;
@@ -180,19 +204,15 @@ class Porte {
 		this.x = width;
 
 		yTarget = this.hautPorte;
-/*
-		this.img = new Image();
-		this.img.src = './DrapeauB.png';
-		this.img2 = new Image();
-		this.img2.src = './DrapeauR.png';
-*/
+
+		this.html = objetHTML;
 	}
 
 	avancer(dx) {
-		if (this.x <= 0) {
-			this.x = width;
+		if (this.x >= width) {
+			this.x = 0;
 
-			this.ecart = this.ecart >= 60 ? this.ecart -= 5 : this.ecart;
+			this.ecart = this.ecart >= 60 ? this.ecart - 5 : this.ecart;
 			this.hautPorte = Math.floor(Math.random() * (height - this.ecart * 2)) + this.ecart;
 
 			yTarget = this.hautPorte;
@@ -203,27 +223,17 @@ class Porte {
 			//			console.log("redemarre");
 
 		} else {
-			this.x -= dx;
+			this.x += dx;
 			//			console.log("avance");
 		}
 	}
 
 	majGraph() {
+		gate.style.right = this.x + "px";
+		gates[0].style.top = this.hautPorte - (PLAYER_SIZE + DIAMETRE_PORTE) + "px";
+		gates[1].style.height = this.ecart + "px";
+		gates[2].style.bottom = (height - this.hautPorte - this.ecart - (PLAYER_SIZE + DIAMETRE_PORTE)) + "px";
 
-		ctx.beginPath();
-		ctx.fillStyle = '#f00';
-		ctx.arc(this.x, this.hautPorte, 5, 0, 2 * Math.PI);
-		ctx.fill();
-
-		ctx.beginPath();
-		ctx.fillStyle = '#00f';
-		ctx.arc(this.x, this.hautPorte + this.ecart, 5, 0, 2 * Math.PI);
-		ctx.fill();
-
-		/*
-		ctx.drawImage(this.img,this.x,this.hautPorte-10);
-		ctx.drawImage(this.img2,this.x,this.hautPorte+this.ecart-10);
-	*/
 	}
 
 	collision(x, y) {
