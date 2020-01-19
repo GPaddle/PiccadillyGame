@@ -1,7 +1,9 @@
-*{
+* {
 	margin: 0;
 	padding: 0;
+	font-family: sans-serif;
 }
+
 .joueur {
 	height: 1.5em;
 	width: 1.5em;
@@ -56,34 +58,45 @@
 	width: 100%;
 }
 
-#j1 {
-	background: #b00;
-	box-shadow: #b00 -5px 3px 6px;
-	left: 2em;
+
+#endGame {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	transform: translateY(100%);
 }
 
-/*
-.joueur::before{
-	content : ' ';
+#tableScore {
+	display: flex;
+}
+
+.scoreJoueur {
+	height: 30px;
+	width: 100%;
+	margin: 7px;
+	border-radius: 10px;
+	color: #fff;
+	text-align: center;
+}
+
+.scoreJoueur::before {
+	content: ' ';
+	background:
+		#fff4;
+	display: block;
+	transform: skewX(30deg) translateX(-10px);
 	position: absolute;
-	top: 5px;
-	left: -5px;
-	bottom: -5px;
-	right: 5px;
-	z-index: -1;
-	filter: blur(20px);
+	width: 5%;
+	height: 7%;
 }
 
-#j2::before{
-	background: #b00 ;
+.out {
+	color: #000;
+	background: #444 !important;
+	width: 40%;
 }
 
-#j2::before{
-	background: #ba5;
-}*/
-
-#j2 {
-	background: #ba5;
-	box-shadow: #ba5 -5px 3px 6px;
-	left: 4.5em;
+#textScore {
+	margin: 2em;
+	text-align: center;
 }

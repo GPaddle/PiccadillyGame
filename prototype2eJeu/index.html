@@ -1,26 +1,29 @@
 <!DOCTYPE html>
 <html lang="fr">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<meta http-equiv="X-UA-Compatible" content="ie=edge">
-		<link rel="stylesheet" type="text/css" href="./style.css">
-		<script type="text/javascript" src="game.js"></script>
-		<title>index</title>
-	</head>
-	<body>
-		<!--canvas id = "canvas">Not supported in your browser</canvas-->
 
-		<div id="game">
-			<span class="joueur" id="j1"></span>
-			<span class="joueur" id="j2"></span>
-			<span id="gate">
-				<div id="topGate"></div>
-				<div id="hole"></div>
-				<div id="bottomGate"></div>
-			</span>
-		</div>
-		<h1>Score : <span id='score'>0</span></h1>
-	</body>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<link rel="stylesheet" type="text/css" href="./style.css">
+	<script type="text/javascript" src="game.js"></script>
+	<title>index</title>
+</head>
+
+<body>
+	<!--canvas id = "canvas">Not supported in your browser</canvas-->
+
+	<div id="game">
+		<span id="joueurs">
+		</span>
+		<span id="gate">
+			<div id="topGate"></div>
+			<div id="hole"></div>
+			<div id="bottomGate"></div>
+		</span>
+	</div>
+	<div id="tableScore"></div>
+	<h1 id="textScore">Score : <span id='score'>0</span></h1>
+</body>
+
 </html>
-

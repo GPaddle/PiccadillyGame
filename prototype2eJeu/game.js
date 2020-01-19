@@ -1,22 +1,36 @@
+
+const nbJoueurs = 9;
+
 window.onload = function () {
 
-	playerList.push(this.document.getElementById("j1"));
-	playerList.push(this.document.getElementById("j2"));
+	game = this.document.getElementById("game");
+	joueurs = this.document.getElementById("joueurs");
+
+	for (let index = 0; index < nbJoueurs; index++) {
+		joueurs.innerHTML += `<span class="joueur"></span>`;
+
+	}
+
+
+	playerList = this.document.getElementsByClassName("joueur");
+
 	gates.push(this.document.getElementById("topGate"));
 	gates.push(this.document.getElementById("hole"));
 	gates.push(this.document.getElementById("bottomGate"));
 
-	let game = this.document.getElementById("game");
+
+	tableScore = this.document.getElementById("tableScore");
+
 	this.console.log(game);
 
-	height = Math.max(document.documentElement.clientHeight,window.innerHeight || 0)*3/4;
+	height = Math.max(document.documentElement.clientHeight, window.innerHeight || 0) * 3 / 4;
 	width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 	this.console.log(width);
 	let y1 = 20, y2 = 30, x = 20;
 
 	score = document.getElementById('score');
 
-	jeu = new Jeu(2);
+	jeu = new Jeu(playerList.length);
 
 	const test = 0;
 
@@ -31,7 +45,11 @@ window.onload = function () {
 	}
 }
 
+let game;
+let joueurs;
 let gates = [];
+const colors = ["#b33", "#bb3", "#3b3", "#3bb", "#33b"];
+const names = ["A", "B", "C", "D", "E", "F", "G", "H", "I"];
 
 let playerList = [];
 let score;
@@ -63,9 +81,12 @@ let direction = 0;
 
 let nbVivant;
 
+let tableScore;
+
 
 
 const V_MAX = 30;
+const v0 = Math.log2(3) ** 2;
 
 /**
  * Classe représentant le jeu dans sa globalité (porte + joueurs)
@@ -78,9 +99,20 @@ class Jeu {
 
 		this.joueurs = [];
 
-		for (let index = 0; index < nbJoueurs; index++) {
-			this.joueurs.push(new Joueur(index, playerList[index]));
+		for (let i = 0; i < nbJoueurs; i++) {
+			this.joueurs.push(new Joueur(i, playerList[i]));
+
+			tableScore.innerHTML += `<div class='scoreJoueur'>` + names[i] + `</div>`;
+
 		}
+
+		let scoreJoueur = document.getElementsByClassName("scoreJoueur");
+		for (let i = 0; i < scoreJoueur.length; i++) {
+			scoreJoueur[i].style.background = colors[i % colors.length];
+		}
+
+
+
 
 		let ecart = 150;
 		this.porte = new Porte(Math.floor(Math.random() * height - ecart), ecart, gate);
@@ -121,17 +153,14 @@ class Jeu {
 				direction = 0;
 			}
 
-			player.deplacement(Math.floor(Math.random() * 2 * direction * speed / (Math.log2(3) ** 2)));
+			player.deplacement(Math.floor(Math.random() * 2 * direction * speed / v0));
 
 			//			console.log(player);
 
 			if (!this.porte.collision(width - (20 + player.diametre * player.nb), player.y)) {
 
-				console.log("EEE");
-				console.log(player.y + " " + this.porte.hautPorte);
-				console.log(this.porte.hautPorte + this.porte.ecart);
-				console.log("EEE");
-
+				document.getElementsByClassName('scoreJoueur')[player.nb].classList += " out";
+				console.log(document.getElementsByClassName('scoreJoueur')[player.nb].classList);
 				player.vivant = false;
 				nbVivant--;
 			}
@@ -149,7 +178,10 @@ class Jeu {
 			clearInterval(gameLoop);
 			document.body.innerHTML = `
 			<div id="game">
-				<h1>Fin du jeu : meilleur score : `+ nbTours + `</h1>
+				<div id="endGame">
+					<h1>Fin du jeu </h1>
+					<h3> meilleur score : `+ nbTours + `</h3>
+				</div>
 			</div>
 			`;
 		}
@@ -163,14 +195,20 @@ class Jeu {
 
 class Joueur {
 
+	nb;
 	constructor(nb, objetHTML) {
 		this.html = objetHTML;
 		this.nb = nb;
 
-		//ICI
+		let color = colors[this.nb % colors.length];
+
 		this.y = height / 2;
 		this.diametre = 20;
 		this.vivant = true;
+
+		this.html.style.background = color;
+		this.html.style.boxShadow = color + " -5px 3px 6px";
+		this.html.style.left = this.nb * 2 + "em";
 	}
 
 	deplacement(y) {
