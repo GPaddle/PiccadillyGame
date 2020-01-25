@@ -30,8 +30,9 @@ const WAIT_NOTHING = 0,
 
 let file;
 
-TEST_MODE ? file = "questions2.json" : file = "questions.json";
+file = TEST_MODE ? "questions2.json" : "questions.json";
 const questions = JSON.parse(fs.readFileSync(file));
+const pseudo_Possibilities = JSON.parse(fs.readFileSync("pseudos.json"));
 
 const SCREEN_SECRET_KEY = "7116dd23254dc1a8";
 
@@ -131,7 +132,10 @@ module.exports = function(httpServer) {
 						nextPlayerId++;
 
 						sock.player.answers = [];
-						sock.player.pseudo = "un inconnu";
+
+						let pseudoPart1 = pseudo_Possibilities.names[Math.floor(Math.random()*(pseudo_Possibilities.names.length-1))];
+						let pseudoPart2 = pseudo_Possibilities.adjectives[Math.floor(Math.random()*(pseudo_Possibilities.adjectives.length-1))];
+						sock.player.pseudo = pseudoPart1+" "+pseudoPart2; 
 
 						for(let screenSock of screensSocks) {
 							screenSock.send(JSON.stringify([ADD_PLAYER]));
