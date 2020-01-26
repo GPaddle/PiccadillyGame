@@ -4,7 +4,7 @@ const fs = require("fs");
 const ws = require("ws");
 
 //Changer l'état à true pour aller plus vite
-const TEST_MODE = false;
+const TEST_MODE = true;
 
 const CLIENT_TYPE_PLAYER = 0,
 	CLIENT_TYPE_SCREEN = 1;
@@ -36,13 +36,14 @@ const pseudo_Possibilities = JSON.parse(fs.readFileSync("pseudos.json"));
 
 const SCREEN_SECRET_KEY = "7116dd23254dc1a8";
 
-const MIN_PLAYER = 2;
+const MIN_PLAYER = TEST_MODE ? 1 : 4;
 let GAME_COUNT_DOWN_TIME;
 
-TEST_MODE ? GAME_COUNT_DOWN_TIME = 5 : GAME_COUNT_DOWN_TIME = 15;
+GAME_COUNT_DOWN_TIME = TEST_MODE ? 5 : 15;
 
-module.exports = function(httpServer) {
-	const wss = new ws.Server({server: httpServer});
+const nbQuestions = TEST_MODE ? 1 : 5;
+module.exports = function (httpServer) {
+	const wss = new ws.Server({ server: httpServer });
 
 	let screensSocks = [];
 	const playersSocks = [];
@@ -60,30 +61,32 @@ module.exports = function(httpServer) {
 	function nextQuestion() {
 		actualQuestion++;
 
-		if(actualQuestion == questions.length) {
+		if (actualQuestion == nbQuestions) {
 			let screensSocksScores = [END_GAME, playersSocks.length];
 
-			for(let i = 0; i < playersSocks.length; i++) {
+			for (let i = 0; i < playersSocks.length; i++) {
 				playersSocks[i].send(JSON.stringify([END_GAME]));
 
 				screensSocksScores[2 + i * 2] = playersSocks[i].player.pseudo;
 				screensSocksScores[3 + i * 2] = playersSocks[i].player.score;
 			}
 
-			for(let screenSock of screensSocks) {
+			console.log(screensSocksScores);
+
+			for (let screenSock of screensSocks) {
 				screenSock.send(JSON.stringify(screensSocksScores));
 			}
 		} else {
 			let question = questions[actualQuestion];
 
-			for(let playerSock of playersSocks) {
+			for (let playerSock of playersSocks) {
 				playerSock.send(JSON.stringify([NEW_QUESTION, question.time])); // on envoit uniquement le temps de la question aux joueurs, l'intitulé de la question sera affiché sur les grands écrans
 				playerSock.state = WAIT_ANSWER;
 			}
 
 			let screenSockQuestion = [NEW_QUESTION, question.title];
 
-			for(let i = 0; i < 4; i++) {
+			for (let i = 0; i < 4; i++) {
 				screenSockQuestion[2 + i] = question.answers[i];
 			}
 
@@ -91,16 +94,16 @@ module.exports = function(httpServer) {
 
 			questionEndTime = Date.now() + question.time * 1000;
 
-			for(let screenSock of screensSocks) {
+			for (let screenSock of screensSocks) {
 				screenSock.send(JSON.stringify(screenSockQuestion));
 			}
 
-			setTimeout(function() {
-				for(let screenSock of screensSocks) {
+			setTimeout(function () {
+				for (let screenSock of screensSocks) {
 					screenSock.send(JSON.stringify([question.correctAnswer]));
 				}
 
-				for(let playerSock of playersSocks) {
+				for (let playerSock of playersSocks) {
 					playerSock.send(JSON.stringify([END_QUESTION, question.correctAnswer])); // on envoit la bonne réponse aux joueurs
 					playerSock.state = WAIT_NOTHING;
 				}
@@ -111,19 +114,19 @@ module.exports = function(httpServer) {
 		}
 	}
 
-	wss.on("connection", function(sock) {
+	wss.on("connection", function (sock) {
 		sock.state = WAIT_AUTH;
 
-		let authTimeout = setTimeout(function() {
+		let authTimeout = setTimeout(function () {
 			sock.close();
 		}, 10000);
 
-		sock.on("message", function(json) {
+		sock.on("message", function (json) {
 			let msg = JSON.parse(json);
 
 			switch (sock.state) {
 				case WAIT_AUTH: {
-					if(msg[0] == CLIENT_TYPE_PLAYER) {
+					if (msg[0] == CLIENT_TYPE_PLAYER) {
 						clearTimeout(authTimeout);
 
 						sock.player = {};
@@ -133,11 +136,11 @@ module.exports = function(httpServer) {
 
 						sock.player.answers = [];
 
-						let pseudoPart1 = pseudo_Possibilities.names[Math.floor(Math.random()*(pseudo_Possibilities.names.length-1))];
-						let pseudoPart2 = pseudo_Possibilities.adjectives[Math.floor(Math.random()*(pseudo_Possibilities.adjectives.length-1))];
-						sock.player.pseudo = pseudoPart1+" "+pseudoPart2; 
+						let pseudoPart1 = pseudo_Possibilities.names[Math.floor(Math.random() * (pseudo_Possibilities.names.length - 1))];
+						let pseudoPart2 = pseudo_Possibilities.adjectives[Math.floor(Math.random() * (pseudo_Possibilities.adjectives.length - 1))];
+						sock.player.pseudo = pseudoPart1 + " " + pseudoPart2;
 
-						for(let screenSock of screensSocks) {
+						for (let screenSock of screensSocks) {
 							screenSock.send(JSON.stringify([ADD_PLAYER]));
 						}
 
@@ -145,7 +148,7 @@ module.exports = function(httpServer) {
 
 						let gameInfo = [MIN_PLAYER, playersSocks.length + 1];
 
-						for(let i = 0; i < playersSocks.length; i++) {
+						for (let i = 0; i < playersSocks.length; i++) {
 							playersSocks[i].send(JSON.stringify([ADD_PLAYER, sock.player.id, sock.player.pseudo]));
 
 							gameInfo[2 + i * 2] = playersSocks[i].player.id;
@@ -162,22 +165,22 @@ module.exports = function(httpServer) {
 
 						playersSocks.push(sock);
 
-						if(playersSocks.length >= MIN_PLAYER && startCountdown === undefined) {
-							for(let playerSock of playersSocks) {
+						if (playersSocks.length >= MIN_PLAYER && startCountdown === undefined) {
+							for (let playerSock of playersSocks) {
 								playerSock.send(JSON.stringify([START_GAME_COUNTDOWN, GAME_COUNT_DOWN_TIME]));
 							}
 
-							for(let screenSock of screensSocks) {
+							for (let screenSock of screensSocks) {
 								screenSock.send(JSON.stringify([START_GAME_COUNTDOWN, GAME_COUNT_DOWN_TIME]));
 							}
 
-							startCountdown = setTimeout(function() {
-								for(let playerSock of playersSocks) {
+							startCountdown = setTimeout(function () {
+								for (let playerSock of playersSocks) {
 									playerSock.player.score = 0;
 									playerSock.send(JSON.stringify([START_GAME])); // on dit aux joueurs que la partie commence (pour qu'ils affichent l'interface des questions)
 								}
 
-								for(let screenSock of screensSocks) {
+								for (let screenSock of screensSocks) {
 									screenSock.send(JSON.stringify([START_GAME]));
 								}
 
@@ -186,7 +189,7 @@ module.exports = function(httpServer) {
 								nextQuestion(); // on envoit la première question
 							}, GAME_COUNT_DOWN_TIME * 1000); // quand on a assez de joueurs on lance la partie dans 15 secondes
 						}
-					} else if(msg[0] == CLIENT_TYPE_SCREEN && msg[1] == SCREEN_SECRET_KEY) {
+					} else if (msg[0] == CLIENT_TYPE_SCREEN && msg[1] == SCREEN_SECRET_KEY) {
 						clearTimeout(authTimeout);
 
 						sock.send(JSON.stringify([MIN_PLAYER, playersSocks.length]));
@@ -203,17 +206,17 @@ module.exports = function(httpServer) {
 				case WAIT_PSEUDO: {
 					let isPseudoFree = true;
 
-					for(let playerSock of playersSocks) {
-						if(msg[0] == playerSock.player.pseudo) {
+					for (let playerSock of playersSocks) {
+						if (msg[0] == playerSock.player.pseudo) {
 							isPseudoFree = false;
 							break;
 						}
 					}
 
-					if(isPseudoFree) {
+					if (isPseudoFree) {
 						sock.player.pseudo = msg[0];
 
-						for(let playerSock of playersSocks) {
+						for (let playerSock of playersSocks) {
 							playerSock.send(JSON.stringify([SET_PSEUDO, sock.player.id, sock.player.pseudo]));
 						}
 
@@ -226,8 +229,8 @@ module.exports = function(httpServer) {
 				}
 
 				case WAIT_ANSWER: {
-					if(sock.player.answers[actualQuestion] === undefined && msg[0] >= 0 && msg[0] <= 3) { // si le joueur n'a pas encore donné de réponse et si le code de réponse est 0, 1, 2 ou 3
-						if(msg[0] == questions[actualQuestion].correctAnswer) {
+					if (sock.player.answers[actualQuestion] === undefined && msg[0] >= 0 && msg[0] <= 3) { // si le joueur n'a pas encore donné de réponse et si le code de réponse est 0, 1, 2 ou 3
+						if (msg[0] == questions[actualQuestion].correctAnswer) {
 							sock.player.score += questionEndTime - Date.now();
 						}
 
@@ -235,18 +238,18 @@ module.exports = function(httpServer) {
 
 						let answerStats = [0, 0, 0, 0];
 
-						for(let playerSock of playersSocks) {
+						for (let playerSock of playersSocks) {
 							answerStats[playerSock.player.answers[actualQuestion]]++;
 						}
 
 						let stats = [ANSWERS_STATS];
 
-						for(let i = 0; i < answerStats.length; i++) {
+						for (let i = 0; i < answerStats.length; i++) {
 							stats[1 + i] = Math.trunc((answerStats[i] / playersSocks.length * 100) * 10) / 10;
 						}
 
-						for(let playerSock of playersSocks) {
-							if(playerSock.player.answers[actualQuestion] !== undefined) { // on envoit seulements les statistiques de réponse aux joueurs ayant déjà répondu à la question
+						for (let playerSock of playersSocks) {
+							if (playerSock.player.answers[actualQuestion] !== undefined) { // on envoit seulements les statistiques de réponse aux joueurs ayant déjà répondu à la question
 								playerSock.send(JSON.stringify(stats));
 							}
 						}
@@ -257,18 +260,18 @@ module.exports = function(httpServer) {
 			}
 		});
 
-		sock.on("close", function() {
-			if(sock.player === undefined) {
+		sock.on("close", function () {
+			if (sock.player === undefined) {
 				screensSocks.splice(screensSocks.indexOf(sock), 1);
 			} else {
 				playersSocks.splice(playersSocks.indexOf(sock), 1);
 
-				if(itsWaitingRoom) {
-					for(let screenSock of screensSocks) {
+				if (itsWaitingRoom) {
+					for (let screenSock of screensSocks) {
 						screenSock.send(JSON.stringify([DEL_PLAYER]));
 					}
 
-					for(let playerSock of playersSocks) {
+					for (let playerSock of playersSocks) {
 						playerSock.send(JSON.stringify([DEL_PLAYER, sock.player.id]));
 					}
 				}
