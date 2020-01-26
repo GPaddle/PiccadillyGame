@@ -4,7 +4,7 @@ const fs = require("fs");
 const ws = require("ws");
 
 //Changer l'état à true pour aller plus vite
-const TEST_MODE = true;
+const TEST_MODE = false;
 
 const CLIENT_TYPE_PLAYER = 0,
 	CLIENT_TYPE_SCREEN = 1;
@@ -31,7 +31,10 @@ const WAIT_NOTHING = 0,
 let file;
 
 file = TEST_MODE ? "questions2.json" : "questions.json";
-const questions = JSON.parse(fs.readFileSync(file));
+const questions = JSON.parse(fs.readFileSync(file)).sort(function () {
+	return .5 - Math.random();
+});
+
 const pseudo_Possibilities = JSON.parse(fs.readFileSync("pseudos.json"));
 
 const SCREEN_SECRET_KEY = "7116dd23254dc1a8";
@@ -64,7 +67,7 @@ module.exports = function (httpServer) {
 		if (actualQuestion == nbQuestions) {
 			// REPERE 1
 			// Envois des questions joueurs+écrans 
-			
+
 
 			let screensSocksScores = [END_GAME, playersSocks.length];
 
@@ -150,7 +153,7 @@ module.exports = function (httpServer) {
 						let pseudoPart2 = pseudo_Possibilities.adjectives[Math.floor(Math.random() * (pseudo_Possibilities.adjectives.length - 1))];
 						sock.player.pseudo = pseudoPart1 + " " + pseudoPart2;
 
-						
+
 						//REPERE 4
 
 						for (let screenSock of screensSocks) {
@@ -269,7 +272,7 @@ module.exports = function (httpServer) {
 						}
 
 						//REPERE 8 
-						
+
 
 						for (let playerSock of playersSocks) {
 							if (playerSock.player.answers[actualQuestion] !== undefined) { // on envoit seulements les statistiques de réponse aux joueurs ayant déjà répondu à la question
@@ -290,7 +293,7 @@ module.exports = function (httpServer) {
 				playersSocks.splice(playersSocks.indexOf(sock), 1);
 
 				//REPERE 9
-				
+
 				if (itsWaitingRoom) {
 					for (let screenSock of screensSocks) {
 						screenSock.send(JSON.stringify([DEL_PLAYER]));
