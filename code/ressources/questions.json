@@ -12,6 +12,54 @@
 	},
 
 	{
+		"title": "Quelle est l'altitude du Mont Blanc ?",
+		"answers": [
+			"4810 m",
+			"8848 m",
+			"4000 m",
+			"232 m"
+		],
+		"correctAnswer": 1,
+		"time": 15
+	},
+
+	{
+		"title": "Avec 28 médailles, quel est le sportif le plus titré des Jeux Olympiques",
+		"answers": [
+			"Tony Hawks",
+			"Jean Dujardin",
+			"Michael Phelps",
+			"Birgit Fischer"
+		],
+		"correctAnswer": 3,
+		"time": 15
+	},
+
+	{
+		"title": "Quel est l'informaticien à l'origine du World Wide Web (WWW) ?",
+		"answers": [
+			"Tim Berners-Lee",
+			"Mark Zuckerberg",
+			"Ada Lovelace",
+			"Tom Anderson"
+		],
+		"correctAnswer": 1,
+		"time": 15
+	},
+
+	{
+		"title": "Combien de temps dure un DUT ?",
+		"answers": [
+			"10 mois",
+			"2 ans",
+			"3 ans",
+			"4 jours"
+		],
+		"correctAnswer": 2,
+		"time": 15
+	},
+
+	{
 		"title": "En quelle année le premier iPhone est sorti ?",
 		"answers": [
 			2005,

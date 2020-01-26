@@ -30,12 +30,18 @@ const WAIT_NOTHING = 0,
 
 let file;
 
-file = TEST_MODE ? "questions2.json" : "questions.json";
-const questions = JSON.parse(fs.readFileSync(file)).sort(function () {
-	return .5 - Math.random();
-});
+file = "ressources/questions.json";
+const questions = JSON.parse(fs.readFileSync(file))
 
-const pseudo_Possibilities = JSON.parse(fs.readFileSync("pseudos.json"));
+if (!TEST_MODE) {
+
+	questions.sort(function () {
+		return .5 - Math.random();
+	});
+
+}
+
+const pseudo_Possibilities = JSON.parse(fs.readFileSync("ressources/pseudos.json"));
 
 const SCREEN_SECRET_KEY = "7116dd23254dc1a8";
 
