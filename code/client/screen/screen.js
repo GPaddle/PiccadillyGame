@@ -20,7 +20,7 @@ const WAIT_GAME_INFO = 0,
 window.onload = function() {
 	document.body.innerHTML = `
 	<div id="service-name">Piccadilly Game</div>
-	<div id="join-invitation">Rejoignez la partie sur http://` + window.location.host + `/play</div>
+	<div id="join-invitation">Rejoignez la partie sur <a href='http://${window.location.host}/play' id='url' target='_blank'>http://${window.location.host}/play</a></div>
 	<canvas id="qr"></canvas>
 	<div id="players-info">Nombre de joueurs connectés : <span id="players-count">0</span></div>
 	<div id="min-players-info">Nombre de joueurs minimum nécessaires : <span id="min-players-count">...</span></div>
@@ -28,7 +28,7 @@ window.onload = function() {
 
 	let qr = new QRious({
 		element : document.getElementById("qr"),
-		value : `http://` + window.location.host+ `/play`,
+		value : `http://${window.location.host}/play`,
 		background : "transparent",
 		foreground : "#fff",
 		size : 300,

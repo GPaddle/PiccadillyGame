@@ -120,3 +120,8 @@ body {
 #qr{
 	margin: 30px;
 }
+
+#url{
+	color: #fff;
+	text-decoration: none;
+}

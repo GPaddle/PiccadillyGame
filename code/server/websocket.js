@@ -155,9 +155,13 @@ module.exports = function (httpServer) {
 
 						sock.player.answers = [];
 
-						let pseudoPart1 = pseudo_Possibilities.names[Math.floor(Math.random() * (pseudo_Possibilities.names.length - 1))];
-						let pseudoPart2 = pseudo_Possibilities.adjectives[Math.floor(Math.random() * (pseudo_Possibilities.adjectives.length - 1))];
-						sock.player.pseudo = pseudoPart1 + " " + pseudoPart2;
+						let random1 = Math.floor(Math.random() * (pseudo_Possibilities.names.length - 1));
+						let random2 = Math.floor(Math.random() * (pseudo_Possibilities.adjectives.length - 1));
+
+						let pseudoPart1 = pseudo_Possibilities.names[random1];
+						let pseudoPart2 = pseudo_Possibilities.adjectives[random2];
+
+						sock.player.pseudo = `${pseudoPart1} ${pseudoPart2}`;
 
 
 						//REPERE 4
