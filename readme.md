@@ -26,24 +26,47 @@ Avec cette brève introduction notre tuteur nous a lancé sur une plateforme de 
 
 Les envois de données sont identifiés dans le code par des commentaire de type //REPERE {x}
 ex : //REPERE 1
+Chaque fichier comporte sa propre numérotation
 
- - **Protocole d'échange Joueur-> Serveur :**
+ - **Protocole d'échange Ecran-> Serveur :** (screen.js)
 
-Sérialisation des informations sous la forme :
+Envois d'information à propos du client (state = WAIT_GAME_INFO) :
+chercher "REPERE 1"
 
 	[
-		0 : Type d'information,
-	 	1 : ,
-	 	2 : ,
-	 	3 : ,
-	 	...
+		0 : CLIENT_TYPE_SCREEN,
+	 	1 : SECRET_SCREEN_KEY
 	 ]
 
+ - **Protocole d'échange Joueur-> Serveur :** (play.js)
 
- - **Protocole d'échange Serveur-> Joueurs :**
+
+Envois du pseudo (state = ?) :
+chercher "REPERE 1"
+
+	[
+		0 : valeur champ pseudo
+	 ]
+
+Envois d'information à propos du client (state = WAIT_GAME_INFO) :
+chercher "REPERE 2"
+
+	[
+		0 : CLIENT_TYPE_PLAYER
+	]
+
+Envois de la réponse choisie  (state = WAIT_QUESTION_EVENT) :
+chercher "REPERE 3"
+
+	[
+		0 : Réponse choisie
+	]
+
+
+ - **Protocole d'échange Serveur-> Joueurs :** (websocket.js)
 
  
-Envois des questions :
+Envois des questions (state = ?) :
 chercher "REPERE 2"
 
 	[
@@ -51,7 +74,7 @@ chercher "REPERE 2"
 		1 : durée de la question
 	]
  
-Envois des informations joueurs (Salle d'attente) :
+Envois des informations joueurs (state = WAIT_AUTH) :
 chercher "REPERE 4"
 
 	[
@@ -60,7 +83,7 @@ chercher "REPERE 4"
 		2 : player pseudo
 	]
  
-Envois des informations sur le jeu :
+Envois des informations sur le jeu (state = WAIT_AUTH) :
 chercher "REPERE 4"
 
 	[
@@ -74,7 +97,7 @@ chercher "REPERE 4"
 		n : rappel du dernier id
 	]
 
-Décompte pour le début du jeu :
+Décompte pour le début du jeu (state = WAIT_AUTH) :
 chercher "REPERE 5"
 
 	[
@@ -82,14 +105,14 @@ chercher "REPERE 5"
 		1 : Durée du compte à rebours
 	]
 
-Début du jeu, affichage des informations spécifiques aux questions :
+Début du jeu, affichage des informations spécifiques aux questions (state = WAIT_AUTH) :
 chercher "REPERE 6"
 
 	[
 		0 : START_GAME
 	]
 
-Envois d'un nouveau joueur à tous les joueurs :
+Envois d'un nouveau joueur à tous les joueurs (state = WAIT_PSEUDO) :
 chercher "REPERE 7"
 
 	[
@@ -98,7 +121,7 @@ chercher "REPERE 7"
 		2 : pseudo du nouveau joueur
 	]
 
-Envois des statistiques à tous les joueurs après avoir répondu :
+Envois des statistiques à tous les joueurs après avoir répondu (state = WAIT_ANSWER) :
 chercher "REPERE 8"
 
 	[
@@ -109,7 +132,7 @@ chercher "REPERE 8"
 		4 : statistiques de la réponse 4
 	]
 
-Suppression d'un nouveau player : 
+Suppression d'un nouveau player  : 
 chercher "REPERE 9"
 
 	[
@@ -120,7 +143,7 @@ chercher "REPERE 9"
 
  - **Protocole d'échange Serveur-> Ecrans :**
 
-Fin du jeu, affichage des scores (state = END_GAME):
+Fin du jeu, affichage des scores (state = ?) :
 chercher "REPERE 1" 
 
 	[
@@ -131,7 +154,7 @@ chercher "REPERE 1"
 		...
 	]
 
-Envois des questions :
+Envois des questions (state = ?) :
 chercher "REPERE 2"
 
 	[
@@ -142,9 +165,17 @@ chercher "REPERE 2"
 		4 : Réponse 3,
 		5 : Réponse 4,
 		6 : Durée de la question,
-	 ]
+	]
 
-Décompte pour le début du jeu :
+Envois d'un nouveau joueur (state = WAIT_AUTH) :
+chercher "REPERE 4"
+
+	[
+		0 : ADD_PLAYER
+	]
+
+
+Décompte pour le début du jeu (state = WAIT_AUTH) :
 chercher "REPERE 5"
 
 	[
@@ -152,7 +183,7 @@ chercher "REPERE 5"
 		1 : Durée du compte à rebours
 	]
 
-Début du jeu, affichage des informations spécifiques aux questions :
+Début du jeu, affichage des informations spécifiques aux questions (state = WAIT_AUTH) :
 chercher "REPERE 6"
 
 	[
@@ -164,6 +195,14 @@ chercher "REPERE 9"
 
 	[
 		0 : DEL_PLAYER
+	]
+
+Ajout d'un nouvel écran (state = WAIT_AUTH) : 
+chercher "REPERE 10"
+
+	[
+		0 : MIN_PLAYER,
+		1 : longeur de la liste de joueurs
 	]
 
 

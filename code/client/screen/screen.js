@@ -47,6 +47,7 @@ window.onload = function() {
 		let questionNumber = 0;
 		let questionCountdown;
 
+		//REPERE 1
 		sock.send(JSON.stringify([CLIENT_TYPE_SCREEN, SECRET_SCREEN_KEY]));
 
 		sock.onmessage = function(json) {

@@ -44,6 +44,8 @@ window.onload = function() {
 
 	let sendPseudoButton = document.getElementById("send-pseudo-button");
 	sendPseudoButton.onclick = function() {
+
+		//REPERE 1
 		sock.send(JSON.stringify([pseudoInput.value]));
 
 		let pseudoError = document.getElementById("pseudo-error");
@@ -63,6 +65,7 @@ window.onload = function() {
 
 		let chosenAnswer;
 
+		//REPERE 2
 		sock.send(JSON.stringify([CLIENT_TYPE_PLAYER]));
 
 		function displayGame() {
@@ -107,6 +110,7 @@ window.onload = function() {
 						chosenAnswer = i;
 						answersButtons[chosenAnswer].style.border = "solid 2px #fefefe";
 
+						//REPERE 3
 						sock.send(JSON.stringify([chosenAnswer])); // on envoit le numéro de la réponse sélectionnée
 					}
 				}
