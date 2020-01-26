@@ -119,6 +119,8 @@ body {
 
 #qr{
 	margin: 30px;
+	width: 40vh;
+	height: 40vh;
 }
 
 #url{

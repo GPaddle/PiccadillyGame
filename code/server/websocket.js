@@ -29,6 +29,7 @@ const WAIT_NOTHING = 0,
 	WAIT_ANSWER = 3;
 
 let file;
+let questionTime;
 
 file = "ressources/questions.json";
 const questions = JSON.parse(fs.readFileSync(file))
@@ -40,6 +41,8 @@ if (!TEST_MODE) {
 	});
 
 }
+
+let totalAnswers = 0;
 
 const pseudo_Possibilities = JSON.parse(fs.readFileSync("ressources/pseudos.json"));
 
@@ -77,18 +80,18 @@ module.exports = function (httpServer) {
 
 			let screensSocksScores = [END_GAME, playersSocks.length];
 
-			let scores = [END_GAME,playersSocks.length];
+			let scores = [END_GAME, playersSocks.length];
 
 			for (let i = 0; i < playersSocks.length; i++) {
 
-				playersSocks[i].send(JSON.stringify([END_GAME]));
+				playersSocks[i].send(JSON.stringify([END_GAME, playersSocks[i].player.score]));
 
 				screensSocksScores[2 + i * 2] = playersSocks[i].player.pseudo;
 				screensSocksScores[3 + i * 2] = playersSocks[i].player.score;
-				scores[2+i] = 
+				scores[2 + i] =
 					{
-						'pseudo' : playersSocks[i].player.pseudo,
-						'score' : playersSocks[i].player.score
+						'pseudo': playersSocks[i].player.pseudo,
+						'score': playersSocks[i].player.score
 					};
 			}
 
@@ -125,7 +128,7 @@ module.exports = function (httpServer) {
 				screenSock.send(JSON.stringify(screenSockQuestion));
 			}
 
-			setTimeout(function () {
+			questionTime = setTimeout(function () {
 
 				//REPERE 3
 
@@ -275,7 +278,15 @@ module.exports = function (httpServer) {
 				case WAIT_ANSWER: {
 					if (sock.player.answers[actualQuestion] === undefined && msg[0] >= 0 && msg[0] <= 3) { // si le joueur n'a pas encore donné de réponse et si le code de réponse est 0, 1, 2 ou 3
 						if (msg[0] == questions[actualQuestion].correctAnswer) {
-							sock.player.score += questionEndTime - Date.now();
+
+							let questionCoefficient = 15 / questions[actualQuestion].time;
+
+							sock.player.score += (questionEndTime - Date.now()) * questionCoefficient;
+
+							totalAnswers++;
+							if (totalAnswers == playersSocks.length) {
+								//TODO trouver comment mettre un terme à la question en cours si tous les joueurs ont répondu
+							}
 						}
 
 						sock.player.answers[actualQuestion] = msg[0]; // on enregistre la réponse envoyée par le joueur

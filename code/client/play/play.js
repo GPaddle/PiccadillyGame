@@ -20,7 +20,7 @@ const WAIT_NOTHING = 0,
 	WAIT_QUESTION = 3,
 	WAIT_QUESTION_EVENT = 4;
 
-window.onload = function() {
+window.onload = function () {
 	document.body.innerHTML = `
 	<div id="players-info">Nombre de joueurs connectés : <span id="players-count">...</span></div>
 	<div id="min-players-info">Nombre de joueurs minimum nécessaires : <span id="min-players-count">...</span></div>
@@ -37,13 +37,13 @@ window.onload = function() {
 	`;
 
 	let pseudoInput = document.getElementById("pseudo-input");
-	pseudoInput.onfocus = function() {
+	pseudoInput.onfocus = function () {
 		let pseudoError = document.getElementById("pseudo-error");
 		pseudoError.innerHTML = "";
 	}
 
 	let sendPseudoButton = document.getElementById("send-pseudo-button");
-	sendPseudoButton.onclick = function() {
+	sendPseudoButton.onclick = function () {
 
 		//REPERE 1
 		sock.send(JSON.stringify([pseudoInput.value]));
@@ -54,7 +54,7 @@ window.onload = function() {
 
 	let sock = new WebSocket("ws://" + window.location.host);
 
-	sock.onopen = function() {
+	sock.onopen = function () {
 		let state = WAIT_GAME_INFO;
 		let players; // tableau des pseudos de joueurs
 
@@ -67,6 +67,7 @@ window.onload = function() {
 
 		//REPERE 2
 		sock.send(JSON.stringify([CLIENT_TYPE_PLAYER]));
+
 
 		function displayGame() {
 			document.body.innerHTML = `
@@ -104,9 +105,9 @@ window.onload = function() {
 
 			let answersButtons = document.getElementsByClassName("answer-button");
 
-			for(let i = 0; i < 4; i++) {
-				answersButtons[i].onclick = function() {
-					if(chosenAnswer === undefined && state == WAIT_QUESTION_EVENT) {
+			for (let i = 0; i < 4; i++) {
+				answersButtons[i].onclick = function () {
+					if (chosenAnswer === undefined && state == WAIT_QUESTION_EVENT) {
 						chosenAnswer = i;
 						answersButtons[chosenAnswer].style.border = "solid 2px #fefefe";
 
@@ -117,7 +118,7 @@ window.onload = function() {
 			}
 		}
 
-		sock.onmessage = function(json) {
+		sock.onmessage = function (json) {
 			let msg = JSON.parse(json.data);
 
 			switch (state) {
@@ -137,7 +138,7 @@ window.onload = function() {
 
 					players = [];
 
-					for(let i = 0; i < playersCount; i++) {
+					for (let i = 0; i < playersCount; i++) {
 						players[i] = {};
 						players[i].id = msg[2 + i * 2];
 						players[i].pseudo = msg[3 + i * 2];
@@ -148,7 +149,7 @@ window.onload = function() {
 
 						playersList.appendChild(players[i].line);
 
-						if(players[i].id == meId) {
+						if (players[i].id == meId) {
 							playerPseudo.innerHTML = players[i].pseudo;
 						}
 					}
@@ -158,7 +159,7 @@ window.onload = function() {
 				}
 
 				case WAIT_WAITING_ROOM_EVENT: {
-					if(msg[0] == ADD_PLAYER) {
+					if (msg[0] == ADD_PLAYER) {
 						let player = {
 							id: msg[1],
 							pseudo: msg[2]
@@ -175,13 +176,13 @@ window.onload = function() {
 
 						let playersCount = document.getElementById("players-count")
 						playersCount.innerHTML = players.length;
-					} else if(msg[0] == SET_PSEUDO) {
-						for(let player of players) { // on récupère le joueur concerné grâce à son id
-							if(player.id == msg[1]) {
+					} else if (msg[0] == SET_PSEUDO) {
+						for (let player of players) { // on récupère le joueur concerné grâce à son id
+							if (player.id == msg[1]) {
 								player.pseudo = msg[2]; // on change le pseudo du joueur
 								player.line.innerHTML = player.pseudo; // on met à jour la liste des joueurs HTML
 
-								if(player.id == meId) {
+								if (player.id == meId) {
 									let playerPseudo = document.getElementById("player-pseudo");
 									playerPseudo.innerHTML = player.pseudo;
 								}
@@ -189,9 +190,9 @@ window.onload = function() {
 								break;
 							}
 						}
-					} else if(msg[0] == DEL_PLAYER) {
-						for(let player of players) {
-							if(player.id == msg[1]) {
+					} else if (msg[0] == DEL_PLAYER) {
+						for (let player of players) {
+							if (player.id == msg[1]) {
 								player.line.remove();
 								players.splice(players.indexOf(player), 1);
 
@@ -199,10 +200,10 @@ window.onload = function() {
 								playersCount.innerHTML = players.length;
 							}
 						}
-					} else if(msg[0] == PSEUDO_ALREADY_USED) {
+					} else if (msg[0] == PSEUDO_ALREADY_USED) {
 						let pseudoError = document.getElementById("pseudo-error");
 						pseudoError.innerHTML = "Ce pseudo est déjà utilisé";
-					} else if(msg[0] == START_GAME_COUNTDOWN) {
+					} else if (msg[0] == START_GAME_COUNTDOWN) {
 						let countdownInfo = document.createElement("div");
 						countdownInfo.id = "start-countdown-info";
 
@@ -220,15 +221,15 @@ window.onload = function() {
 						let playerPseudoInfo = document.getElementById("player-pseudo-info");
 						document.body.insertBefore(countdownInfo, playerPseudoInfo)
 
-						let countdown = setInterval(function() {
+						let countdown = setInterval(function () {
 							time--;
 							countdownSpan.innerHTML = time;
 
-							if(time == 0) {
+							if (time == 0) {
 								clearInterval(countdown);
 							}
 						}, 1000);
-					} else if(msg[0] == START_GAME) {
+					} else if (msg[0] == START_GAME) {
 						displayGame();
 						state = WAIT_QUESTION;
 					}
@@ -237,8 +238,8 @@ window.onload = function() {
 				}
 
 				case WAIT_QUESTION: {
-					if(msg[0] == NEW_QUESTION) {
-						if(chosenAnswer !== undefined) {
+					if (msg[0] == NEW_QUESTION) {
+						if (chosenAnswer !== undefined) {
 							let clickedAnswerButton = document.getElementsByClassName("answer-button")[chosenAnswer];
 							clickedAnswerButton.style.border = "";
 						}
@@ -248,7 +249,7 @@ window.onload = function() {
 						let answersStats = document.getElementsByClassName("answer-stat");
 						let answersStatsBars = document.getElementsByClassName("answer-stat-bar");
 
-						for(let i = 0; i < 4; i++) {
+						for (let i = 0; i < 4; i++) {
 							answersStats[i].innerHTML = "";
 							answersStatsBars[i].style.width = "";
 						}
@@ -260,7 +261,7 @@ window.onload = function() {
 
 						let answersButtons = document.getElementsByClassName("answer-button");
 
-						for(let answerButton of answersButtons) {
+						for (let answerButton of answersButtons) {
 							answerButton.style.backgroundColor = "";
 						}
 
@@ -274,11 +275,11 @@ window.onload = function() {
 						let questionCountdownSpan = document.getElementById("question-countdown");
 						questionCountdownSpan.innerHTML = time;
 
-						questionCountdown = setInterval(function() {
+						questionCountdown = setInterval(function () {
 							time--;
 							questionCountdownSpan.innerHTML = time;
 
-							if(time == 0) {
+							if (time == 0) {
 								clearTimeout(questionCountdown);
 							}
 						}, 1000);
@@ -289,18 +290,18 @@ window.onload = function() {
 				}
 
 				case WAIT_QUESTION_EVENT: {
-					if(msg[0] == ANSWERS_STATS) {
+					if (msg[0] == ANSWERS_STATS) {
 						let answersStats = document.getElementsByClassName("answer-stat");
 						let answersStatsBars = document.getElementsByClassName("answer-stat-bar")
 
-						for(let i = 0; i < answersStats.length; i++) {
+						for (let i = 0; i < answersStats.length; i++) {
 							answersStats[i].innerHTML = msg[1 + i] + "%";
 							answersStatsBars[i].style.width = msg[1 + i] + "%";
 						}
-					} else if(msg[0] == END_QUESTION) {
+					} else if (msg[0] == END_QUESTION) {
 						let answersButtons = document.getElementsByClassName("answer-button");
 
-						for(let answerButton of answersButtons) {
+						for (let answerButton of answersButtons) {
 							answerButton.backgroundColor = "#a65050";
 						}
 
@@ -308,16 +309,15 @@ window.onload = function() {
 
 						let questionInfo = document.getElementById("question-info");
 
-						if(chosenAnswer == msg[1]) {
+						if (chosenAnswer == msg[1]) {
 							questionInfo.innerHTML = "Bonne réponse !";
 						} else {
 							questionInfo.innerHTML = "Mauvaise réponse...";
 						}
 
 						state = WAIT_QUESTION;
-					} else if(msg[0] == END_GAME) {
-						let questionInfo = document.getElementById("question-info");
-						questionInfo.innerHTML = "Fin de la partie";
+					} else if (msg[0] == END_GAME) {
+						displayEnd(msg);
 					}
 
 					break;
@@ -325,4 +325,16 @@ window.onload = function() {
 			}
 		}
 	}
+}
+
+function displayEnd(msg) {
+	document.body.innerHTML = `
+	<div id="endContent">
+		<h1>Partie terminée</h1>	
+		<h1>Votre score : ${msg[1]}</h1>
+		<div>
+			<a href='./play' class="button">Cliquez ici pour relancer une partie</a>
+		</div>
+	</div>`;
+
 }
