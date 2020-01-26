@@ -4,7 +4,7 @@ const fs = require("fs");
 const ws = require("ws");
 
 //Changer l'état à true pour aller plus vite
-const TEST_MODE = false;
+const TEST_MODE = true;
 
 const CLIENT_TYPE_PLAYER = 0,
 	CLIENT_TYPE_SCREEN = 1;
@@ -77,16 +77,27 @@ module.exports = function (httpServer) {
 
 			let screensSocksScores = [END_GAME, playersSocks.length];
 
+			let scores = [END_GAME,playersSocks.length];
+
 			for (let i = 0; i < playersSocks.length; i++) {
 
 				playersSocks[i].send(JSON.stringify([END_GAME]));
 
 				screensSocksScores[2 + i * 2] = playersSocks[i].player.pseudo;
 				screensSocksScores[3 + i * 2] = playersSocks[i].player.score;
+				scores[2+i] = 
+					{
+						'pseudo' : playersSocks[i].player.pseudo,
+						'score' : playersSocks[i].player.score
+					};
 			}
 
+			scores.sort(function (a, b) {
+				return b.score - a.score
+			});
+
 			for (let screenSock of screensSocks) {
-				screenSock.send(JSON.stringify(screensSocksScores));
+				screenSock.send(JSON.stringify(scores));
 			}
 		} else {
 			// REPERE 2

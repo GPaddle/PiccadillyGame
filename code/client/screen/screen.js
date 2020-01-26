@@ -178,9 +178,11 @@ window.onload = function() {
 						for(let i = 0; i < msg[1]; i++) {
 							resultsDiv.innerHTML += `
 							<div class="result">
-								<div class="result-pseudo">` + msg[2 + i * 2] + `</div>
-								<div class="result-score">` + msg[3 + i * 2] + `</div>
+								<div class="result-pseudo">${msg[2 + i].pseudo}</div>
+								<div class="result-score">${msg[2 + i].score}</div>
 							</div>`;
+
+							console.log(msg[2+i]);
 						}
 					}
 
