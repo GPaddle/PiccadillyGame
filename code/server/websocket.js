@@ -35,11 +35,9 @@ file = "ressources/questions.json";
 const questions = JSON.parse(fs.readFileSync(file))
 
 if (!TEST_MODE) {
-
 	questions.sort(function () {
 		return .5 - Math.random();
 	});
-
 }
 
 let totalAnswers = 0;
@@ -77,30 +75,30 @@ module.exports = function (httpServer) {
 			// REPERE 1
 			// Envois des questions joueurs+écrans 
 
+			let scores = [];
+
+			for(let i = 0; i < playersSocks.length; i++) {
+				scores[i] = {
+					"pseudo": playersSocks[i].player.pseudo,
+					"score": playersSocks[i].player.score
+				}
+			}
+
+			scores.sort(function(a, b) {
+				return b.score - a.score;
+			})
 
 			let screensSocksScores = [END_GAME, playersSocks.length];
 
-			let scores = [END_GAME, playersSocks.length];
-
 			for (let i = 0; i < playersSocks.length; i++) {
-
 				playersSocks[i].send(JSON.stringify([END_GAME, playersSocks[i].player.score]));
 
-				screensSocksScores[2 + i * 2] = playersSocks[i].player.pseudo;
-				screensSocksScores[3 + i * 2] = playersSocks[i].player.score;
-				scores[2 + i] =
-					{
-						'pseudo': playersSocks[i].player.pseudo,
-						'score': playersSocks[i].player.score
-					};
+				screensSocksScores[2 + i * 2] = scores[i].pseudo;
+				screensSocksScores[3 + i * 2] = scores[i].score;
 			}
 
-			scores.sort(function (a, b) {
-				return b.score - a.score
-			});
-
 			for (let screenSock of screensSocks) {
-				screenSock.send(JSON.stringify(scores));
+				screenSock.send(JSON.stringify(screensSocksScores));
 			}
 		} else {
 			// REPERE 2
