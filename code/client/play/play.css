@@ -28,26 +28,6 @@ body {
 
 /* Page d'accueil - ajout du pseudo */
 
-#players-info {
-	text-align: center;
-	font-size: 22px;
-	margin-bottom: 15px;
-}
-
-#players-count {
-	font-weight: bold;
-}
-
-#min-players-info {
-	text-align: center;
-	font-size: 22px;
-	margin-bottom: 30px;
-}
-
-#min-players-count {
-	font-weight: bold;
-}
-
 #start-countdown-info {
 	font-size: 18px;
 	text-align: center;
@@ -62,10 +42,6 @@ body {
 	text-align: center;
 	font-size: 20px;
 	margin-bottom: 20px;
-}
-
-#player-pseudo {
-	font-weight: bold;
 }
 
 #pseudo-input {
@@ -86,7 +62,7 @@ body {
 	margin-bottom: 20px;
 }
 
-#send-pseudo-button {
+#join-button {
 	width: 100px;
 	background-color: #a65050;
 	border: none;
@@ -96,6 +72,7 @@ body {
 	text-decoration: none;
 	font-size: 16px;
 	margin: 0px auto 30px auto;
+	cursor: pointer;
 }
 
 #players-list-header {

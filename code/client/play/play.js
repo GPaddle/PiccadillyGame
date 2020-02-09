@@ -2,17 +2,16 @@
 
 const CLIENT_TYPE_PLAYER = 0;
 
-const ADD_PLAYER = 0,
-	SET_PSEUDO = 1,
+const ADD_PLAYER = 1,
 	DEL_PLAYER = 2,
 	PSEUDO_ALREADY_USED = 3,
-	START_GAME_COUNTDOWN = 4,
-	START_GAME = 5;
+	START_GAME_COUNTDOWN = 4;
 
 const NEW_QUESTION = 0,
-	ANSWERS_STATS = 1,
-	END_QUESTION = 2,
-	END_GAME = 3;
+	END_GAME = 1;
+
+const ANSWERS_STATS = 0,
+	END_QUESTION = 1;
 
 const WAIT_NOTHING = 0,
 	WAIT_GAME_INFO = 1,
@@ -22,13 +21,10 @@ const WAIT_NOTHING = 0,
 
 window.onload = function () {
 	document.body.innerHTML = `
-	<div id="players-info">Nombre de joueurs connectés : <span id="players-count">...</span></div>
-	<div id="min-players-info">Nombre de joueurs minimum nécessaires : <span id="min-players-count">...</span></div>
-
-	<div id="player-pseudo-info">Votre pseudo est <span id="player-pseudo">...</span></div>
+	<div id="player-pseudo-info">Votre pseudo :</div>
 	<input id="pseudo-input" type="text" placeholder="Entrez votre pseudo" required autofocus>
 	<div id="pseudo-error"></div>
-	<div id="send-pseudo-button">Envoyer</div>
+	<div id="join-button">Rejoindre la partie</div>
 
 	<div id="players-list-header">Joueurs connectés</div>
 	<div id="players-list">
@@ -42,9 +38,8 @@ window.onload = function () {
 		pseudoError.innerHTML = "";
 	}
 
-	let sendPseudoButton = document.getElementById("send-pseudo-button");
-	sendPseudoButton.onclick = function () {
-
+	let joinButton = document.getElementById("join-button");
+	joinButton.onclick = function () {
 		//REPERE 1
 		sock.send(JSON.stringify([pseudoInput.value]));
 
@@ -58,9 +53,6 @@ window.onload = function () {
 		let state = WAIT_GAME_INFO;
 		let players; // tableau des pseudos de joueurs
 
-		let meId; // mon identifiant de joueur
-
-		let actualQuestion = 0;
 		let questionCountdown;
 
 		let chosenAnswer;
@@ -68,10 +60,9 @@ window.onload = function () {
 		//REPERE 2
 		sock.send(JSON.stringify([CLIENT_TYPE_PLAYER]));
 
-
 		function displayGame() {
 			document.body.innerHTML = `
-			<div id="question-number">Question 1</div>
+			<div id="question-number">Question</div>
 			<div id="question-info"></div>
 			<div class="answer-button">
 				<div class="answer-stat-bar"></div>
@@ -121,22 +112,61 @@ window.onload = function () {
 		sock.onmessage = function (json) {
 			let msg = JSON.parse(json.data);
 
+			function onNewQuestion() {
+				if (chosenAnswer !== undefined) {
+					let clickedAnswerButton = document.getElementsByClassName("answer-button")[chosenAnswer];
+					clickedAnswerButton.style.border = "";
+				}
+
+				chosenAnswer = undefined;
+
+				let answersStats = document.getElementsByClassName("answer-stat");
+				let answersStatsBars = document.getElementsByClassName("answer-stat-bar");
+
+				for (let i = 0; i < 4; i++) {
+					answersStats[i].innerHTML = "";
+					answersStatsBars[i].style.width = "";
+				}
+
+				let questionNumber = document.getElementById("question-number");
+
+				let answersButtons = document.getElementsByClassName("answer-button");
+
+				for (let answerButton of answersButtons) {
+					answerButton.style.backgroundColor = "";
+				}
+
+				clearInterval(questionCountdown);
+
+				let time = msg[1];
+
+				let questionInfo = document.getElementById("question-info");
+				questionInfo.innerHTML = "Temps restant : <span id=\"question-countdown\"></span>"
+
+				let questionCountdownSpan = document.getElementById("question-countdown");
+				questionCountdownSpan.innerHTML = time;
+
+				questionCountdown = setInterval(function () {
+					time--;
+					questionCountdownSpan.innerHTML = time;
+
+					if (time == 0) {
+						clearTimeout(questionCountdown);
+					}
+				}, 1000);
+
+				state = WAIT_QUESTION_EVENT;
+			}
+
 			switch (state) {
 				case WAIT_GAME_INFO: {
-					let minPlayersCount = document.getElementById("min-players-count");
-					minPlayersCount.innerHTML = msg[0];
+					let pseudoInput = document.getElementById("pseudo-input");
+					pseudoInput.value = msg[0];
 
 					let playersCount = msg[1];
 
-					let playersCountSpan = document.getElementById("players-count");
-					playersCountSpan.innerHTML = playersCount;
-
-					meId = msg[2 + playersCount * 2];
-
-					let playersList = document.getElementById("players-list");
-					let playerPseudo = document.getElementById("player-pseudo")
-
 					players = [];
+					let playersList = document.getElementById("players-list");
 
 					for (let i = 0; i < playersCount; i++) {
 						players[i] = {};
@@ -148,10 +178,6 @@ window.onload = function () {
 						players[i].line.innerHTML = players[i].pseudo;
 
 						playersList.appendChild(players[i].line);
-
-						if (players[i].id == meId) {
-							playerPseudo.innerHTML = players[i].pseudo;
-						}
 					}
 
 					state = WAIT_WAITING_ROOM_EVENT;
@@ -173,23 +199,6 @@ window.onload = function () {
 
 						let playersList = document.getElementById("players-list");
 						playersList.appendChild(player.line);
-
-						let playersCount = document.getElementById("players-count")
-						playersCount.innerHTML = players.length;
-					} else if (msg[0] == SET_PSEUDO) {
-						for (let player of players) { // on récupère le joueur concerné grâce à son id
-							if (player.id == msg[1]) {
-								player.pseudo = msg[2]; // on change le pseudo du joueur
-								player.line.innerHTML = player.pseudo; // on met à jour la liste des joueurs HTML
-
-								if (player.id == meId) {
-									let playerPseudo = document.getElementById("player-pseudo");
-									playerPseudo.innerHTML = player.pseudo;
-								}
-
-								break;
-							}
-						}
 					} else if (msg[0] == DEL_PLAYER) {
 						for (let player of players) {
 							if (player.id == msg[1]) {
@@ -229,9 +238,9 @@ window.onload = function () {
 								clearInterval(countdown);
 							}
 						}, 1000);
-					} else if (msg[0] == START_GAME) {
+					} else if (msg[0] == NEW_QUESTION) {
 						displayGame();
-						state = WAIT_QUESTION;
+						onNewQuestion();
 					}
 
 					break;
@@ -239,54 +248,12 @@ window.onload = function () {
 
 				case WAIT_QUESTION: {
 					if (msg[0] == NEW_QUESTION) {
-						if (chosenAnswer !== undefined) {
-							let clickedAnswerButton = document.getElementsByClassName("answer-button")[chosenAnswer];
-							clickedAnswerButton.style.border = "";
-						}
-
-						chosenAnswer = undefined;
-
-						let answersStats = document.getElementsByClassName("answer-stat");
-						let answersStatsBars = document.getElementsByClassName("answer-stat-bar");
-
-						for (let i = 0; i < 4; i++) {
-							answersStats[i].innerHTML = "";
-							answersStatsBars[i].style.width = "";
-						}
-
-						actualQuestion++;
-
-						let questionNumber = document.getElementById("question-number");
-						questionNumber.innerHTML = "Question " + actualQuestion;
-
-						let answersButtons = document.getElementsByClassName("answer-button");
-
-						for (let answerButton of answersButtons) {
-							answerButton.style.backgroundColor = "";
-						}
-
-						clearInterval(questionCountdown);
-
-						let time = msg[1];
-
-						let questionInfo = document.getElementById("question-info");
-						questionInfo.innerHTML = "Temps restant : <span id=\"question-countdown\"></span>"
-
-						let questionCountdownSpan = document.getElementById("question-countdown");
-						questionCountdownSpan.innerHTML = time;
-
-						questionCountdown = setInterval(function () {
-							time--;
-							questionCountdownSpan.innerHTML = time;
-
-							if (time == 0) {
-								clearTimeout(questionCountdown);
-							}
-						}, 1000);
-
-						state = WAIT_QUESTION_EVENT;
-						break;
+						onNewQuestion();
+					} else if(msg[0] == END_GAME) {
+						displayEnd(msg);
 					}
+
+					break;
 				}
 
 				case WAIT_QUESTION_EVENT: {
@@ -316,8 +283,6 @@ window.onload = function () {
 						}
 
 						state = WAIT_QUESTION;
-					} else if (msg[0] == END_GAME) {
-						displayEnd(msg);
 					}
 
 					break;

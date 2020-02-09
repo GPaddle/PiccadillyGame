@@ -2,13 +2,12 @@
 
 const CLIENT_TYPE_SCREEN = 1;
 
-const ADD_PLAYER = 0,
+const ADD_PLAYER = 1,
 	DEL_PLAYER = 2,
-	START_GAME_COUNTDOWN = 4,
-	START_GAME = 5;
+	START_GAME_COUNTDOWN = 4;
 
 const NEW_QUESTION = 0,
-	END_GAME = 3;
+	END_GAME = 1;
 
 const SECRET_SCREEN_KEY = "7116dd23254dc1a8";
 
@@ -52,6 +51,47 @@ window.onload = function() {
 
 		sock.onmessage = function(json) {
 			let msg = JSON.parse(json.data);
+
+			function onNewQuestion() {
+				clearInterval(questionCountdown);
+				questionNumber++;
+
+				let questionNumberDiv = document.getElementById("question-number");
+				questionNumberDiv.innerHTML = "Question " + questionNumber;
+
+				let questionDiv = document.getElementById("question");
+				questionDiv.innerHTML = msg[1];
+
+				let answers = document.getElementsByClassName("answer");
+				let answersText = document.getElementsByClassName("answer-text");
+
+				questionAnswers = [];
+
+				for(let i = 0; i < 4; i++) {
+					questionAnswers[i] = msg[2 + i];
+
+					answers[i].style.backgroundColor = "";
+					answersText[i].innerHTML = questionAnswers[i];
+				}
+
+				let time = msg[6];
+
+				let questionInfo = document.getElementById("question-info");
+				questionInfo.innerHTML = "Temps restant : <span id=\"question-countdown\">" + time + "</span>";
+
+				let questionCountdownSpan = document.getElementById("question-countdown");
+
+				questionCountdown = setInterval(function() {
+					time--;
+					questionCountdownSpan.innerHTML = time;
+
+					if(time == 0) {
+						clearInterval(questionCountdown);
+					}
+				}, 1000);
+
+				state = WAIT_ANSWER;
+			}
 
 			switch (state) {
 				case WAIT_GAME_INFO: {
@@ -101,7 +141,7 @@ window.onload = function() {
 								clearInterval(countdown);
 							}
 						}, 1000)
-					} else if(msg[0] == START_GAME) {
+					} else if(msg[0] == NEW_QUESTION) {
 						document.body.innerHTML = `
 						<div id="question-number">Question ...</div>
 						<div id="question">...</div>
@@ -124,7 +164,7 @@ window.onload = function() {
 						</div>
 						`;
 
-						state = WAIT_QUESTION;
+						onNewQuestion();
 					}
 
 					break;
@@ -132,44 +172,7 @@ window.onload = function() {
 
 				case WAIT_QUESTION: {
 					if(msg[0] == NEW_QUESTION) {
-						clearInterval(questionCountdown);
-						questionNumber++;
-
-						let questionNumberDiv = document.getElementById("question-number");
-						questionNumberDiv.innerHTML = "Question " + questionNumber;
-
-						let questionDiv = document.getElementById("question");
-						questionDiv.innerHTML = msg[1];
-
-						let answers = document.getElementsByClassName("answer");
-						let answersText = document.getElementsByClassName("answer-text");
-
-						questionAnswers = [];
-
-						for(let i = 0; i < 4; i++) {
-							questionAnswers[i] = msg[2 + i];
-
-							answers[i].style.backgroundColor = "";
-							answersText[i].innerHTML = questionAnswers[i];
-						}
-
-						let time = msg[6];
-
-						let questionInfo = document.getElementById("question-info");
-						questionInfo.innerHTML = "Temps restant : <span id=\"question-countdown\">" + time + "</span>";
-
-						let questionCountdownSpan = document.getElementById("question-countdown");
-
-						questionCountdown = setInterval(function() {
-							time--;
-							questionCountdownSpan.innerHTML = time;
-
-							if(time == 0) {
-								clearInterval(questionCountdown);
-							}
-						}, 1000);
-
-						state = WAIT_ANSWER;
+						onNewQuestion();
 					} else if(msg[0] == END_GAME) {
 						document.body.innerHTML = `<div id="results-header">Résultats</div><div id="results"></div>`;
 
