@@ -19,7 +19,7 @@
 			"4000 m",
 			"232 m"
 		],
-		"correctAnswer": 1,
+		"correctAnswer": 0,
 		"time": 15
 	},
 
@@ -31,7 +31,7 @@
 			"Michael Phelps",
 			"Birgit Fischer"
 		],
-		"correctAnswer": 3,
+		"correctAnswer": 2,
 		"time": 15
 	},
 
@@ -43,7 +43,7 @@
 			"Ada Lovelace",
 			"Tom Anderson"
 		],
-		"correctAnswer": 1,
+		"correctAnswer": 0,
 		"time": 15
 	},
 
@@ -55,7 +55,7 @@
 			"3 ans",
 			"4 jours"
 		],
-		"correctAnswer": 2,
+		"correctAnswer": 1,
 		"time": 15
 	},
 
