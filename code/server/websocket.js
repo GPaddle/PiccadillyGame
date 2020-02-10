@@ -232,6 +232,8 @@ module.exports = function (httpServer) {
 
 							startCountdownRunning = true;
 						} else if(questionRunning) {
+							waitingRoomSocks.splice(waitingRoomSocks.indexOf(sock), 1);
+
 							let remainingQuestionTime = Math.floor((questionEndTime - Date.now()) / 1000);
 
 							sock.send(JSON.stringify([NEW_QUESTION, remainingQuestionTime]));
