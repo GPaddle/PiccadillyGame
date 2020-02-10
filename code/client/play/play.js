@@ -20,6 +20,8 @@ const WAIT_NOTHING = 0,
 	WAIT_QUESTION = 3,
 	WAIT_QUESTION_EVENT = 4;
 
+const TEST_MODE = false;
+
 window.onload = function () {
 	document.body.innerHTML = `
 	<div id="player-pseudo-info">Votre pseudo :</div>
@@ -44,12 +46,6 @@ window.onload = function () {
 		}
 	}
 
-	let joinButton = document.getElementById("join-button");
-	joinButton.onclick = function () {
-		//REPERE 1
-		sock.send(JSON.stringify([pseudoInput.value]));
-	};
-
 	let sock = new WebSocket("ws://" + window.location.host);
 
 	sock.onopen = function () {
@@ -62,6 +58,15 @@ window.onload = function () {
 
 		//REPERE 2
 		sock.send(JSON.stringify([CLIENT_TYPE_PLAYER]));
+
+		document.getElementById("join-button").onclick = function () {
+			//REPERE 1
+			sock.send(JSON.stringify([pseudoInput.value]));
+		};
+
+		if(TEST_MODE) {
+			document.getElementById("join-button").click();
+		}
 
 		function displayGame() {
 			document.body.innerHTML = `
