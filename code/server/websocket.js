@@ -11,8 +11,9 @@ const CLIENT_TYPE_PLAYER = 0,
 
 const ADD_PLAYER = 1,
 	DEL_PLAYER = 2,
-	PSEUDO_ALREADY_USED = 3,
-	START_GAME_COUNTDOWN = 4;
+	PSEUDO_OK = 3,
+	PSEUDO_ALREADY_USED = 4,
+	START_GAME_COUNTDOWN = 5;
 
 const NEW_QUESTION = 0,
 	END_GAME = 1;
@@ -51,7 +52,7 @@ module.exports = function (httpServer) {
 	const wss = new ws.Server({ server: httpServer });
 
 	const playersSocks = []; // tableau de tous les joueurs
-	const anonymousSocks = []; // tableau des personnes n'ayant pas encore choisi de pseudos
+	const waitingRoomSocks = []; // tableau des personnes se trouvant en salle d'attente qui recoivent les évènements de salle d'attente ("bidule s'est connecté", "machin s'est déconnecté")
 	const screensSocks = []; // tableau de tous les écrans d'affichage connectés au serveur
 
 	let nextPlayerId = 0;
@@ -162,7 +163,7 @@ module.exports = function (httpServer) {
 						}
 
 						sock.send(JSON.stringify(gameInfo));
-						anonymousSocks.push(sock);
+						waitingRoomSocks.push(sock);
 
 						sock.state = WAIT_PSEUDO;
 					} else if(msg[0] == CLIENT_TYPE_SCREEN && msg[1] == SCREEN_SECRET_KEY) {
@@ -195,21 +196,20 @@ module.exports = function (httpServer) {
 
 						sock.player.answers = [];
 
-						anonymousSocks.splice(anonymousSocks.indexOf(sock), 1);
 						playersSocks.push(sock);
+
+						sock.send(JSON.stringify([PSEUDO_OK, sock.player.id]));
 
 						if(!gameRunning) {
 							for(let screenSock of screensSocks) {
 								screenSock.send(JSON.stringify([ADD_PLAYER]));
 							}
-
-							for(let playerSock of playersSocks) {
-								playerSock.send(JSON.stringify([ADD_PLAYER, sock.player.id, sock.player.pseudo]));
-							}
 						}
 
-						for(let anonymousSock of anonymousSocks) {
-							anonymousSock.send(JSON.stringify([ADD_PLAYER, sock.player.id, sock.player.pseudo]));
+						for(let waitingRoomSock of waitingRoomSocks) {
+							if(waitingRoomSock != sock) {
+								waitingRoomSock.send(JSON.stringify([ADD_PLAYER, sock.player.id, sock.player.pseudo]));
+							}
 						}
 
 						if(!gameRunning && startCountdown === undefined && playersSocks.length >= MIN_PLAYER) {
@@ -223,6 +223,13 @@ module.exports = function (httpServer) {
 
 							startCountdown = setTimeout(function () {
 								gameRunning = true;
+
+								for(let waitingRoomSock of waitingRoomSocks) { // on supprime de la salle d'attente toutes les personnes qui ont cliqué sur "rejoindre la partie"
+									if(waitingRoomSock.player !== undefined) {
+										waitingRoomSocks.slice(waitingRoomSocks.indexOf(waitingRoomSock), 1);
+									}
+								}
+
 								nextQuestion(); // on envoit la première question
 							}, GAME_COUNT_DOWN_TIME * 1000); // quand on a assez de joueurs on lance la partie dans 15 secondes
 						}
@@ -278,30 +285,26 @@ module.exports = function (httpServer) {
 		sock.on("close", function () {
 			let screensSocksIndex = screensSocks.indexOf(sock);
 			let playersSocksIndex = playersSocks.indexOf(sock);
-			let anonymousSocksIndex = anonymousSocks.indexOf(sock);
+			let waitingRoomSocksIndex = waitingRoomSocks.indexOf(sock);
 
 			if(screensSocksIndex != -1) {
 				screensSocks.splice(screensSocksIndex, 1);
 			} else if(playersSocksIndex != -1) {
 				//REPERE 9
 
+				playersSocks.splice(playersSocksIndex, 1);
+
 				if(!gameRunning) {
 					for(let screenSock of screensSocks) {
 						screenSock.send(JSON.stringify([DEL_PLAYER]));
 					}
-
-					for(let playerSock of playersSocks) {
-						playerSock.send(JSON.stringify([DEL_PLAYER, sock.player.id]));
-					}
 				}
 
-				for(let anonymousSock of anonymousSocks) {
-					anonymousSock.send(JSON.stringify([DEL_PLAYER, sock.player.id]));
+				for(let waitingRoomSock of waitingRoomSocks) {
+					waitingRoomSock.send(JSON.stringify([DEL_PLAYER, sock.player.id]));
 				}
-
-				playersSocks.splice(playersSocksIndex, 1);
-			} else if(anonymousSocksIndex != -1) {
-				anonymousSocks.splice(anonymousSocksIndex, 1);
+			} else if(waitingRoomSocksIndex != -1) {
+				waitingRoomSocks.splice(waitingRoomSocksIndex, 1);
 			}
 		});
 	});

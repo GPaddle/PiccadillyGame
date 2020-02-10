@@ -28,20 +28,10 @@ body {
 
 /* Page d'accueil - ajout du pseudo */
 
-#start-countdown-info {
-	font-size: 18px;
-	text-align: center;
-	margin-bottom: 20px;
-}
-
-#start-countdown {
-	font-weight: bold;
-}
-
 #player-pseudo-info {
 	text-align: center;
 	font-size: 20px;
-	margin-bottom: 20px;
+	margin-bottom: 10px;
 }
 
 #pseudo-input {
@@ -55,11 +45,17 @@ body {
 	border: 2px solid white;
 	border-radius: 8px;
 	color: #fefefe;
+	margin-bottom: 20px;
 }
 
-#pseudo-error {
+#game-info {
+	font-size: 18px;
 	text-align: center;
 	margin-bottom: 20px;
+}
+
+#start-countdown {
+	font-weight: bold;
 }
 
 #join-button {

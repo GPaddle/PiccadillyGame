@@ -4,8 +4,9 @@ const CLIENT_TYPE_PLAYER = 0;
 
 const ADD_PLAYER = 1,
 	DEL_PLAYER = 2,
-	PSEUDO_ALREADY_USED = 3,
-	START_GAME_COUNTDOWN = 4;
+	PSEUDO_OK = 3,
+	PSEUDO_ALREADY_USED = 4,
+	START_GAME_COUNTDOWN = 5;
 
 const NEW_QUESTION = 0,
 	END_GAME = 1;
@@ -23,7 +24,7 @@ window.onload = function () {
 	document.body.innerHTML = `
 	<div id="player-pseudo-info">Votre pseudo :</div>
 	<input id="pseudo-input" type="text" placeholder="Entrez votre pseudo" required autofocus>
-	<div id="pseudo-error"></div>
+	<div id="game-info"></div>
 	<div id="join-button">Rejoindre la partie</div>
 
 	<div id="players-list-header">Joueurs connectés</div>
@@ -32,19 +33,21 @@ window.onload = function () {
 	</div>
 	`;
 
+	let pseudoError = false;
+
 	let pseudoInput = document.getElementById("pseudo-input");
 	pseudoInput.onfocus = function () {
-		let pseudoError = document.getElementById("pseudo-error");
-		pseudoError.innerHTML = "";
+		if(pseudoError) {
+			let gameInfo = document.getElementById("game-info");
+			gameInfo.innerHTML = "";
+			pseudoError = false;
+		}
 	}
 
 	let joinButton = document.getElementById("join-button");
 	joinButton.onclick = function () {
 		//REPERE 1
 		sock.send(JSON.stringify([pseudoInput.value]));
-
-		let pseudoError = document.getElementById("pseudo-error");
-		pseudoError.innerHTML = "";
 	};
 
 	let sock = new WebSocket("ws://" + window.location.host);
@@ -185,13 +188,8 @@ window.onload = function () {
 				}
 
 				case WAIT_WAITING_ROOM_EVENT: {
-					if (msg[0] == ADD_PLAYER) {
-						let player = {
-							id: msg[1],
-							pseudo: msg[2]
-						};
-
-						players.push(player);
+					function addPlayer(id, pseudo) {
+						let player = {id: id, pseudo: pseudo};
 
 						player.line = document.createElement("div");
 						player.line.classList.add("players-list-player");
@@ -199,6 +197,12 @@ window.onload = function () {
 
 						let playersList = document.getElementById("players-list");
 						playersList.appendChild(player.line);
+
+						players.push(player);
+					}
+
+					if (msg[0] == ADD_PLAYER) {
+						addPlayer(msg[1], msg[2]);
 					} else if (msg[0] == DEL_PLAYER) {
 						for (let player of players) {
 							if (player.id == msg[1]) {
@@ -209,26 +213,32 @@ window.onload = function () {
 								playersCount.innerHTML = players.length;
 							}
 						}
+					} else if(msg[0] == PSEUDO_OK) {
+						let pseudoInput = document.getElementById("pseudo-input");
+						addPlayer(msg[1], pseudoInput.value);
+
+						let joinButton = document.getElementById("join-button");
+						let gameInfo = document.getElementById("game-info");
+
+						document.body.removeChild(joinButton);
+						gameInfo.innerHTML = "En attente du début de la partie";
+						pseudoInput.readOnly = true;
 					} else if (msg[0] == PSEUDO_ALREADY_USED) {
-						let pseudoError = document.getElementById("pseudo-error");
-						pseudoError.innerHTML = "Ce pseudo est déjà utilisé";
+						let gameInfo = document.getElementById("game-info");
+						gameInfo.innerHTML = "Ce pseudo est déjà utilisé";
+						pseudoError = true;
 					} else if (msg[0] == START_GAME_COUNTDOWN) {
-						let countdownInfo = document.createElement("div");
-						countdownInfo.id = "start-countdown-info";
-
-						let textNode = document.createTextNode("La partie commence dans ");
-						countdownInfo.appendChild(textNode);
-
-						let time = msg[1];
+						let gameInfo = document.getElementById("game-info");
+						let joinButton = document.getElementById("join-button");
 
 						let countdownSpan = document.createElement("span");
 						countdownSpan.id = "start-countdown";
-						countdownSpan.innerHTML = time;
+						countdownSpan.innerHTML = msg[1];
 
-						countdownInfo.appendChild(countdownSpan);
+						gameInfo.innerHTML = "La partie commence dans ";
+						gameInfo.appendChild(countdownSpan);
 
-						let playerPseudoInfo = document.getElementById("player-pseudo-info");
-						document.body.insertBefore(countdownInfo, playerPseudoInfo)
+						let time = msg[1];
 
 						let countdown = setInterval(function () {
 							time--;
