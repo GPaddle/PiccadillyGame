@@ -26,8 +26,6 @@ const WAIT_NOTHING = 0,
 	WAIT_PSEUDO = 2,
 	WAIT_ANSWER = 3;
 
-let questionTime;
-
 const questions = JSON.parse(fs.readFileSync("ressources/questions.json"))
 
 if (!TEST_MODE) {
@@ -43,9 +41,7 @@ const pseudo_Possibilities = JSON.parse(fs.readFileSync("ressources/pseudos.json
 const SCREEN_SECRET_KEY = "7116dd23254dc1a8";
 
 const MIN_PLAYER = TEST_MODE ? 1 : 4;
-let GAME_COUNT_DOWN_TIME;
-
-GAME_COUNT_DOWN_TIME = TEST_MODE ? 5 : 15;
+const GAME_COUNT_DOWN_TIME = TEST_MODE ? 5 : 15;
 
 const nbQuestions = TEST_MODE ? 1 : 5;
 module.exports = function (httpServer) {
@@ -55,14 +51,22 @@ module.exports = function (httpServer) {
 	const waitingRoomSocks = []; // tableau des personnes se trouvant en salle d'attente qui recoivent les évènements de salle d'attente ("bidule s'est connecté", "machin s'est déconnecté")
 	const screensSocks = []; // tableau de tous les écrans d'affichage connectés au serveur
 
-	let nextPlayerId = 0;
 	let gameRunning = false;
+	let questionRunning = false;
+	let startCountdownRunning = false;
+	let nextPlayerId = 0;
 	let actualQuestion = -1;
-	let startCountdown;
 	let questionEndTime;
 
 	function nextQuestion() {
 		actualQuestion++;
+
+		for(let i = 0; i < waitingRoomSocks.length; i++) {
+			if(waitingRoomSocks[i].isPlayer) {
+				waitingRoomSocks.splice(i, 1);
+				i--; // pour éviter de sauter des élements du tableau
+			}
+		}
 
 		if (actualQuestion == nbQuestions) {
 			// REPERE 1
@@ -118,8 +122,12 @@ module.exports = function (httpServer) {
 				screenSock.send(JSON.stringify(screenSockQuestion));
 			}
 
-			questionTime = setTimeout(function () {
+			questionRunning = true;
+
+			let questionCountdown = setTimeout(function () {
 				//REPERE 3
+
+				questionRunning = false;
 
 				for (let screenSock of screensSocks) {
 					screenSock.send(JSON.stringify([question.correctAnswer]));
@@ -187,6 +195,7 @@ module.exports = function (httpServer) {
 					}
 
 					if(isPseudoFree) {
+						sock.isPlayer = true;
 						sock.player = {};
 
 						sock.player.id = nextPlayerId;
@@ -212,26 +221,23 @@ module.exports = function (httpServer) {
 							}
 						}
 
-						if(!gameRunning && startCountdown === undefined && playersSocks.length >= MIN_PLAYER) {
+						if(!gameRunning && !startCountdownRunning && playersSocks.length >= MIN_PLAYER) {
 							for (let screenSock of screensSocks) {
 								screenSock.send(JSON.stringify([START_GAME_COUNTDOWN, GAME_COUNT_DOWN_TIME]));
 							}
 
-							for (let playerSock of playersSocks) {
-								playerSock.send(JSON.stringify([START_GAME_COUNTDOWN, GAME_COUNT_DOWN_TIME]));
-							}
-
-							startCountdown = setTimeout(function () {
+							let startCountdown = setTimeout(function () {
+								startCountdownRunning = false;
 								gameRunning = true;
-
-								for(let waitingRoomSock of waitingRoomSocks) { // on supprime de la salle d'attente toutes les personnes qui ont cliqué sur "rejoindre la partie"
-									if(waitingRoomSock.player !== undefined) {
-										waitingRoomSocks.slice(waitingRoomSocks.indexOf(waitingRoomSock), 1);
-									}
-								}
-
 								nextQuestion(); // on envoit la première question
 							}, GAME_COUNT_DOWN_TIME * 1000); // quand on a assez de joueurs on lance la partie dans 15 secondes
+
+							startCountdownRunning = true;
+						} else if(questionRunning) {
+							let remainingQuestionTime = Math.floor((questionEndTime - Date.now()) / 1000);
+
+							sock.send(JSON.stringify([NEW_QUESTION, remainingQuestionTime]));
+							sock.state = WAIT_ANSWER;
 						}
 					} else {
 						sock.send(JSON.stringify([PSEUDO_ALREADY_USED]));

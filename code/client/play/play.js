@@ -5,8 +5,7 @@ const CLIENT_TYPE_PLAYER = 0;
 const ADD_PLAYER = 1,
 	DEL_PLAYER = 2,
 	PSEUDO_OK = 3,
-	PSEUDO_ALREADY_USED = 4,
-	START_GAME_COUNTDOWN = 5;
+	PSEUDO_ALREADY_USED = 4;
 
 const NEW_QUESTION = 0,
 	END_GAME = 1;
@@ -226,33 +225,12 @@ window.onload = function () {
 						let gameInfo = document.getElementById("game-info");
 
 						document.body.removeChild(joinButton);
-						gameInfo.innerHTML = "En attente du début de la partie";
+						gameInfo.innerHTML = "Pseudo validé";
 						pseudoInput.readOnly = true;
 					} else if (msg[0] == PSEUDO_ALREADY_USED) {
 						let gameInfo = document.getElementById("game-info");
 						gameInfo.innerHTML = "Ce pseudo est déjà utilisé";
 						pseudoError = true;
-					} else if (msg[0] == START_GAME_COUNTDOWN) {
-						let gameInfo = document.getElementById("game-info");
-						let joinButton = document.getElementById("join-button");
-
-						let countdownSpan = document.createElement("span");
-						countdownSpan.id = "start-countdown";
-						countdownSpan.innerHTML = msg[1];
-
-						gameInfo.innerHTML = "La partie commence dans ";
-						gameInfo.appendChild(countdownSpan);
-
-						let time = msg[1];
-
-						let countdown = setInterval(function () {
-							time--;
-							countdownSpan.innerHTML = time;
-
-							if (time == 0) {
-								clearInterval(countdown);
-							}
-						}, 1000);
 					} else if (msg[0] == NEW_QUESTION) {
 						displayGame();
 						onNewQuestion();
