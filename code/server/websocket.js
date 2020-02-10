@@ -34,8 +34,6 @@ if (!TEST_MODE) {
 	});
 }
 
-let totalAnswers = 0;
-
 const pseudo_Possibilities = JSON.parse(fs.readFileSync("ressources/pseudos.json"));
 
 const SCREEN_SECRET_KEY = "7116dd23254dc1a8";
@@ -249,15 +247,8 @@ module.exports = function (httpServer) {
 				case WAIT_ANSWER: {
 					if (sock.player.answers[actualQuestion] === undefined && msg[0] >= 0 && msg[0] <= 3) { // si le joueur n'a pas encore donné de réponse et si le code de réponse est 0, 1, 2 ou 3
 						if (msg[0] == questions[actualQuestion].correctAnswer) {
-
 							let questionCoefficient = 15 / questions[actualQuestion].time;
-
 							sock.player.score += (questionEndTime - Date.now()) * questionCoefficient;
-
-							totalAnswers++;
-							if (totalAnswers == playersSocks.length) {
-								//TODO trouver comment mettre un terme à la question en cours si tous les joueurs ont répondu
-							}
 						}
 
 						sock.player.answers[actualQuestion] = msg[0]; // on enregistre la réponse envoyée par le joueur
