@@ -108,15 +108,12 @@ module.exports = function (httpServer) {
 
 					if(isPseudoFree) {
 						sock.isPlayer = true;
-						sock.player = {};
 
+						sock.player = {};
 						sock.player.id = nextPlayerId;
 						sock.player.pseudo = msg[0];
-						sock.player.score = 0;
 
 						nextPlayerId++;
-
-						sock.player.answers = [];
 
 						playersSocks.push(sock);
 
@@ -228,7 +225,12 @@ module.exports = function (httpServer) {
 										}, question.time * 1000);
 									}
 								}
-								
+
+								for(let playerSock of playersSocks) { // on initialise tous les scores des joueurs à 0
+									playerSock.player.answers = [];
+									playerSock.player.score = 0;
+								}
+
 								nextQuestion(); // on envoit la première question
 							}, GAME_COUNT_DOWN_TIME * 1000); // quand on a assez de joueurs on lance la partie dans 15 secondes
 
@@ -237,6 +239,9 @@ module.exports = function (httpServer) {
 							waitingRoomSocks.splice(waitingRoomSocks.indexOf(sock), 1);
 
 							let remainingQuestionTime = Math.floor((questionEndTime - Date.now()) / 1000);
+
+							sock.player.answers = [];
+							sock.player.score = 0;
 
 							sock.send(JSON.stringify([NEW_QUESTION, remainingQuestionTime]));
 							sock.state = WAIT_ANSWER;
