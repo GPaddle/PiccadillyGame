@@ -56,92 +56,6 @@ module.exports = function (httpServer) {
 	let actualQuestion = -1;
 	let questionEndTime;
 
-	function nextQuestion() {
-		actualQuestion++;
-
-		for(let i = 0; i < waitingRoomSocks.length; i++) {
-			if(waitingRoomSocks[i].isPlayer) {
-				waitingRoomSocks.splice(i, 1);
-				i--; // pour éviter de sauter des élements du tableau
-			}
-		}
-
-		if (actualQuestion == nbQuestions) {
-			// REPERE 1
-			// Envois des questions joueurs+écrans 
-
-			let scores = [];
-
-			for(let i = 0; i < playersSocks.length; i++) {
-				scores[i] = {
-					"pseudo": playersSocks[i].player.pseudo,
-					"score": playersSocks[i].player.score
-				}
-			}
-
-			scores.sort(function(a, b) {
-				return b.score - a.score;
-			})
-
-			let screensSocksScores = [END_GAME, playersSocks.length];
-
-			for (let i = 0; i < playersSocks.length; i++) {
-				playersSocks[i].send(JSON.stringify([END_GAME, playersSocks[i].player.score]));
-
-				screensSocksScores[2 + i * 2] = scores[i].pseudo;
-				screensSocksScores[3 + i * 2] = scores[i].score;
-			}
-
-			for (let screenSock of screensSocks) {
-				screenSock.send(JSON.stringify(screensSocksScores));
-			}
-		} else {
-			// REPERE 2
-			// Envois des questions joueurs+écrans 
-
-			let question = questions[actualQuestion];
-
-			for (let playerSock of playersSocks) {
-				playerSock.send(JSON.stringify([NEW_QUESTION, question.time])); // on envoit uniquement le temps de la question aux joueurs, l'intitulé de la question sera affiché sur les grands écrans
-				playerSock.state = WAIT_ANSWER;
-			}
-
-			let screenSockQuestion = [NEW_QUESTION, question.title];
-
-			for (let i = 0; i < 4; i++) {
-				screenSockQuestion[2 + i] = question.answers[i];
-			}
-
-			screenSockQuestion[6] = question.time;
-
-			questionEndTime = Date.now() + question.time * 1000;
-
-			for (let screenSock of screensSocks) {
-				screenSock.send(JSON.stringify(screenSockQuestion));
-			}
-
-			questionRunning = true;
-
-			let questionCountdown = setTimeout(function () {
-				//REPERE 3
-
-				questionRunning = false;
-
-				for (let screenSock of screensSocks) {
-					screenSock.send(JSON.stringify([question.correctAnswer]));
-				}
-
-				for (let playerSock of playersSocks) {
-					playerSock.send(JSON.stringify([END_QUESTION, question.correctAnswer])); // on envoit la bonne réponse aux joueurs
-					playerSock.state = WAIT_NOTHING;
-				}
-
-				let time = TEST_MODE ? 1000 : 6000;
-				setTimeout(nextQuestion, time);
-			}, question.time * 1000);
-		}
-	}
-
 	wss.on("connection", function (sock) {
 		sock.state = WAIT_AUTH;
 
@@ -228,6 +142,93 @@ module.exports = function (httpServer) {
 							let startCountdown = setTimeout(function () {
 								startCountdownRunning = false;
 								gameRunning = true;
+
+								function nextQuestion() {
+									actualQuestion++;
+
+									for(let i = 0; i < waitingRoomSocks.length; i++) {
+										if(waitingRoomSocks[i].isPlayer) {
+											waitingRoomSocks.splice(i, 1);
+											i--; // pour éviter de sauter des élements du tableau
+										}
+									}
+
+									if (actualQuestion == nbQuestions) {
+										// REPERE 1
+										// Envois des questions joueurs+écrans 
+
+										let scores = [];
+
+										for(let i = 0; i < playersSocks.length; i++) {
+											scores[i] = {
+												"pseudo": playersSocks[i].player.pseudo,
+												"score": playersSocks[i].player.score
+											}
+										}
+
+										scores.sort(function(a, b) {
+											return b.score - a.score;
+										})
+
+										let screensSocksScores = [END_GAME, playersSocks.length];
+
+										for (let i = 0; i < playersSocks.length; i++) {
+											playersSocks[i].send(JSON.stringify([END_GAME, playersSocks[i].player.score]));
+
+											screensSocksScores[2 + i * 2] = scores[i].pseudo;
+											screensSocksScores[3 + i * 2] = scores[i].score;
+										}
+
+										for (let screenSock of screensSocks) {
+											screenSock.send(JSON.stringify(screensSocksScores));
+										}
+									} else {
+										// REPERE 2
+										// Envois des questions joueurs+écrans 
+
+										let question = questions[actualQuestion];
+
+										for (let playerSock of playersSocks) {
+											playerSock.send(JSON.stringify([NEW_QUESTION, question.time])); // on envoit uniquement le temps de la question aux joueurs, l'intitulé de la question sera affiché sur les grands écrans
+											playerSock.state = WAIT_ANSWER;
+										}
+
+										let screenSockQuestion = [NEW_QUESTION, question.title];
+
+										for (let i = 0; i < 4; i++) {
+											screenSockQuestion[2 + i] = question.answers[i];
+										}
+
+										screenSockQuestion[6] = question.time;
+
+										questionEndTime = Date.now() + question.time * 1000;
+
+										for (let screenSock of screensSocks) {
+											screenSock.send(JSON.stringify(screenSockQuestion));
+										}
+
+										questionRunning = true;
+
+										let questionCountdown = setTimeout(function () {
+											//REPERE 3
+
+											questionRunning = false;
+
+											for (let screenSock of screensSocks) {
+												screenSock.send(JSON.stringify([question.correctAnswer]));
+											}
+
+											for (let playerSock of playersSocks) {
+												playerSock.send(JSON.stringify([END_QUESTION, question.correctAnswer])); // on envoit la bonne réponse aux joueurs
+												playerSock.state = WAIT_NOTHING;
+											}
+
+											let time = TEST_MODE ? 1000 : 6000;
+											setTimeout(nextQuestion, time);
+										}, question.time * 1000);
+									}
+								}
+								
 								nextQuestion(); // on envoit la première question
 							}, GAME_COUNT_DOWN_TIME * 1000); // quand on a assez de joueurs on lance la partie dans 15 secondes
 
