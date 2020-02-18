@@ -2,13 +2,12 @@
 
 const CLIENT_TYPE_PLAYER = 0;
 
-const ADD_PLAYER = 1,
-	DEL_PLAYER = 2,
-	PSEUDO_OK = 3,
-	PSEUDO_ALREADY_USED = 4;
-
-const NEW_QUESTION = 0,
-	END_GAME = 1;
+const ADD_PLAYER = 0,
+	DEL_PLAYER = 1,
+	PSEUDO_OK = 2,
+	PSEUDO_ALREADY_USED = 3,
+	NEW_QUESTION = 5,
+	END_GAME = 6;
 
 const ANSWERS_STATS = 0,
 	END_QUESTION = 1;
@@ -22,98 +21,52 @@ const WAIT_NOTHING = 0,
 const TEST_MODE = false;
 
 window.onload = function () {
-	document.body.innerHTML = `
-	<div id="player-pseudo-info">Votre pseudo :</div>
-	<input id="pseudo-input" type="text" placeholder="Entrez votre pseudo" required autofocus>
-	<div id="game-info"></div>
-	<div id="join-button">Rejoindre la partie</div>
-
-	<div id="players-list-header">Joueurs connectés</div>
-	<div id="players-list">
-
-	</div>
-	`;
-
-	let pseudoError = false;
-
-	let pseudoInput = document.getElementById("pseudo-input");
-	pseudoInput.onfocus = function () {
-		if(pseudoError) {
-			let gameInfo = document.getElementById("game-info");
-			gameInfo.innerHTML = "";
-			pseudoError = false;
-		}
-	}
-
 	let sock = new WebSocket("ws://" + window.location.host);
 
 	sock.onopen = function () {
-		let state = WAIT_GAME_INFO;
+		let pseudoError = false;
+		let state;
 		let players; // tableau des pseudos de joueurs
-
 		let questionCountdown;
-
 		let chosenAnswer;
+
+		function displayWaitingRoom() {
+			document.body.innerHTML = `
+			<div id="player-pseudo-info">Votre pseudo :</div>
+			<input id="pseudo-input" type="text" placeholder="Entrez votre pseudo" required autofocus>
+			<div id="game-info"></div>
+			<div id="join-button">Rejoindre la partie</div>
+
+			<div id="players-list-header">Joueurs connectés</div>
+			<div id="players-list">
+
+			</div>
+			`;
+
+			let pseudoInput = document.getElementById("pseudo-input");
+			pseudoInput.onfocus = function () {
+				if(pseudoError) {
+					let gameInfo = document.getElementById("game-info");
+					gameInfo.innerHTML = "";
+					pseudoError = false;
+				}
+			}
+
+			document.getElementById("join-button").addEventListener("click", function () {
+				//REPERE 1
+				sock.send(JSON.stringify([pseudoInput.value]));
+			});
+
+			state = WAIT_GAME_INFO;
+		}
+
+		displayWaitingRoom();
 
 		//REPERE 2
 		sock.send(JSON.stringify([CLIENT_TYPE_PLAYER]));
 
-		document.getElementById("join-button").onclick = function () {
-			//REPERE 1
-			sock.send(JSON.stringify([pseudoInput.value]));
-		};
-
 		if(TEST_MODE) {
 			document.getElementById("join-button").click();
-		}
-
-		function displayGame() {
-			document.body.innerHTML = `
-			<div id="question-number">Question</div>
-			<div id="question-info"></div>
-			<div class="answer-button">
-				<div class="answer-stat-bar"></div>
-				<div class="answer-button-content">
-					<div class="answer-letter">A</div>
-					<div class="answer-stat">0%</div>
-				</div>
-			</div>
-			<div class="answer-button">
-				<div class="answer-stat-bar"></div>
-				<div class="answer-button-content">
-					<div class="answer-letter">B</div>
-					<div class="answer-stat">0%</div>
-				</div>
-			</div>
-			<div class="answer-button">
-				<div class="answer-stat-bar"></div>
-				<div class="answer-button-content">
-					<div class="answer-letter">C</div>
-					<div class="answer-stat">0%</div>
-				</div>
-			</div>
-			<div class="answer-button">
-				<div class="answer-stat-bar"></div>
-				<div class="answer-button-content">
-					<div class="answer-letter">D</div>
-					<div class="answer-stat">0%</div>
-				</div>
-			</div>
-			`;
-
-			let answersButtons = document.getElementsByClassName("answer-button");
-
-			for (let i = 0; i < 4; i++) {
-				answersButtons[i].onclick = function () {
-					if (chosenAnswer === undefined && state == WAIT_QUESTION_EVENT) {
-						chosenAnswer = i;
-						answersButtons[chosenAnswer].style.border = "solid 2px #fefefe";
-
-						//REPERE 3
-						sock.send(JSON.stringify([chosenAnswer])); // on envoit le numéro de la réponse sélectionnée
-					}
-				}
-			}
 		}
 
 		sock.onmessage = function (json) {
@@ -163,6 +116,73 @@ window.onload = function () {
 				}, 1000);
 
 				state = WAIT_QUESTION_EVENT;
+			}
+
+			function displayGame() {
+				document.body.innerHTML = `
+				<div id="question-number">Question</div>
+				<div id="question-info"></div>
+				<div class="answer-button">
+					<div class="answer-stat-bar"></div>
+					<div class="answer-button-content">
+						<div class="answer-letter">A</div>
+						<div class="answer-stat">0%</div>
+					</div>
+				</div>
+				<div class="answer-button">
+					<div class="answer-stat-bar"></div>
+					<div class="answer-button-content">
+						<div class="answer-letter">B</div>
+						<div class="answer-stat">0%</div>
+					</div>
+				</div>
+				<div class="answer-button">
+					<div class="answer-stat-bar"></div>
+					<div class="answer-button-content">
+						<div class="answer-letter">C</div>
+						<div class="answer-stat">0%</div>
+					</div>
+				</div>
+				<div class="answer-button">
+					<div class="answer-stat-bar"></div>
+					<div class="answer-button-content">
+						<div class="answer-letter">D</div>
+						<div class="answer-stat">0%</div>
+					</div>
+				</div>
+				`;
+
+				let answersButtons = document.getElementsByClassName("answer-button");
+
+				for (let i = 0; i < 4; i++) {
+					answersButtons[i].addEventListener("click", function () {
+						if (chosenAnswer === undefined && state == WAIT_QUESTION_EVENT) {
+							chosenAnswer = i;
+							answersButtons[chosenAnswer].style.border = "solid 2px #fefefe";
+
+							//REPERE 3
+							sock.send(JSON.stringify([chosenAnswer])); // on envoit le numéro de la réponse sélectionnée
+						}
+					});
+				}
+			}
+
+			function displayEnd(msg) {
+				document.body.innerHTML = `
+				<div id="endContent">
+					<h1>Partie terminée</h1>	
+					<h1>Votre score : ${msg[1]}</h1>
+					<div>
+						<div id="replay-button" class="button">Rejouer</a>
+					</div>
+				</div>`;
+
+				let replayButton = document.querySelector("#replay-button");
+
+				replayButton.addEventListener("click", function() {
+					sock.send("0"); // ici, on doit juste envoyer un paquet pour indiquer au serveur qu'on souhaite rejouer. le contenu du paquet est ignoré donc "0" ne signifie rien
+					displayWaitingRoom();
+				});
 			}
 
 			switch (state) {
@@ -234,6 +254,8 @@ window.onload = function () {
 					} else if (msg[0] == NEW_QUESTION) {
 						displayGame();
 						onNewQuestion();
+					} else if(msg[0] == END_GAME) {
+						displayEnd(msg);
 					}
 
 					break;
@@ -283,16 +305,4 @@ window.onload = function () {
 			}
 		}
 	}
-}
-
-function displayEnd(msg) {
-	document.body.innerHTML = `
-	<div id="endContent">
-		<h1>Partie terminée</h1>	
-		<h1>Votre score : ${msg[1]}</h1>
-		<div>
-			<a href='./play' class="button">Cliquez ici pour relancer une partie</a>
-		</div>
-	</div>`;
-
 }

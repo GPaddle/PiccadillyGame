@@ -2,12 +2,11 @@
 
 const CLIENT_TYPE_SCREEN = 1;
 
-const ADD_PLAYER = 1,
-	DEL_PLAYER = 2,
-	START_GAME_COUNTDOWN = 5;
-
-const NEW_QUESTION = 0,
-	END_GAME = 1;
+const ADD_PLAYER = 0,
+	DEL_PLAYER = 1,
+	START_GAME_COUNTDOWN = 4,
+	NEW_QUESTION = 5,
+	END_GAME = 6;
 
 const SECRET_SCREEN_KEY = "7116dd23254dc1a8";
 
@@ -17,23 +16,6 @@ const WAIT_GAME_INFO = 0,
 	WAIT_ANSWER = 3;
 
 window.onload = function() {
-	document.body.innerHTML = `
-	<div id="service-name">Piccadilly Game</div>
-	<div id="join-invitation">Rejoignez la partie sur <a href='http://${window.location.host}/play' id='url' target='_blank'>http://${window.location.host}/play</a></div>
-	<canvas id="qr"></canvas>
-	<div id="players-info">Nombre de joueurs connectés : <span id="players-count">0</span></div>
-	<div id="min-players-info">Nombre de joueurs minimum nécessaires : <span id="min-players-count">...</span></div>
-	`;
-
-	let qr = new QRious({
-		element : document.getElementById("qr"),
-		value : `http://${window.location.host}/play`,
-		background : "transparent",
-		foreground : "#fff",
-		size : 300,
-		padding : null
-	});
-
 	const sock = new WebSocket("ws://" + window.location.host);
 
 	sock.onopen = function() {
@@ -95,6 +77,23 @@ window.onload = function() {
 
 			switch (state) {
 				case WAIT_GAME_INFO: {
+					document.body.innerHTML = `
+					<div id="service-name">Piccadilly Game</div>
+					<div id="join-invitation">Rejoignez la partie sur <a href='http://${window.location.host}/play' id='url' target='_blank'>http://${window.location.host}/play</a></div>
+					<canvas id="qr"></canvas>
+					<div id="players-info">Nombre de joueurs connectés : <span id="players-count">0</span></div>
+					<div id="min-players-info">Nombre de joueurs minimum nécessaires : <span id="min-players-count">...</span></div>
+					`;
+
+					let qr = new QRious({
+						element : document.getElementById("qr"),
+						value : `http://${window.location.host}/play`,
+						background : "transparent",
+						foreground : "#fff",
+						size : 300,
+						padding : null
+					});
+
 					let minPlayersCount = document.getElementById("min-players-count");
 					minPlayersCount.innerHTML = msg[0];
 
@@ -187,6 +186,8 @@ window.onload = function() {
 
 							console.log(msg[2+i]);
 						}
+
+						state = WAIT_GAME_INFO;
 					}
 
 					break;
