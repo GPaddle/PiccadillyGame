@@ -198,6 +198,7 @@ module.exports = function (httpServer) {
 
 						sock.player.id = nextPlayerId;
 						sock.player.pseudo = msg[0];
+						sock.player.score = 0;
 
 						nextPlayerId++;
 
