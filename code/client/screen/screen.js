@@ -20,12 +20,9 @@ window.onload = function() {
 
 	sock.onopen = function() {
 		let state = WAIT_GAME_INFO;
-
-		let playersCount = 0;
-
+		let playersCount;
 		let questionAnswers;
-
-		let questionNumber = 0;
+		let questionNumber;
 		let questionCountdown;
 
 		//REPERE 1
@@ -162,6 +159,8 @@ window.onload = function() {
 							<span class="answer-text">...</div>
 						</div>
 						`;
+
+						questionNumber = 0;
 
 						onNewQuestion();
 					}
