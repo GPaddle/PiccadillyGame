@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Test Tom</title>
+</head>
+<body>
+	<div id="game" style="height: 200px;width: 100%;">
+		<span id="joueurs"></span>
+		<span id="gate"></span>
+	</div>
+	<div id="tableScore"></div>
+	<h1 id="textScore">Score : <span id='score'>0</span></h1>
+	<div class="slidecontainer" >
+		<input type="range" value="0" orient="vertical" id="range" max="200">
+	</div>
+
+	<script type="text/javascript">
+		//créer la partie 
+		//créer les joueurs
+		//créer les portes <----------------------------
+		//les faire avancer et check la collision		|
+		//si colision le sortir du jeu 					|
+		//sinon ----------------------------------------
+		
+	</script>
+	<script type="module" src="./main.js"></script>
+	<style type="text/css">
+		.joueur {
+			position: relative;
+			float: left;
+			width: 10px;
+			height: 10px;
+			background-color: lightblue;
+			z-index: 100;
+		}
+		#game {
+			margin-top: 5%;
+		}
+		.slidecontainer {
+			display: inline-block;
+			width: 20px;
+			height: 150px;
+			padding: 0;
+		}
+
+		.slidecontainer input {
+			width: 150px;
+			height: 20px;
+			margin: 0;
+			transform-origin: 75px 75px;
+			transform: rotate(90deg);
+		}
+
+		.door {
+			position: relative;
+			float: left;
+			width: 10px;
+			height: 100%;
+			background-color: lightgreen;
+			z-index: 1;
+		}
+		#hole {
+			z-index: 2;
+			position: relative;
+			float: left;
+			width: 10px;
+			background-color: white;
+		}
+	</style>
+</body>
+</html>
