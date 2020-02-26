@@ -1,5 +1,10 @@
 "use strict";
 
+const GAME_QUESTION = 0,
+	GAME_SKI = 1;
+
+const GAME = GAME_SKI; // constante à changer pour changer de jeu
+
 const CLIENT_TYPE_PLAYER = 0;
 
 const ADD_PLAYER = 0,

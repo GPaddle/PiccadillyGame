@@ -3,6 +3,11 @@
 const fs = require("fs");
 const ws = require("ws");
 
+const GAME_QUESTION = 0,
+	GAME_SKI = 1;
+
+const GAME = GAME_SKI; // constante à changer pour changer de jeu
+
 //Changer l'état à true pour aller plus vite
 const TEST_MODE = false;
 
