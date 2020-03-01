@@ -2,7 +2,7 @@
 
 const http = require("http");
 const fs = require("fs");
-const startWebSocket = require("./websocket.js");
+const server = require("./websocket.js");
 
 const SCREEN_SECRET_KEY = "2a50e397ad42ed24";
 
@@ -89,4 +89,4 @@ httpServer.on("request", function(req, res) {
 	}
 });
 
-startWebSocket(httpServer);
+server.startWebSocket(httpServer);
