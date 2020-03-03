@@ -34,7 +34,7 @@ function nextQuestion() {
 
 	server.clearWaitingRoom();
 
-	if (actualQuestion == /*questions.length*/2) {
+	if (actualQuestion == questions.length) {
 		server.endGame();
 	} else {
 		// REPERE 2

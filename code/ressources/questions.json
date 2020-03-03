@@ -105,5 +105,41 @@
 		],
 		"correctAnswer": 3,
 	   "time": 10
+	},
+
+	{
+		"title": "Quelle est la capitale du Togo ?",
+		"answers": [
+			"Casablanca",
+			"Abidjan",
+			"Lomé",
+			"Nairobi"
+		],
+		"correctAnswer": 2,
+		"time": 8
+	},
+
+	{
+		"title": "En quelle année Netflix a t-il été crée ?",
+		"answers": [
+			"2008",
+			"1997",
+			"1996",
+			"2006"
+		],
+		"correctAnswer": 1,
+		"time": 15
+	},
+
+	{
+		"title": "Qu'a inventé Barthélemy Thimonnier ?",
+		"answers": [
+			"La machine à coudre",
+			"L'ampoule",
+			"Le vélo",
+			"Le lave-vaisselle"
+		],
+		"correctAnswer": 0,
+		"time": 15
 	}
 ]
