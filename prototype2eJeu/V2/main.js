@@ -1,6 +1,6 @@
 let nbPlayer = 1;
 let sock;
-
+const TAILLE = 200;
 window.onload = function () {
 	//création de la partie au chargement de la page
 	var game = new Game(nbPlayer);
@@ -26,7 +26,10 @@ class Game {
 		}
 
 		//création de la porte 
-		this.door = new Door(Math.random()*((50-25)+1)+25, Math.random()*200/4, 500);
+		let ecart = Math.random()*((50-25)+1)+25;
+		let hauteur = Math.random()*(TAILLE-ecart)/2;
+
+		this.door = new Door(ecart, hauteur, 500);
 
 		this.nbAlive = nbPlayers;
 
@@ -125,20 +128,26 @@ class Door {
 		this.x = x;
 		this.width = document.querySelector("#game").clientWidth;
 
-		//insere une porte dans le dom
-		document.querySelector("#gate").innerHTML += '<span class="door"><div id="hole"></div></span>';
-		this.html = document.querySelector(".door");
-		this.html2 = document.querySelector("#hole");
-		this.html2.style.top = this.haut+"px";
-		this.html2.style.height = this.ecart+"px";
-		this.html.style.left = this.x+"px";
+		//insertion de la porte dans le dom
+		document.querySelector("#gate").innerHTML += '<span class="door"><div id="top"></div><div id="bottom"></div></span>';
+
+		//on recupere les différents élements de la porte
+		this.top = document.querySelector("#top");
+		this.bottom = document.querySelector("#bottom");
+		this.door = document.querySelector(".door");
+
+		//on position la porte
+		this.top.style.height = this.haut +"px";
+		this.bottom.style.top = (this.ecart)+"px";
+		this.bottom.style.height = (TAILLE-(this.haut+this.ecart))+"px";
+		this.door.style.left = this.x+"px";
 	}
 
 	//permet de faire avancer la porte 
 	avancer(vitesse) {
 		if (this.x < -55) {
 			this.x = this.width-20;
-			this.haut = Math.random()*200/2;
+			this.haut = Math.random()*TAILLE/2;
 			this.ecart = Math.random()*((50-25)+1)+25;
 		}
 		else {
@@ -159,9 +168,10 @@ class Door {
 
 	//met à jour de dom
 	majHTML() {
-		this.html.style.left = this.x+"px";
-		this.html2.style.top = this.haut+"px";
-		this.html2.style.height = this.ecart+"px";
+		this.top.style.height = this.haut +"px";
+		this.bottom.style.top = this.ecart+"px";
+		this.bottom.style.height = (TAILLE-(this.haut+this.ecart))+"px";
+		this.door.style.left = this.x+"px";
 		
 	}
 }
