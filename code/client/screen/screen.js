@@ -15,7 +15,7 @@ const WAIT_GAME_INFO = 0,
 let sock;
 let msg;
 let state = WAIT_GAME_INFO;
-let playersCount;
+let players;
 
 function endGame() {
 	document.body.innerHTML = `<div id="results-header">Résultats</div><div id="results"></div>`;
@@ -67,10 +67,10 @@ window.onload = function() {
 					let minPlayersCount = document.getElementById("min-players-count");
 					minPlayersCount.innerHTML = msg[0];
 
-					playersCount = msg[1];
-
 					let playersCountSpan = document.getElementById("players-count");
-					playersCountSpan.innerHTML = playersCount;
+					playersCountSpan.innerHTML = msg[1];
+
+					players = []; // TEMPORAIRE !! NE PAS OUBLIER DE RETIRER !
 
 					state = WAIT_WAITING_ROOM_EVENT;
 					break;
@@ -78,15 +78,20 @@ window.onload = function() {
 
 				case WAIT_WAITING_ROOM_EVENT: {
 					if(msg[0] == ADD_PLAYER) {
-						playersCount++;
+						players.push({id: msg[1]});
 
 						let playersCountSpan = document.getElementById("players-count");
-						playersCountSpan.innerHTML = playersCount;
+						playersCountSpan.innerHTML = players.length;
 					} else if(msg[0] == DEL_PLAYER) {
-						playersCount--;
+						for(let i = 0; i < players.length; i++) {
+							if(msg[1] == players[i].id) {
+								players.splice(i, 1);
+								break;
+							}
+						}
 
 						let playersCountSpan = document.getElementById("players-count");
-						playersCountSpan.innerHTML = playersCount;
+						playersCountSpan.innerHTML = players.length;
 					} else if(msg[0] == START_GAME_COUNTDOWN) {
 						let countdownInfo = document.createElement("div");
 						countdownInfo.id = "start-countdown-info";

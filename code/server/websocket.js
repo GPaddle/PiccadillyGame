@@ -6,7 +6,7 @@ let server = module.exports; // toutes les variables ou fonctions qui commencent
 const fs = require("fs");
 const ws = require("ws");
 
-const game = require("./questions.js") // le module game contient les fonctions propres à chaque jeu (questions ou ski)
+const game = require("./ski.js") // le module game contient les fonctions propres à chaque jeu (questions ou ski)
 
 const CLIENT_TYPE_PLAYER = 0,
 	CLIENT_TYPE_SCREEN = 1;
@@ -91,7 +91,7 @@ server.startWebSocket = function(httpServer) {
 
 						if(server.gameState == WAITING_ROOM || server.gameState == BEGIN_COUNT_DOWN) {
 							for(let screenSock of server.screensSocks) {
-								screenSock.send(JSON.stringify([ADD_PLAYER]));
+								screenSock.send(JSON.stringify([ADD_PLAYER, sock.player.id]));
 							}
 						}
 
@@ -140,7 +140,7 @@ server.startWebSocket = function(httpServer) {
 
 				if(server.gameState == WAITING_ROOM || server.gameState == BEGIN_COUNT_DOWN) {
 					for(let screenSock of server.screensSocks) {
-						screenSock.send(JSON.stringify([DEL_PLAYER]));
+						screenSock.send(JSON.stringify([DEL_PLAYER, sock.player.id]));
 					}
 				}
 

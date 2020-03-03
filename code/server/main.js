@@ -51,6 +51,13 @@ httpServer.on("request", function(req, res) {
 			break;
 		}
 
+		case "/play/ski.js": {
+			res.setHeader("Content-Type", "application/javascript");
+			let file = fs.createReadStream("client/play/ski.js");
+			file.pipe(res);
+			break;
+		}
+
 		case "/qrious.js": {
 			res.setHeader("Content-Type", "application/javascript");
 			let file = fs.createReadStream("node_modules/qrious/dist/qrious.js");
@@ -68,6 +75,55 @@ httpServer.on("request", function(req, res) {
 		case "/" + SCREEN_SECRET_KEY + "/screen/questions.js": {
 			res.setHeader("Content-Type", "application/javascript");
 			let file = fs.createReadStream("client/screen/questions.js");
+			file.pipe(res);
+			break;
+		}
+
+		case "/" + SCREEN_SECRET_KEY + "/screen/ski.js": {
+			res.setHeader("Content-Type", "application/javascript");
+			let file = fs.createReadStream("client/screen/ski.js");
+			file.pipe(res);
+			break;
+		}
+
+		case "/" + SCREEN_SECRET_KEY + "/screen/background.svg": {
+			res.setHeader("Content-Type", "image/svg+xml");
+			let file = fs.createReadStream("client/screen/assets/background/background.svg");
+			file.pipe(res);
+			break;
+		}
+
+		case "/" + SCREEN_SECRET_KEY + "/screen/moon.svg": {
+			res.setHeader("Content-Type", "image/svg+xml");
+			let file = fs.createReadStream("client/screen/assets/background/moon.svg");
+			file.pipe(res);
+			break;
+		}
+
+		case "/" + SCREEN_SECRET_KEY + "/screen/stars1.svg": {
+			res.setHeader("Content-Type", "image/svg+xml");
+			let file = fs.createReadStream("client/screen/assets/background/stars1.svg");
+			file.pipe(res);
+			break;
+		}
+
+		case "/" + SCREEN_SECRET_KEY + "/screen/stars2.svg": {
+			res.setHeader("Content-Type", "image/svg+xml");
+			let file = fs.createReadStream("client/screen/assets/background/stars2.svg");
+			file.pipe(res);
+			break;
+		}
+
+		case "/" + SCREEN_SECRET_KEY + "/screen/laser_top.png": {
+			res.setHeader("Content-Type", "image/png");
+			let file = fs.createReadStream("client/screen/assets/laser_top.png");
+			file.pipe(res);
+			break;
+		}
+
+		case "/" + SCREEN_SECRET_KEY + "/screen/starship.png": {
+			res.setHeader("Content-Type", "image/png");
+			let file = fs.createReadStream("client/screen/assets/starship.png");
 			file.pipe(res);
 			break;
 		}
