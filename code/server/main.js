@@ -44,7 +44,7 @@ httpServer.on("request", function(req, res) {
 			break;
 		}
 
-		case "/questions.js": {
+		case "/play/questions.js": {
 			res.setHeader("Content-Type", "application/javascript");
 			let file = fs.createReadStream("client/play/questions.js");
 			file.pipe(res);
@@ -61,6 +61,13 @@ httpServer.on("request", function(req, res) {
 		case "/" + SCREEN_SECRET_KEY + "/screen.js": {
 			res.setHeader("Content-Type", "application/javascript");
 			let file = fs.createReadStream("client/screen/screen.js");
+			file.pipe(res);
+			break;
+		}
+
+		case "/" + SCREEN_SECRET_KEY + "/screen/questions.js": {
+			res.setHeader("Content-Type", "application/javascript");
+			let file = fs.createReadStream("client/screen/questions.js");
 			file.pipe(res);
 			break;
 		}
