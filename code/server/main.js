@@ -44,6 +44,13 @@ httpServer.on("request", function(req, res) {
 			break;
 		}
 
+		case "/questions.js": {
+			res.setHeader("Content-Type", "application/javascript");
+			let file = fs.createReadStream("client/play/questions.js");
+			file.pipe(res);
+			break;
+		}
+
 		case "/qrious.js": {
 			res.setHeader("Content-Type", "application/javascript");
 			let file = fs.createReadStream("node_modules/qrious/dist/qrious.js");
