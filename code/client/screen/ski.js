@@ -4,7 +4,33 @@ const START_GAME = 6;
 
 const WAIT_GAME_EVENT = 2;
 
-const PLAYER_MOVE = 0;
+const PLAYER_MOVE = 0,
+	NEW_GATE = 1;
+
+function newGate() {
+	let top = document.querySelector("#top");
+	top.style.top = "1px";
+	top.style.height = (msg[1] - 8) + "px";
+
+	let bottom = document.querySelector("#bottom");
+	bottom.style.top = (8 + msg[2]) + "px";
+	bottom.style.height = (200 - msg[2] - msg[1] - 1) + "px";
+
+	let startTimeStamp = null;
+
+	function animation(timestamp) {
+		if(startTimeStamp === null) {
+			startTimeStamp = timestamp;
+		}
+
+		top.style.left = (1000 - (timestamp - startTimeStamp) * 0.4) + "px";
+		bottom.style.left = (1000 - (timestamp - startTimeStamp) * 0.4) + "px";
+
+		requestAnimationFrame(animation);
+	}
+
+	requestAnimationFrame(animation);
+}
 
 function gameOnWaitingRoomMessage() {
 	if(msg[0] == START_GAME) {
@@ -13,9 +39,12 @@ function gameOnWaitingRoomMessage() {
 		document.body.innerHTML = `
 		<div id="game" style="height: 200px;width: 100%;">
 			<span id="joueurs">
-				
+
 			</span>
-			<span id="gate"></span>
+			<span id="gate">
+				<div id="top"></div>
+				<div id="bottom"></div>
+			</span>
 		</div>
 		`;
 
@@ -30,21 +59,7 @@ function gameOnWaitingRoomMessage() {
 			players[i].fusee = fusee;
 		}
 
-		let top = document.createElement("div");
-		top.id = "top";
-		top.style.left = msg[1] + "px";
-		top.style.top = "1px";
-		top.style.height = (msg[2] - 8) + "px";
-
-		let bottom = document.createElement("div");
-		bottom.id = "bottom";
-		bottom.style.left = msg[1] + "px";
-		bottom.style.top = (8 + msg[3]) + "px";
-		bottom.style.height = (200 - msg[3] - msg[2] - 1) + "px";
-
-		let gate = document.querySelector("#gate");
-		gate.appendChild(top);
-		gate.appendChild(bottom);
+		newGate();
 	}
 }
 
@@ -57,6 +72,8 @@ function gameOnMessage() {
 					break;
 				}
 			}
+		} else if(msg[0] == NEW_GATE) {
+			newGate();
 		}
 	}
 }

@@ -31,9 +31,9 @@ const WAITING_ROOM = 0, // les différents états du jeu. attente de joueurs
 const pseudoPossibilities = JSON.parse(fs.readFileSync("ressources/pseudos.json"));
 
 const SCREEN_SECRET_KEY = "7116dd23254dc1a8";
-
-const MIN_PLAYER = 4;
-const GAME_COUNT_DOWN_TIME = 15;
+const TEST_MODE = true;
+const MIN_PLAYER = TEST_MODE ?1:4;
+const GAME_COUNT_DOWN_TIME =  TEST_MODE ?1:15;
 
 server.playersSocks = []; // tableau de tous les joueurs
 server.waitingRoomSocks = []; // tableau des personnes se trouvant en salle d'attente qui recoivent les évènements de salle d'attente ("bidule s'est connecté", "machin s'est déconnecté")
