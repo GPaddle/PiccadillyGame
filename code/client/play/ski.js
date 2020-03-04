@@ -11,7 +11,7 @@ function gameOnWaitingRoomMessage() {
 		let slider = document.querySelector("#slider");
 
 		slider.addEventListener("input", function() {
-			sock.send(JSON.stringify([slider.value]));
+			sock.send(JSON.stringify([slider.max - slider.value]));
 		});
 	}
 }

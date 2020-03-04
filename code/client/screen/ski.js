@@ -29,6 +29,22 @@ function gameOnWaitingRoomMessage() {
 
 			players[i].fusee = fusee;
 		}
+
+		let top = document.createElement("div");
+		top.id = "top";
+		top.style.left = msg[1] + "px";
+		top.style.top = "1px";
+		top.style.height = (msg[2] - 8) + "px";
+
+		let bottom = document.createElement("div");
+		bottom.id = "bottom";
+		bottom.style.left = msg[1] + "px";
+		bottom.style.top = (8 + msg[3]) + "px";
+		bottom.style.height = (200 - msg[3] - msg[2] - 1) + "px";
+
+		let gate = document.querySelector("#gate");
+		gate.appendChild(top);
+		gate.appendChild(bottom);
 	}
 }
 
