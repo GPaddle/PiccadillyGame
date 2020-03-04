@@ -5,7 +5,8 @@ const START_GAME = 6;
 const WAIT_GAME_EVENT = 2;
 
 const PLAYER_MOVE = 0,
-	NEW_GATE = 1;
+	NEW_GATE = 1,
+	DEAD = 2;
 
 function newGate() {
 	let top = document.querySelector("#top");
@@ -74,6 +75,13 @@ function gameOnMessage() {
 			}
 		} else if(msg[0] == NEW_GATE) {
 			newGate();
+		} else if(msg[0] == DEAD) {
+			for(let player of players) {
+				if(msg[1] == player.id) {
+					let joueurs = document.querySelector("#joueurs");
+					joueurs.removeChild(player.fusee);
+				}
+			}
 		}
 	}
 }
