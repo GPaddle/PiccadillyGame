@@ -4,8 +4,6 @@ const http = require("http");
 const fs = require("fs");
 const server = require("./websocket.js");
 
-const SCREEN_SECRET_KEY = "2a50e397ad42ed24";
-
 const httpServer = http.createServer();
 httpServer.listen(8082) // On ouvre l'écoute sur le port 8082 pour ne pas concurrencer d'autres serveurs lancés classiquement sur 8080 : WAMP
 
@@ -23,7 +21,7 @@ httpServer.on("request", function(req, res) {
 			break;
 		}
 
-		case "/" + SCREEN_SECRET_KEY + "/screen": {
+		case "/screen": {
 			res.setHeader("Content-Type", "text/html");
 			let file = fs.createReadStream("client/screen/screen.html");
 			file.pipe(res);
@@ -65,70 +63,70 @@ httpServer.on("request", function(req, res) {
 			break;
 		}
 
-		case "/" + SCREEN_SECRET_KEY + "/screen.js": {
+		case "/screen.js": {
 			res.setHeader("Content-Type", "application/javascript");
 			let file = fs.createReadStream("client/screen/screen.js");
 			file.pipe(res);
 			break;
 		}
 
-		case "/" + SCREEN_SECRET_KEY + "/screen/questions.js": {
+		case "/screen/questions.js": {
 			res.setHeader("Content-Type", "application/javascript");
 			let file = fs.createReadStream("client/screen/questions.js");
 			file.pipe(res);
 			break;
 		}
 
-		case "/" + SCREEN_SECRET_KEY + "/screen/ski.js": {
+		case "/screen/ski.js": {
 			res.setHeader("Content-Type", "application/javascript");
 			let file = fs.createReadStream("client/screen/ski.js");
 			file.pipe(res);
 			break;
 		}
 
-		case "/" + SCREEN_SECRET_KEY + "/screen/background.svg": {
+		case "/screen/background.svg": {
 			res.setHeader("Content-Type", "image/svg+xml");
 			let file = fs.createReadStream("client/screen/assets/background/background.svg");
 			file.pipe(res);
 			break;
 		}
 
-		case "/" + SCREEN_SECRET_KEY + "/screen/moon.svg": {
+		case "/screen/moon.svg": {
 			res.setHeader("Content-Type", "image/svg+xml");
 			let file = fs.createReadStream("client/screen/assets/background/moon.svg");
 			file.pipe(res);
 			break;
 		}
 
-		case "/" + SCREEN_SECRET_KEY + "/screen/stars1.svg": {
+		case "/screen/stars1.svg": {
 			res.setHeader("Content-Type", "image/svg+xml");
 			let file = fs.createReadStream("client/screen/assets/background/stars1.svg");
 			file.pipe(res);
 			break;
 		}
 
-		case "/" + SCREEN_SECRET_KEY + "/screen/stars2.svg": {
+		case "/screen/stars2.svg": {
 			res.setHeader("Content-Type", "image/svg+xml");
 			let file = fs.createReadStream("client/screen/assets/background/stars2.svg");
 			file.pipe(res);
 			break;
 		}
 
-		case "/" + SCREEN_SECRET_KEY + "/screen/laser_top.png": {
+		case "/screen/laser_top.png": {
 			res.setHeader("Content-Type", "image/png");
 			let file = fs.createReadStream("client/screen/assets/laser_top.png");
 			file.pipe(res);
 			break;
 		}
 
-		case "/" + SCREEN_SECRET_KEY + "/screen/starship.png": {
+		case "/screen/starship.png": {
 			res.setHeader("Content-Type", "image/png");
 			let file = fs.createReadStream("client/screen/assets/starship.png");
 			file.pipe(res);
 			break;
 		}
 
-		case "/" + SCREEN_SECRET_KEY + "/screen.css": {
+		case "/screen.css": {
 			res.setHeader("Content-Type", "text/css");
 			let file = fs.createReadStream("client/screen/screen.css");
 			file.pipe(res);

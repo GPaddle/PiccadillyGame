@@ -16,8 +16,8 @@ const PLAYER_MOVE = 0,
 let haut, ecart;
 
 function generateGate() {
-	haut = Math.random() * (200 / 2);
-	ecart = Math.random() * (200 / 4) + 25;
+	ecart = Math.random() * ((50-25)+1)+25;
+	haut = Math.random() * (200 - ecart) / 2;
 }
 
 function collisionTimeout() {
@@ -46,6 +46,7 @@ game.start = function() {
 	for(let playerSock of server.playersSocks) {
 		playerSock.send(JSON.stringify([START_GAME]));
 		playerSock.state = WAIT_COORDINATE;
+		playerSock.player.coord = 0;
 	}
 
 	collisionTimeout();
