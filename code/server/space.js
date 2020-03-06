@@ -15,10 +15,13 @@ const PLAYER_MOVE = 0,
 
 let haut, ecart;
 
-let nbJoueursDead = 0;
+
+let nbJoueursDead = 0,
+	nbPortes = 0,
+	nbJoueursTotal = 0;
 
 function generateGate() {
-	ecart = Math.random() * ((50 - 25) + 1) + 25;
+	ecart = Math.random() * ((50 - 25) + 1) + 25 - nbPortes;
 	haut = Math.random() * (200 - ecart) / 2;
 }
 
@@ -32,32 +35,44 @@ function collisionTimeout() {
 				playerSock.send(JSON.stringify([DEAD]));
 				playerSock.player.alive = false;
 				nbJoueursDead++;
+				playerSock.player.score = (new Date(Date.now()) - gameStart) / 1000;
 
 				for (let screenSock of server.screensSocks) {
 					screenSock.send(JSON.stringify([DEAD, playerSock.player.id]));
+				}
+
+				if (nbJoueursDead == nbJoueursTotal) {
+					server.endGame();
 				}
 			}
 		}
 	}, 2400);
 }
+let gameStart;
 
 game.start = function () {
 	generateGate();
 
+	gameStart = new Date(Date.now());
+
 	for (let screenSock of server.screensSocks) {
 		screenSock.send(JSON.stringify([START_GAME, haut, ecart]));
 	}
+
 
 	for (let playerSock of server.playersSocks) {
 		playerSock.send(JSON.stringify([START_GAME]));
 		playerSock.state = WAIT_COORDINATE;
 		playerSock.player.coord = 100;
 		playerSock.player.alive = true;
+		nbJoueursTotal++;
+		console.log(nbJoueursTotal);
 	}
 
 	collisionTimeout();
 
 	setInterval(function () {
+		nbPortes++;
 		generateGate();
 
 		for (let screenSock of server.screensSocks) {
