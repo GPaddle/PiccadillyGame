@@ -38,7 +38,7 @@ function gameOnWaitingRoomMessage() {
 		state = WAIT_GAME_EVENT;
 
 		document.body.innerHTML = `
-		<div id="game" style="height: 200px;width: 100%;">
+		<div id="game" style="height: 200px;width: 100%;overflow: hidden;">
 			<span id="joueurs">
 
 			</span>

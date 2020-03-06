@@ -1,1 +1,95 @@
-<?xml version="1.0" standalone="no"?><!-- Generator: Gravit.io --><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="isolation:isolate" viewBox="0 0 1280 720" width="1280" height="720"><defs><clipPath id="_clipPath_60WSD85BdJyeXLuL5sYKhXd0dhHUkw2e"><rect width="1280" height="720"/></clipPath></defs><linearGradient xmlns="http://www.w3.org/2000/svg" id="_lgradient_1" x1="53.38028169014084%" y1="0.250391236306724%" x2="53.380281690140855%" y2="100.1564945226917%"><stop offset="0%" stop-opacity="1" style="stop-color:rgb(0,30,47)"/><stop offset="48.69949487509792%" stop-opacity="1" style="stop-color:rgb(1,72,111)"/><stop offset="100%" stop-opacity="1" style="stop-color:rgb(0,30,47)"/></linearGradient><rect xmlns="http://www.w3.org/2000/svg" x="0" y="0" width="1280" height="720" transform="matrix(1,0,0,1,0,0)" fill="url(#_lgradient_1)"/></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Gravit.io -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   style="isolation:isolate"
+   viewBox="0 0 2 720"
+   width="2"
+   height="720"
+   version="1.1"
+   id="svg16"
+   sodipodi:docname="background2.svg"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)">
+  <metadata
+     id="metadata20">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1001"
+     id="namedview18"
+     showgrid="false"
+     inkscape:zoom="0.46354778"
+     inkscape:cx="518.5899"
+     inkscape:cy="294.65742"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg16" />
+  <defs
+     id="defs5">
+    <clipPath
+       id="_clipPath_60WSD85BdJyeXLuL5sYKhXd0dhHUkw2e">
+      <rect
+         width="1280"
+         height="720"
+         id="rect2"
+         x="0"
+         y="0" />
+    </clipPath>
+  </defs>
+  <linearGradient
+     id="_lgradient_1"
+     x1="512.45068"
+     y1="2.4037559"
+     x2="512.45068"
+     y2="961.50238"
+     gradientTransform="scale(0.39401987,0.75)"
+     gradientUnits="userSpaceOnUse">
+    <stop
+       offset="0%"
+       stop-opacity="1"
+       style="stop-color:rgb(0,30,47)"
+       id="stop7" />
+    <stop
+       offset="48.69949487509792%"
+       stop-opacity="1"
+       style="stop-color:rgb(1,72,111)"
+       id="stop9" />
+    <stop
+       offset="100%"
+       stop-opacity="1"
+       style="stop-color:rgb(0,30,47)"
+       id="stop11" />
+  </linearGradient>
+  <rect
+     x="-5.6843419e-014"
+     y="-3.4805406e-030"
+     width="378.25909"
+     height="720"
+     id="rect14"
+     style="fill:url(#_lgradient_1);stroke-width:0.54361284" />
+</svg>

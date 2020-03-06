@@ -60,6 +60,7 @@ window.onload = function() {
 						value : `http://${window.location.host}/play`,
 						background : "transparent",
 						foreground : "#fff",
+						level: 'H',
 						size : 300,
 						padding : null
 					});
