@@ -28,7 +28,7 @@ const WAIT_NOTHING = 0,
 const WAITING_ROOM = 0, // les différents états du jeu. attente de joueurs
 	BEGIN_COUNT_DOWN = 1, // compte à rebours avant le début de la partie
 	SCORE = 2; // affichage des scores finaux
-	// toutes les valeurs au dessus de SCORE veulent dire qu'on est en jeu
+// toutes les valeurs au dessus de SCORE veulent dire qu'on est en jeu
 
 const pseudoPossibilities = JSON.parse(fs.readFileSync("ressources/pseudos.json"));
 
@@ -36,8 +36,8 @@ const SCREEN_SECRET_KEY = "7116dd23254dc1a8";
 
 const TEST_MODE = conf.testMode;
 
-const MIN_PLAYER = TEST_MODE ?1:4;
-const GAME_COUNT_DOWN_TIME =  TEST_MODE ?1:15;
+const MIN_PLAYER = TEST_MODE ? 1 : 4;
+const GAME_COUNT_DOWN_TIME = TEST_MODE ? 1 : 15;
 
 server.playersSocks = []; // tableau de tous les joueurs
 server.waitingRoomSocks = []; // tableau des personnes se trouvant en salle d'attente qui recoivent les évènements de salle d'attente ("bidule s'est connecté", "machin s'est déconnecté")
@@ -47,7 +47,7 @@ server.gameState = WAITING_ROOM;
 
 let nextPlayerId = 0;
 
-server.startWebSocket = function(httpServer) {
+server.startWebSocket = function (httpServer) {
 	const wss = new ws.Server({ server: httpServer });
 
 	wss.on("connection", function (sock) {
@@ -58,9 +58,9 @@ server.startWebSocket = function(httpServer) {
 
 			switch (sock.state) {
 				case WAIT_AUTH: {
-					if(msg[0] == CLIENT_TYPE_PLAYER) {
+					if (msg[0] == CLIENT_TYPE_PLAYER) {
 						initPrePlayer(sock);
-					} else if(msg[0] == CLIENT_TYPE_SCREEN && msg[1] == SCREEN_SECRET_KEY) {
+					} else if (msg[0] == CLIENT_TYPE_SCREEN && msg[1] == SCREEN_SECRET_KEY) {
 						//REPERE 10
 						sock.send(JSON.stringify([MIN_PLAYER, server.playersSocks.length]));
 						sock.state = WAIT_NOTHING;
@@ -80,7 +80,7 @@ server.startWebSocket = function(httpServer) {
 						}
 					}
 
-					if(isPseudoFree) {
+					if (isPseudoFree) {
 						sock.isPlayer = true;
 
 						sock.player = {};
@@ -93,21 +93,21 @@ server.startWebSocket = function(httpServer) {
 
 						sock.send(JSON.stringify([PSEUDO_OK, sock.player.id]));
 
-						if(server.gameState == WAITING_ROOM || server.gameState == BEGIN_COUNT_DOWN) {
-							for(let screenSock of server.screensSocks) {
+						if (server.gameState == WAITING_ROOM || server.gameState == BEGIN_COUNT_DOWN) {
+							for (let screenSock of server.screensSocks) {
 								screenSock.send(JSON.stringify([ADD_PLAYER, sock.player.id]));
 							}
 						}
 
-						for(let waitingRoomSock of server.waitingRoomSocks) {
-							if(waitingRoomSock != sock) {
+						for (let waitingRoomSock of server.waitingRoomSocks) {
+							if (waitingRoomSock != sock) {
 								waitingRoomSock.send(JSON.stringify([ADD_PLAYER, sock.player.id, sock.player.pseudo]));
 							}
 						}
 
-						if(server.gameState == WAITING_ROOM && server.playersSocks.length >= MIN_PLAYER) {
+						if (server.gameState == WAITING_ROOM && server.playersSocks.length >= MIN_PLAYER) {
 							startBeginCountdown();
-						} else if(server.gameState > SCORE) { // supérieur à score donc c'est qu'on est en pleine partie
+						} else if (server.gameState > SCORE) { // supérieur à score donc c'est qu'on est en pleine partie
 							sock.player.score = 0;
 							game.onPlayerJoinInGame(sock);
 						}
@@ -135,23 +135,23 @@ server.startWebSocket = function(httpServer) {
 			let playersSocksIndex = server.playersSocks.indexOf(sock);
 			let waitingRoomSocksIndex = server.waitingRoomSocks.indexOf(sock);
 
-			if(screensSocksIndex != -1) {
+			if (screensSocksIndex != -1) {
 				server.screensSocks.splice(screensSocksIndex, 1);
-			} else if(playersSocksIndex != -1) {
+			} else if (playersSocksIndex != -1) {
 				//REPERE 9
 
 				server.playersSocks.splice(playersSocksIndex, 1);
 
-				if(server.gameState == WAITING_ROOM || server.gameState == BEGIN_COUNT_DOWN) {
-					for(let screenSock of server.screensSocks) {
+				if (server.gameState == WAITING_ROOM || server.gameState == BEGIN_COUNT_DOWN) {
+					for (let screenSock of server.screensSocks) {
 						screenSock.send(JSON.stringify([DEL_PLAYER, sock.player.id]));
 					}
 				}
 
-				for(let waitingRoomSock of server.waitingRoomSocks) {
+				for (let waitingRoomSock of server.waitingRoomSocks) {
 					waitingRoomSock.send(JSON.stringify([DEL_PLAYER, sock.player.id]));
 				}
-			} else if(waitingRoomSocksIndex != -1) {
+			} else if (waitingRoomSocksIndex != -1) {
 				server.waitingRoomSocks.splice(waitingRoomSocksIndex, 1);
 			}
 		});
@@ -172,6 +172,9 @@ function initPrePlayer(sock) { // quand un joueur entre en salle d'attente (apr�
 	let gameInfo = [pseudoSuggestion, server.playersSocks.length];
 
 	for (let i = 0; i < server.playersSocks.length; i++) {
+
+		//		gameInfo[gameInfo.length + i * 2] = server.playersSocks[i].player.id;
+		//		gameInfo[gameInfo.length + 1 + i * 2] = server.playersSocks[i].player.pseudo;
 		gameInfo[2 + i * 2] = server.playersSocks[i].player.id;
 		gameInfo[3 + i * 2] = server.playersSocks[i].player.pseudo;
 	}
@@ -190,7 +193,7 @@ function startBeginCountdown() {
 	}
 
 	let beginCountdown = setTimeout(function () {
-		for(let playerSock of server.playersSocks) { // on initialise tous les scores des joueurs à 0
+		for (let playerSock of server.playersSocks) { // on initialise tous les scores des joueurs à 0
 			playerSock.player.score = 0;
 		}
 
@@ -198,28 +201,28 @@ function startBeginCountdown() {
 	}, GAME_COUNT_DOWN_TIME * 1000); // quand on a assez de joueurs on lance la partie dans 15 secondes
 }
 
-server.clearWaitingRoom = function() { // supprime tous les joueurs qui ont validé leur pseudo de la salle d'attente
-	for(let i = 0; i < server.waitingRoomSocks.length; i++) {
-		if(server.waitingRoomSocks[i].isPlayer) {
+server.clearWaitingRoom = function () { // supprime tous les joueurs qui ont validé leur pseudo de la salle d'attente
+	for (let i = 0; i < server.waitingRoomSocks.length; i++) {
+		if (server.waitingRoomSocks[i].isPlayer) {
 			server.waitingRoomSocks.splice(i, 1);
 			i--; // pour éviter de sauter des élements du tableau
 		}
 	}
 }
 
-server.endGame = function() {
+server.endGame = function () {
 	server.gameState = SCORE;
 
 	let scores = [];
 
-	for(let i = 0; i < server.playersSocks.length; i++) {
+	for (let i = 0; i < server.playersSocks.length; i++) {
 		scores[i] = {
 			"pseudo": server.playersSocks[i].player.pseudo,
 			"score": server.playersSocks[i].player.score
 		}
 	}
 
-	scores.sort(function(a, b) {
+	scores.sort(function (a, b) {
 		return b.score - a.score;
 	})
 
@@ -240,14 +243,14 @@ server.endGame = function() {
 
 	server.playersSocks = [];
 
-	setTimeout(function() { // on affiche les scores pendant 30 secondes puis on reprépare une nouvelle partie
+	setTimeout(function () { // on affiche les scores pendant 30 secondes puis on reprépare une nouvelle partie
 		server.gameState = WAITING_ROOM;
 
-		for(let screenSock of server.screensSocks) {
+		for (let screenSock of server.screensSocks) {
 			screenSock.send(JSON.stringify([MIN_PLAYER, server.playersSocks.length]));
 		}
 
-		if(server.playersSocks.length >= MIN_PLAYER) { // s'il y a déjà assez de joueurs quand on sort de l'écran d'affichage des scores, on déclenche directement le décompte de début de partie
+		if (server.playersSocks.length >= MIN_PLAYER) { // s'il y a déjà assez de joueurs quand on sort de l'écran d'affichage des scores, on déclenche directement le décompte de début de partie
 			startBeginCountdown();
 		}
 	}, 30000);

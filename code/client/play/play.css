@@ -23,6 +23,7 @@ body {
 	color: #fefefe;
 	font-family: lato;
 	padding: 100px 20px 20px 20px;
+	height: calc(100vh - 140px);
 }
 
 
@@ -281,15 +282,15 @@ Style pour le slider
 
 #slider {
 	transform: rotate(-90deg);
-	width: 200px;
-	height: 200px;
+	width: 50vh;
+	height: 50%;
 	background: transparent;
 }
 
 input[type=range] {
 	-webkit-appearance: none;
 	width: 100%;
-	margin: 22.4px 0;
+	/*	margin: 22.4px 0;*/
 }
 
 input[type=range]:focus {
