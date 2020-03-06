@@ -273,9 +273,113 @@ button:active {
 }
 
 
-/* jeu ski */
+/* jeu space */
+
+/*
+Style pour le slider
+*/
 
 #slider {
+	transform: rotate(-90deg);
 	width: 200px;
 	height: 200px;
+	background: transparent;
+}
+
+input[type=range] {
+	-webkit-appearance: none;
+	width: 100%;
+	margin: 22.4px 0;
+}
+
+input[type=range]:focus {
+	outline: none;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+	width: 100%;
+	height: 1.2px;
+	cursor: pointer;
+	box-shadow: 2.2px 2.2px 5.3px #7b0000, 0px 0px 2.2px #950000;
+	background: rgba(255, 0, 0, 0);
+	border-radius: 3.4px;
+	border: 0.5px solid #ff0000;
+}
+
+input[type=range]::-webkit-slider-thumb {
+	box-shadow: 3px 3px 3.5px #c10000, 0px 0px 3px #db0000;
+	border: 1px solid #ff0000;
+	height: 46px;
+	width: 4px;
+	border-radius: 19px;
+	background: #ff0000;
+	cursor: pointer;
+	-webkit-appearance: none;
+	margin-top: -22.9px;
+}
+
+input[type=range]:focus::-webkit-slider-runnable-track {
+	background: rgba(255, 117, 117, 0);
+}
+
+input[type=range]::-moz-range-track {
+	width: 100%;
+	height: 1.2px;
+	cursor: pointer;
+	box-shadow: 2.2px 2.2px 5.3px #7b0000, 0px 0px 2.2px #950000;
+	background: rgba(255, 0, 0, 0);
+	border-radius: 3.4px;
+	border: 0.5px solid #ff0000;
+}
+
+input[type=range]::-moz-range-thumb {
+	box-shadow: 3px 3px 3.5px #c10000, 0px 0px 3px #db0000;
+	border: 1px solid #ff0000;
+	height: 46px;
+	width: 4px;
+	border-radius: 19px;
+	background: #ff0000;
+	cursor: pointer;
+}
+
+input[type=range]::-ms-track {
+	width: 100%;
+	height: 1.2px;
+	cursor: pointer;
+	background: transparent;
+	border-color: transparent;
+	color: transparent;
+}
+
+input[type=range]::-ms-fill-lower {
+	background: rgba(138, 0, 0, 0);
+	border: 0.5px solid #ff0000;
+	border-radius: 6.8px;
+	box-shadow: 2.2px 2.2px 5.3px #7b0000, 0px 0px 2.2px #950000;
+}
+
+input[type=range]::-ms-fill-upper {
+	background: rgba(255, 0, 0, 0);
+	border: 0.5px solid #ff0000;
+	border-radius: 6.8px;
+	box-shadow: 2.2px 2.2px 5.3px #7b0000, 0px 0px 2.2px #950000;
+}
+
+input[type=range]::-ms-thumb {
+	box-shadow: 3px 3px 3.5px #c10000, 0px 0px 3px #db0000;
+	border: 1px solid #ff0000;
+	height: 46px;
+	width: 4px;
+	border-radius: 19px;
+	background: #ff0000;
+	cursor: pointer;
+	height: 1.2px;
+}
+
+input[type=range]:focus::-ms-fill-lower {
+	background: rgba(255, 0, 0, 0);
+}
+
+input[type=range]:focus::-ms-fill-upper {
+	background: rgba(255, 117, 117, 0);
 }

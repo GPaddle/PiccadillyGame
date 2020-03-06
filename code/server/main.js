@@ -49,9 +49,9 @@ httpServer.on("request", function(req, res) {
 			break;
 		}
 
-		case "/play/ski.js": {
+		case "/play/space.js": {
 			res.setHeader("Content-Type", "application/javascript");
-			let file = fs.createReadStream("client/play/ski.js");
+			let file = fs.createReadStream("client/play/space.js");
 			file.pipe(res);
 			break;
 		}
@@ -77,9 +77,9 @@ httpServer.on("request", function(req, res) {
 			break;
 		}
 
-		case "/screen/ski.js": {
+		case "/screen/space.js": {
 			res.setHeader("Content-Type", "application/javascript");
-			let file = fs.createReadStream("client/screen/ski.js");
+			let file = fs.createReadStream("client/screen/space.js");
 			file.pipe(res);
 			break;
 		}

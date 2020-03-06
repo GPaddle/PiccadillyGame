@@ -1,8 +1,8 @@
 {
 	"testMode": true,
-	"jeu":"./ski.js",
+	"jeu":"./space.js",
 	"listeJeu":[
-		"./ski.js",
+		"./space.js",
 		"./questions.js"
 	]
 }

@@ -1,12 +1,14 @@
 "use strict";
 
 module.exports = {};
-let server = module.exports; // toutes les variables ou fonctions qui commencent par "server" sont partagées avec le fichier spécifique au jeu (questions.js ou ski.js)
+let server = module.exports; // toutes les variables ou fonctions qui commencent par "server" sont partagées avec le fichier spécifique au jeu (questions.js ou space.js)
 
 const fs = require("fs");
 const ws = require("ws");
 
-const game = require("./ski.js") // le module game contient les fonctions propres à chaque jeu (questions ou ski)
+const conf = JSON.parse(fs.readFileSync("conf/conf.json"));
+
+const game = require(conf.jeu) // le module game contient les fonctions propres à chaque jeu (questions ou espace)
 
 const CLIENT_TYPE_PLAYER = 0,
 	CLIENT_TYPE_SCREEN = 1;
@@ -31,7 +33,9 @@ const WAITING_ROOM = 0, // les différents états du jeu. attente de joueurs
 const pseudoPossibilities = JSON.parse(fs.readFileSync("ressources/pseudos.json"));
 
 const SCREEN_SECRET_KEY = "7116dd23254dc1a8";
-const TEST_MODE = true;
+
+const TEST_MODE = conf.testMode;
+
 const MIN_PLAYER = TEST_MODE ?1:4;
 const GAME_COUNT_DOWN_TIME =  TEST_MODE ?1:15;
 
@@ -120,7 +124,7 @@ server.startWebSocket = function(httpServer) {
 				}
 
 				default: {
-					game.onMessage(sock, msg); // on déclenche l'évènement onMessage du jeu actuel (nouvelle réponse, mouvement du ski du joueur...)
+					game.onMessage(sock, msg); // on déclenche l'évènement onMessage du jeu actuel (nouvelle réponse, mouvement du space du joueur...)
 					break;
 				}
 			}
