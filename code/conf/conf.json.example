@@ -1,8 +1,0 @@
-{
-	"testMode": true,
-	"jeu":"./space.js",
-	"listeJeu":[
-		"./space.js",
-		"./questions.js"
-	]
-}

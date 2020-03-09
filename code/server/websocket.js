@@ -6,10 +6,6 @@ let server = module.exports; // toutes les variables ou fonctions qui commencent
 const fs = require("fs");
 const ws = require("ws");
 
-const conf = JSON.parse(fs.readFileSync("conf/conf.json"));
-
-const game = require(conf.jeu) // le module game contient les fonctions propres à chaque jeu (questions ou espace)
-
 const CLIENT_TYPE_PLAYER = 0,
 	CLIENT_TYPE_SCREEN = 1;
 
@@ -34,11 +30,6 @@ const pseudoPossibilities = JSON.parse(fs.readFileSync("ressources/pseudos.json"
 
 const SCREEN_SECRET_KEY = "7116dd23254dc1a8";
 
-const TEST_MODE = conf.testMode;
-
-const MIN_PLAYER = TEST_MODE ? 1 : conf.minPlayer;
-const GAME_COUNT_DOWN_TIME = TEST_MODE ? 1 : conf.gameCountDownTime;
-
 server.playersSocks = []; // tableau de tous les joueurs
 server.waitingRoomSocks = []; // tableau des personnes se trouvant en salle d'attente qui recoivent les évènements de salle d'attente ("bidule s'est connecté", "machin s'est déconnecté")
 server.screensSocks = []; // tableau de tous les écrans d'affichage connectés au serveur
@@ -47,8 +38,19 @@ server.gameState = WAITING_ROOM;
 
 let nextPlayerId = 0;
 
-server.startWebSocket = function (httpServer) {
+let game; // le module game contient les fonctions propres à chaque jeu (questions ou espace)
+let conf;
+
+server.startWebSocket = function (httpServer, config) {
 	const wss = new ws.Server({ server: httpServer });
+	conf = config;
+
+	game = require("./" + conf.game + ".js");
+
+	if(conf.testMode) {
+		conf.minPlayer = 1;
+		conf.countdownTime = 1;
+	}
 
 	wss.on("connection", function (sock) {
 		sock.state = WAIT_AUTH;
@@ -62,7 +64,7 @@ server.startWebSocket = function (httpServer) {
 						initPrePlayer(sock);
 					} else if (msg[0] == CLIENT_TYPE_SCREEN && msg[1] == SCREEN_SECRET_KEY) {
 						//REPERE 10
-						sock.send(JSON.stringify([MIN_PLAYER, server.playersSocks.length]));
+						sock.send(JSON.stringify([conf.minPlayer, server.playersSocks.length]));
 						sock.state = WAIT_NOTHING;
 						server.screensSocks.push(sock);
 					}
@@ -105,7 +107,7 @@ server.startWebSocket = function (httpServer) {
 							}
 						}
 
-						if (server.gameState == WAITING_ROOM && server.playersSocks.length >= MIN_PLAYER) {
+						if (server.gameState == WAITING_ROOM && server.playersSocks.length >= conf.minPlayer) {
 							startBeginCountdown();
 						} else if (server.gameState > SCORE) { // supérieur à score donc c'est qu'on est en pleine partie
 							sock.player.score = 0;
@@ -172,9 +174,6 @@ function initPrePlayer(sock) { // quand un joueur entre en salle d'attente (apr�
 	let gameInfo = [pseudoSuggestion, server.playersSocks.length];
 
 	for (let i = 0; i < server.playersSocks.length; i++) {
-
-		//		gameInfo[gameInfo.length + i * 2] = server.playersSocks[i].player.id;
-		//		gameInfo[gameInfo.length + 1 + i * 2] = server.playersSocks[i].player.pseudo;
 		gameInfo[2 + i * 2] = server.playersSocks[i].player.id;
 		gameInfo[3 + i * 2] = server.playersSocks[i].player.pseudo;
 	}
@@ -189,7 +188,7 @@ function startBeginCountdown() {
 	server.gameState = BEGIN_COUNT_DOWN;
 
 	for (let screenSock of server.screensSocks) {
-		screenSock.send(JSON.stringify([START_GAME_COUNTDOWN, GAME_COUNT_DOWN_TIME]));
+		screenSock.send(JSON.stringify([START_GAME_COUNTDOWN, conf.countdownTime]));
 	}
 
 	let beginCountdown = setTimeout(function () {
@@ -198,7 +197,7 @@ function startBeginCountdown() {
 		}
 
 		game.start();
-	}, GAME_COUNT_DOWN_TIME * 1000); // quand on a assez de joueurs on lance la partie dans 15 secondes
+	}, conf.countdownTime * 1000); // quand on a assez de joueurs on lance la partie dans 15 secondes
 }
 
 server.clearWaitingRoom = function () { // supprime tous les joueurs qui ont validé leur pseudo de la salle d'attente
@@ -247,10 +246,10 @@ server.endGame = function () {
 		server.gameState = WAITING_ROOM;
 
 		for (let screenSock of server.screensSocks) {
-			screenSock.send(JSON.stringify([MIN_PLAYER, server.playersSocks.length]));
+			screenSock.send(JSON.stringify([conf.minPlayer, server.playersSocks.length]));
 		}
 
-		if (server.playersSocks.length >= MIN_PLAYER) { // s'il y a déjà assez de joueurs quand on sort de l'écran d'affichage des scores, on déclenche directement le décompte de début de partie
+		if (server.playersSocks.length >= conf.minPlayer) { // s'il y a déjà assez de joueurs quand on sort de l'écran d'affichage des scores, on déclenche directement le décompte de début de partie
 			startBeginCountdown();
 		}
 	}, 30000);

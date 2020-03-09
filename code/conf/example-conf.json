@@ -1,0 +1,6 @@
+{
+	"game": "questions",
+	"minPlayer": 3,
+	"countdownTime": 15,
+	"testMode": false
+}

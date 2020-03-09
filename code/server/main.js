@@ -4,6 +4,8 @@ const http = require("http");
 const fs = require("fs");
 const server = require("./websocket.js");
 
+const conf = JSON.parse(fs.readFileSync("conf/conf.json"));
+
 const httpServer = http.createServer();
 httpServer.listen(8082) // On ouvre l'écoute sur le port 8082 pour ne pas concurrencer d'autres serveurs lancés classiquement sur 8080 : WAMP
 
@@ -42,16 +44,9 @@ httpServer.on("request", function(req, res) {
 			break;
 		}
 
-		case "/play/questions.js": {
+		case "/play/game.js": {
 			res.setHeader("Content-Type", "application/javascript");
-			let file = fs.createReadStream("client/play/questions.js");
-			file.pipe(res);
-			break;
-		}
-
-		case "/play/space.js": {
-			res.setHeader("Content-Type", "application/javascript");
-			let file = fs.createReadStream("client/play/space.js");
+			let file = fs.createReadStream("client/play/" + conf.game + ".js");
 			file.pipe(res);
 			break;
 		}
@@ -70,16 +65,9 @@ httpServer.on("request", function(req, res) {
 			break;
 		}
 
-		case "/screen/questions.js": {
+		case "/screen/game.js": {
 			res.setHeader("Content-Type", "application/javascript");
-			let file = fs.createReadStream("client/screen/questions.js");
-			file.pipe(res);
-			break;
-		}
-
-		case "/screen/space.js": {
-			res.setHeader("Content-Type", "application/javascript");
-			let file = fs.createReadStream("client/screen/space.js");
+			let file = fs.createReadStream("client/screen/" + conf.game + ".js");
 			file.pipe(res);
 			break;
 		}
@@ -157,4 +145,4 @@ httpServer.on("request", function(req, res) {
 	}
 });
 
-server.startWebSocket(httpServer);
+server.startWebSocket(httpServer, conf);
