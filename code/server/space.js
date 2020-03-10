@@ -15,7 +15,6 @@ const PLAYER_MOVE = 0,
 
 let haut, ecart;
 
-
 let nbJoueursDead = 0,
 	nbPortes = 0,
 	nbJoueursTotal = 0;

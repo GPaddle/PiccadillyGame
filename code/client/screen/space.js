@@ -79,7 +79,7 @@ function gameOnMessage() {
 			for(let player of players) {
 				if(msg[1] == player.id) {
 					let joueurs = document.querySelector("#joueurs");
-					joueurs.removeChild(player.fusee);
+					player.fusee.classList.add("dead-player");
 				}
 			}
 		}

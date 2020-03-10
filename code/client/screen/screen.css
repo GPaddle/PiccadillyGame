@@ -152,26 +152,15 @@ body {
 	filter: hue-rotate(200deg);
 }
 
+.dead-player {
+	opacity: 0;
+}
+
 #game {
 	margin-top: 5%;
 	background-image: url(screen/moon.svg), url(screen/stars1.svg), url(screen/stars2.svg), url(screen/background.svg);
 	background-position: 0px 0px;
 	animation: speed 30s linear infinite;
-}
-
-.slidecontainer {
-	display: inline-block;
-	width: 20px;
-	height: 150px;
-	padding: 0;
-}
-
-.slidecontainer input {
-	width: 150px;
-	height: 20px;
-	margin: 0;
-	transform-origin: 75px 75px;
-	transform: rotate(90deg);
 }
 
 .door {
@@ -180,14 +169,6 @@ body {
 	width: 10px;
 	height: 100%;
 	z-index: 1;
-}
-
-#hole {
-	z-index: 2;
-	position: relative;
-	float: left;
-	width: 10px;
-	background-color: white;
 }
 
 #top,
