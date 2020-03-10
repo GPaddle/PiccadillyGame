@@ -11,31 +11,6 @@ const PLAYER_MOVE = 0,
 const GAME_HEIGHT = 210;
 const BASE_HEIGHT = 12;
 
-function newGate() {
-	let gatePos = msg[1];
-	let gateHeight = msg[2];
-
-	document.querySelector(".gate-laser#top").style.height = (gatePos - 2 * BASE_HEIGHT) + "px";
-	document.querySelector(".gate-base.bottom#top").style.top = (gatePos - BASE_HEIGHT) + "px";
-	document.querySelector(".gate-wall#bottom").style.top = (gatePos + gateHeight) + "px";
-	document.querySelector(".gate-laser#bottom").style.height = (GAME_HEIGHT - gatePos - gateHeight - 2 * BASE_HEIGHT) + "px";
-	document.querySelector(".gate-base.bottom#bottom").style.top = (GAME_HEIGHT - gatePos - gateHeight - BASE_HEIGHT) + "px";
-
-	let startTimeStamp = null;
-
-	function animation(timestamp) {
-		if(startTimeStamp === null) {
-			startTimeStamp = timestamp;
-		}
-
-		document.querySelector("#gate").style.left = (1000 - (timestamp - startTimeStamp) * 0.4) + "px";
-
-		requestAnimationFrame(animation);
-	}
-
-	requestAnimationFrame(animation);
-}
-
 function gameOnWaitingRoomMessage() {
 	if(msg[0] == START_GAME) {
 		state = WAIT_GAME_EVENT;
@@ -60,6 +35,8 @@ function gameOnWaitingRoomMessage() {
 		</div>
 		`;
 
+		document.querySelector("#gate").style.left = "-100px";
+
 		let joueurs = document.querySelector("#starships");
 
 		for(let i = 0; i < players.length; i++) {
@@ -74,8 +51,6 @@ function gameOnWaitingRoomMessage() {
 
 			players[i].fusee = fusee;
 		}
-
-		newGate();
 	}
 }
 
@@ -89,7 +64,29 @@ function gameOnMessage() {
 				}
 			}
 		} else if(msg[0] == NEW_GATE) {
-			newGate();
+			let gatePos = msg[1];
+			let gateHeight = msg[2];
+			let speed = msg[3];
+
+			document.querySelector(".gate-laser#top").style.height = (gatePos - 2 * BASE_HEIGHT) + "px";
+			document.querySelector(".gate-base.bottom#top").style.top = (gatePos - BASE_HEIGHT) + "px";
+			document.querySelector(".gate-wall#bottom").style.top = (gatePos + gateHeight) + "px";
+			document.querySelector(".gate-laser#bottom").style.height = (GAME_HEIGHT - gatePos - gateHeight - 2 * BASE_HEIGHT) + "px";
+			document.querySelector(".gate-base.bottom#bottom").style.top = (GAME_HEIGHT - gatePos - gateHeight - BASE_HEIGHT) + "px";
+
+			let startTimeStamp = null;
+
+			function animation(timestamp) {
+				if(startTimeStamp === null) {
+					startTimeStamp = timestamp;
+				}
+
+				document.querySelector("#gate").style.left = (1000 - (timestamp - startTimeStamp) / 1000 * speed) + "px";
+
+				requestAnimationFrame(animation);
+			}
+
+			requestAnimationFrame(animation);
 		} else if(msg[0] == DEAD) {
 			for(let player of players) {
 				if(msg[1] == player.id) {
