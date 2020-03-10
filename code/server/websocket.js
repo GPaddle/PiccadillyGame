@@ -56,7 +56,7 @@ server.startWebSocket = function (httpServer, config) {
 		sock.state = WAIT_AUTH;
 
 		sock.on("message", function (json) {
-			let msg = JSON.parse(json);
+			let msg = JSON.parse(json); // attention : si c'est pas du json, ça plante
 
 			switch (sock.state) {
 				case WAIT_AUTH: {
@@ -171,11 +171,11 @@ function initPrePlayer(sock) { // quand un joueur entre en salle d'attente (apr�
 
 	// format de la trame sérialisée gameInfo : suggestion de pseudo, nombre de joueur, id, "pseudo", id, "pseudo"...
 
-	let gameInfo = [pseudoSuggestion, server.playersSocks.length];
+	let gameInfo = [pseudoSuggestion, server.playersSocks.length, conf.testMode];
 
 	for (let i = 0; i < server.playersSocks.length; i++) {
-		gameInfo[2 + i * 2] = server.playersSocks[i].player.id;
-		gameInfo[3 + i * 2] = server.playersSocks[i].player.pseudo;
+		gameInfo[gameInfo.length + i * 2] = server.playersSocks[i].player.id;
+		gameInfo[gameInfo.length + 1 + i * 2] = server.playersSocks[i].player.pseudo;
 	}
 
 	sock.send(JSON.stringify(gameInfo));

@@ -14,7 +14,7 @@ const WAIT_NOTHING = 0,
 	WAIT_QUESTION = 3,
 	WAIT_QUESTION_EVENT = 4;
 
-const TEST_MODE = false;
+let TEST_MODE;
 
 let state;
 let sock;
@@ -106,13 +106,15 @@ window.onload = function () {
 
 					let playersCount = msg[1];
 
+					TEST_MODE = msg[2];
+
 					players = [];
 					let playersList = document.getElementById("players-list");
 
 					for (let i = 0; i < playersCount; i++) {
 						players[i] = {};
-						players[i].id = msg[2 + i * 2];
-						players[i].pseudo = msg[3 + i * 2];
+						players[i].id = msg[3 + i * 2];
+						players[i].pseudo = msg[4 + i * 2];
 
 						players[i].line = document.createElement("div");
 						players[i].line.classList.add("players-list-player");
