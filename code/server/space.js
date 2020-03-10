@@ -41,7 +41,7 @@ game.start = function () {
 		screenSock.send(JSON.stringify([START_GAME]));
 	}
 
-	setInterval(function () {
+	function newGate() {
 		doorHeight = MIN_HEIGHT + Math.random() * (MAX_HEIGHT - MIN_HEIGHT);
 		doorPos = MIN_POS + Math.random() * (210 - MIN_POS - MAX_POS - doorHeight); // 210px est la hauteur de l'espace de jeu
 
@@ -53,14 +53,18 @@ game.start = function () {
 			MAX_HEIGHT -= 5; // on diminue de 5px la hauteur maximale à chaque tour pour augmenter la difficulté
 		}
 
-		speed += 50;
+		speed += 30;
 
 		for (let screenSock of server.screensSocks) {
 			screenSock.send(JSON.stringify([NEW_GATE, doorPos, doorHeight, speed]));
 		}
 
-		setTimeout(function () {
-			for (let playerSock of server.playersSocks) {
+		for(let i = 0; i < server.playersSocks.length; i++) {
+			let playerSock = server.playersSocks[i];
+
+			let playerStarshipPos = i * 30 + 21;
+
+			setTimeout(function() {
 				if (playerSock.player.alive && (playerSock.player.coord < doorPos || (playerSock.player.coord + STARSHIP_HEIGHT) > doorPos + doorHeight)) {
 					playerSock.send(JSON.stringify([DEAD]));
 					playerSock.player.alive = false;
@@ -75,9 +79,13 @@ game.start = function () {
 						server.endGame();
 					}
 				}
-			}
-		}, 2400);
-	}, 3000);
+			}, (1000 - playerStarshipPos) / speed * 1000)
+		}
+
+		setTimeout(newGate, 1200 / speed * 1000);
+	}
+
+	setTimeout(newGate, 6000);
 }
 
 game.onMessage = function (sock, msg) {
