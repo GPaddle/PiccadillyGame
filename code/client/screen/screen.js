@@ -7,8 +7,6 @@ const ADD_PLAYER = 0,
 	START_GAME_COUNTDOWN = 4,
 	END_GAME = 5;
 
-const SECRET_SCREEN_KEY = "7116dd23254dc1a8";
-
 const WAIT_GAME_INFO = 0,
 	WAIT_WAITING_ROOM_EVENT = 1;
 
@@ -40,7 +38,7 @@ window.onload = function() {
 
 	sock.onopen = function() {
 		//REPERE 1
-		sock.send(JSON.stringify([CLIENT_TYPE_SCREEN, SECRET_SCREEN_KEY]));
+		sock.send(JSON.stringify([CLIENT_TYPE_SCREEN]));
 
 		sock.onmessage = function(json) {
 			msg = JSON.parse(json.data);

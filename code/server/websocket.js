@@ -28,8 +28,6 @@ const WAITING_ROOM = 0, // les différents états du jeu. attente de joueurs
 
 const pseudoPossibilities = JSON.parse(fs.readFileSync("ressources/pseudos.json"));
 
-const SCREEN_SECRET_KEY = "7116dd23254dc1a8";
-
 server.playersSocks = []; // tableau de tous les joueurs
 server.waitingRoomSocks = []; // tableau des personnes se trouvant en salle d'attente qui recoivent les évènements de salle d'attente ("bidule s'est connecté", "machin s'est déconnecté")
 server.screensSocks = []; // tableau de tous les écrans d'affichage connectés au serveur
@@ -62,7 +60,7 @@ server.startWebSocket = function (httpServer, config) {
 				case WAIT_AUTH: {
 					if (msg[0] == CLIENT_TYPE_PLAYER) {
 						initPrePlayer(sock);
-					} else if (msg[0] == CLIENT_TYPE_SCREEN && msg[1] == SCREEN_SECRET_KEY) {
+					} else if (msg[0] == CLIENT_TYPE_SCREEN) {
 						//REPERE 10
 						sock.send(JSON.stringify([conf.minPlayer, server.playersSocks.length]));
 						sock.state = WAIT_NOTHING;
@@ -174,8 +172,8 @@ function initPrePlayer(sock) { // quand un joueur entre en salle d'attente (apr�
 	let gameInfo = [pseudoSuggestion, server.playersSocks.length, conf.testMode];
 
 	for (let i = 0; i < server.playersSocks.length; i++) {
-		gameInfo[gameInfo.length + i * 2] = server.playersSocks[i].player.id;
-		gameInfo[gameInfo.length + 1 + i * 2] = server.playersSocks[i].player.pseudo;
+		gameInfo.push(server.playersSocks[i].player.id);
+		gameInfo.push(server.playersSocks[i].player.pseudo);
 	}
 
 	sock.send(JSON.stringify(gameInfo));
@@ -232,8 +230,8 @@ server.endGame = function () {
 
 		server.playersSocks[i].state = WAIT_REPLAY;
 
-		screensSocksScores[2 + i * 2] = scores[i].pseudo;
-		screensSocksScores[3 + i * 2] = scores[i].score;
+		screensSocksScores.push(scores[i].pseudo);
+		screensSocksScores.push(scores[i].score);
 	}
 
 	for (let screenSock of server.screensSocks) {
