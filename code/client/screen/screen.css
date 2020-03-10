@@ -132,16 +132,6 @@ body {
 
 /* jeu de space */
 
-.joueur {
-	position: relative;
-	float: left;
-	width: 10px;
-	height: 10px;
-	transform: rotate(90deg);
-	z-index: 100;
-	margin-right: 30px;
-}
-
 .joueur:nth-child(3n){
 	filter: hue-rotate(0deg);
 }
@@ -152,78 +142,50 @@ body {
 	filter: hue-rotate(200deg);
 }
 
-.dead-player {
-	opacity: 0;
-}
-
 #game {
 	margin-top: 5%;
 	background-image: url(screen/moon.svg), url(screen/stars1.svg), url(screen/stars2.svg), url(screen/background.svg);
 	background-position: 0px 0px;
 	animation: speed 30s linear infinite;
+	position: relative;
 }
 
-.door {
-	position: relative;
-	float: left;
-	width: 10px;
-	height: 100%;
-	z-index: 1;
+.starship {
+	position: absolute;
+	transition: 50ms;
 }
 
-#top,
-#bottom {
-	position: relative;
+#gate {
+	position: absolute;
+	top: 0px;
+	left: 200px;
+}
+
+.gate-wall {
+	position: absolute;
+	left: 0px;
+}
+
+.gate-wall#top {
+	top: 0px;
+}
+
+.gate-base {
+	position: absolute;
+}
+
+.gate-base.top{
+	transform: rotate(180deg);
+	top: 0px;
+}
+
+.gate-laser {
+	position: absolute;
+	left: 14px;
+	top: 12px;
 	background-color: red;
 	box-shadow: 0px 0px 5px red;
 	width: 2px;
-}
-
-.joueur::before {
-	content: url(screen/starship.png);
-	position: absolute;
-	bottom: 5px;
-}
-
-div#bottom::before {
-	content: url(screen/laser_top.png);
-	position: absolute;
-	bottom: -6px;
-	left: -14px;
-	display: inline-block;
-	width: 20px;
-	height: 20px;
-}
-
-div#bottom::after {
-	content: url(screen/laser_top.png);
-	transform: rotate(180deg);
-	position: absolute;
-	top: -6px;
-	left: -4px;
-	display: inline-block;
-	width: 20px;
-	height: 20px;
-}
-
-div#top::before {
-	content: url(screen/laser_top.png);
-	position: absolute;
-	bottom: -12px;
-	left: -14px;
-	display: inline-block;
-	width: 20px;
-	height: 20px;
-}
-
-div#top::after {
-	content: url(screen/laser_top.png);
-	transform: rotate(180deg);
-	position: absolute;
-	top: -6px;
-	left: -4px;
-	display: inline-block;
-	width: 20px;
 	height: 20px;
 }
 

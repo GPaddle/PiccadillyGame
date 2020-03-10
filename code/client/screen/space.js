@@ -8,14 +8,18 @@ const PLAYER_MOVE = 0,
 	NEW_GATE = 1,
 	DEAD = 2;
 
-function newGate() {
-	let top = document.querySelector("#top");
-	top.style.top = "1px";
-	top.style.height = (msg[1] - 8) + "px";
+const GAME_HEIGHT = 210;
+const BASE_HEIGHT = 12;
 
-	let bottom = document.querySelector("#bottom");
-	bottom.style.top = (8 + msg[2]) + "px";
-	bottom.style.height = (200 - msg[2] - msg[1] - 1) + "px";
+function newGate() {
+	let gatePos = msg[1];
+	let gateHeight = msg[2];
+
+	document.querySelector(".gate-laser#top").style.height = (gatePos - 2 * BASE_HEIGHT) + "px";
+	document.querySelector(".gate-base.bottom#top").style.top = (gatePos - BASE_HEIGHT) + "px";
+	document.querySelector(".gate-wall#bottom").style.top = (gatePos + gateHeight) + "px";
+	document.querySelector(".gate-laser#bottom").style.height = (GAME_HEIGHT - gatePos - gateHeight - 2 * BASE_HEIGHT) + "px";
+	document.querySelector(".gate-base.bottom#bottom").style.top = (GAME_HEIGHT - gatePos - gateHeight - BASE_HEIGHT) + "px";
 
 	let startTimeStamp = null;
 
@@ -24,8 +28,7 @@ function newGate() {
 			startTimeStamp = timestamp;
 		}
 
-		top.style.left = (1000 - (timestamp - startTimeStamp) * 0.4) + "px";
-		bottom.style.left = (1000 - (timestamp - startTimeStamp) * 0.4) + "px";
+		document.querySelector("#gate").style.left = (1000 - (timestamp - startTimeStamp) * 0.4) + "px";
 
 		requestAnimationFrame(animation);
 	}
@@ -38,22 +41,34 @@ function gameOnWaitingRoomMessage() {
 		state = WAIT_GAME_EVENT;
 
 		document.body.innerHTML = `
-		<div id="game" style="height: 200px;width: 100%;overflow: hidden;">
-			<span id="joueurs">
+		<div id="game" style="height: 210px;width: 100%;overflow: hidden;">
+			<div id="starships">
 
-			</span>
-			<span id="gate">
-				<div id="top"></div>
-				<div id="bottom"></div>
-			</span>
+			</div>
+			<div id="gate">
+				<div class="gate-wall" id="top">
+					<img class="gate-base top" id="top" src="/screen/laser_top.png">
+					<div class="gate-laser" id="top"></div>
+					<img class="gate-base bottom" id="top" src="/screen/laser_top.png">
+				</div>
+				<div class="gate-wall" id="bottom">
+					<img class="gate-base top" id="bottom" src="/screen/laser_top.png">
+					<div class="gate-laser" id="bottom"></div>
+					<img class="gate-base bottom" id="bottom" src="/screen/laser_top.png">
+				</div>
+			</div>
 		</div>
 		`;
 
-		let joueurs = document.querySelector("#joueurs");
+		let joueurs = document.querySelector("#starships");
 
 		for(let i = 0; i < players.length; i++) {
-			let fusee = document.createElement("span");
-			fusee.className = "joueur";
+			let fusee = document.createElement("img");
+			fusee.className = "starship";
+			fusee.src = "/screen/starship.png";
+
+			fusee.style.left = (i * 30) + "px";
+			fusee.style.top = "0px";
 
 			joueurs.appendChild(fusee);
 
@@ -78,8 +93,8 @@ function gameOnMessage() {
 		} else if(msg[0] == DEAD) {
 			for(let player of players) {
 				if(msg[1] == player.id) {
-					let joueurs = document.querySelector("#joueurs");
-					player.fusee.classList.add("dead-player");
+					let fusees = document.querySelector("#starships");
+					fusees.removeChild(player.fusee);
 				}
 			}
 		}
