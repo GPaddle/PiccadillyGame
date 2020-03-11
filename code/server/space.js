@@ -21,6 +21,8 @@ module.exports = function(game) {
 	game.start = function() {
 		let gameStart = new Date(Date.now());
 
+		game.clearWaitingRoom();
+
 		let nbJoueursDead = 0;
 		let speed = 300;
 
