@@ -8,11 +8,12 @@ const ADD_PLAYER = 0,
 	DEL_PLAYER = 1,
 	PSEUDO_OK = 2,
 	PSEUDO_ALREADY_USED = 3,
-	END_GAME = 5;
+	START_GAME = 5;
 
-const WAIT_NOTHING = 0,
-	WAIT_GAME_INFO = 1,
-	WAIT_WAITING_ROOM_EVENT = 2;
+const END_GAME = 0;
+
+const WAIT_GAME_INFO = 0,
+	WAIT_WAITING_ROOM_EVENT = 1;
 
 window.onload = function () {
 	const game = {} // l'objet game contient les variables et fonctions partagées entre ce fichier et le fichier de jeu (questions.js ou space.js)
@@ -66,24 +67,6 @@ window.onload = function () {
 		playersList.appendChild(player.line);
 
 		players.push(player);
-	}
-
-	game.endGame = function(msg) {
-		document.body.innerHTML = `
-		<div id="endContent">
-			<h1>Partie terminée</h1>	
-			<h1>Votre score : ${msg[1]}</h1>
-			<div>
-				<div id="replay-button" class="button">Rejouer</a>
-			</div>
-		</div>`;
-
-		let replayButton = document.querySelector("#replay-button");
-
-		replayButton.addEventListener("click", function() {
-			game.sock.send("0"); // ici, on doit juste envoyer un paquet pour indiquer au serveur qu'on souhaite rejouer. le contenu du paquet est ignoré donc "0" ne signifie rien
-			displayWaitingRoom();
-		});
 	}
 
 	game.sock.onopen = function () {
@@ -151,17 +134,34 @@ window.onload = function () {
 						let gameInfo = document.getElementById("game-info");
 						gameInfo.innerHTML = "Ce pseudo est déjà utilisé";
 						pseudoError = true;
-					} else if(msg[0] == END_GAME) {
-						game.endGame(msg);
-					} else {
-						game.onWaitingRoomMessage(msg); // on passe la main au code du jeu
+					} else if(msg[0] == START_GAME) {
+						game.onStart(msg);
 					}
 
 					break;
 				}
 
 				default: {
-					game.onMessage(msg); // on passe la main au code du jeu
+					if(msg[0] == END_GAME) {
+						document.body.innerHTML = `
+						<div id="endContent">
+							<h1>Partie terminée</h1>	
+							<h1>Votre score : ${msg[1]}</h1>
+							<div>
+								<div id="replay-button" class="button">Rejouer</a>
+							</div>
+						</div>`;
+
+						let replayButton = document.querySelector("#replay-button");
+
+						replayButton.addEventListener("click", function() {
+							game.sock.send("0"); // ici, on doit juste envoyer un paquet pour indiquer au serveur qu'on souhaite rejouer. le contenu du paquet est ignoré donc "0" ne signifie rien
+							displayWaitingRoom();
+						});
+					} else {
+						game.onMessage(msg); // on passe la main au code du jeu
+					}
+
 					break;
 				}
 			}

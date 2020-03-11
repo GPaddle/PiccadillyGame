@@ -11,7 +11,9 @@ const ADD_PLAYER = 0,
 	PSEUDO_OK = 2,
 	PSEUDO_ALREADY_USED = 3,
 	START_GAME_COUNTDOWN = 4,
-	END_GAME = 5;
+	START_GAME = 5;
+
+const END_GAME = 0;
 
 const WAIT_NOTHING = 0,
 	WAIT_AUTH = 1,
@@ -26,8 +28,6 @@ const WAITING_ROOM = 0, // les différents états du jeu. attente de joueurs
 module.exports = function (httpServer, conf) {
 	const wss = new ws.Server({ server: httpServer });
 
-	const pseudoPossibilities = JSON.parse(fs.readFileSync("ressources/pseudos.json"));
-
 	const game = {}; // l'objet game contient les variables et fonctions partagées entre websocket.js et le fichier de jeu (questions.js ou space.js)
 
 	game.playersSocks = []; // tableau de tous les joueurs
@@ -35,6 +35,8 @@ module.exports = function (httpServer, conf) {
 	game.screensSocks = []; // tableau de tous les écrans d'affichage connectés au serveur
 
 	game.state = WAITING_ROOM;
+
+	const pseudoPossibilities = JSON.parse(fs.readFileSync("ressources/pseudos.json"));
 
 	let nextPlayerId = 0;
 

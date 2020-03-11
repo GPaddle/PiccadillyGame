@@ -7,7 +7,9 @@ const CLIENT_TYPE_SCREEN = 1;
 const ADD_PLAYER = 0,
 	DEL_PLAYER = 1,
 	START_GAME_COUNTDOWN = 4,
-	END_GAME = 5;
+	START_GAME = 5;
+
+const END_GAME = 0;
 
 const WAIT_GAME_INFO = 0,
 	WAIT_WAITING_ROOM_EVENT = 1;
@@ -21,24 +23,6 @@ window.onload = function() {
 	initGame(game);
 
 	let playersCount;
-
-	game.endGame = function(msg) {
-		document.body.innerHTML = `<div id="results-header">Résultats</div><div id="results"></div>`;
-
-		let resultsDiv = document.getElementById("results");
-
-		for(let i = 0; i < msg[1]; i++) {
-			resultsDiv.innerHTML += `
-			<div class="result">
-				<div class="result-pseudo">${msg[2 + i * 2]}</div>
-				<div class="result-score">${msg[3 + i * 2]}</div>
-			</div>`;
-
-			console.log(msg[2+i]);
-		}
-
-		game.state = WAIT_GAME_INFO;
-	}
 
 	game.sock.onopen = function() {
 		//REPERE 1
@@ -109,15 +93,34 @@ window.onload = function() {
 								clearInterval(countdown);
 							}
 						}, 1000)
-					} else {
-						game.onWaitingRoomMessage(msg);
+					} else if(msg[0] == START_GAME) {
+						game.onStart(msg);
 					}
 
 					break;
 				}
 
 				default: {
-					game.onMessage(msg);
+					if(msg[0] == END_GAME) {
+						document.body.innerHTML = `<div id="results-header">Résultats</div><div id="results"></div>`;
+
+						let resultsDiv = document.getElementById("results");
+
+						for(let i = 0; i < msg[1]; i++) {
+							resultsDiv.innerHTML += `
+							<div class="result">
+								<div class="result-pseudo">${msg[2 + i * 2]}</div>
+								<div class="result-score">${msg[3 + i * 2]}</div>
+							</div>`;
+
+							console.log(msg[2+i]);
+						}
+
+						game.state = WAIT_GAME_INFO;
+					} else {
+						game.onMessage(msg);
+					}
+					
 					break;
 				}
 			}

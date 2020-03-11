@@ -1,14 +1,11 @@
 "use strict";
 
-const END_GAME = 5,
-	START_GAME = 6;
-
 const WAIT_GAME_EVENT = 2;
 
-const PLAYER_MOVE = 0,
-	NEW_GATE = 1,
-	DEAD = 2,
-	NEW_PLAYER = 3;
+const PLAYER_MOVE = 1,
+	NEW_GATE = 2,
+	DEAD = 3,
+	NEW_PLAYER = 4;
 
 const GAME_HEIGHT = 210;
 const BASE_HEIGHT = 12;
@@ -18,57 +15,55 @@ export default function(game) {
 
 	let players;
 
-	game.onWaitingRoomMessage = function(msg) {
-		if(msg[0] == START_GAME) {
-			nextRange = 0;
+	game.onStart = function(msg) {
+		nextRange = 0;
 
-			game.state = WAIT_GAME_EVENT;
+		game.state = WAIT_GAME_EVENT;
 
-			document.body.innerHTML = `
-			<div id="game" style="height: 210px;width: 100%;overflow: hidden;">
-				<div id="starships">
+		document.body.innerHTML = `
+		<div id="game" style="height: 210px;width: 100%;overflow: hidden;">
+			<div id="starships">
 
+			</div>
+			<div id="gate">
+				<div class="gate-wall" id="top">
+					<img class="gate-base top" id="top" src="/screen/laser_top.png">
+					<div class="gate-laser" id="top"></div>
+					<img class="gate-base bottom" id="top" src="/screen/laser_top.png">
 				</div>
-				<div id="gate">
-					<div class="gate-wall" id="top">
-						<img class="gate-base top" id="top" src="/screen/laser_top.png">
-						<div class="gate-laser" id="top"></div>
-						<img class="gate-base bottom" id="top" src="/screen/laser_top.png">
-					</div>
-					<div class="gate-wall" id="bottom">
-						<img class="gate-base top" id="bottom" src="/screen/laser_top.png">
-						<div class="gate-laser" id="bottom"></div>
-						<img class="gate-base bottom" id="bottom" src="/screen/laser_top.png">
-					</div>
+				<div class="gate-wall" id="bottom">
+					<img class="gate-base top" id="bottom" src="/screen/laser_top.png">
+					<div class="gate-laser" id="bottom"></div>
+					<img class="gate-base bottom" id="bottom" src="/screen/laser_top.png">
 				</div>
 			</div>
-			`;
+		</div>
+		`;
 
-			document.querySelector("#gate").style.left = "-100px";
+		document.querySelector("#gate").style.left = "-100px";
 
-			let joueurs = document.querySelector("#starships");
+		let joueurs = document.querySelector("#starships");
 
-			players = [];
+		players = [];
 
-			for(let i = 0; i < msg[1]; i++) {
-				let player = {id: msg[2 + i]};
+		for(let i = 0; i < msg[1]; i++) {
+			let player = {id: msg[2 + i]};
 
-				player.range = nextRange;
-				nextRange++;
+			player.range = nextRange;
+			nextRange++;
 
-				let fusee = document.createElement("img");
-				fusee.className = "starship";
-				fusee.src = "/screen/starship.png";
+			let fusee = document.createElement("img");
+			fusee.className = "starship";
+			fusee.src = "/screen/starship.png";
 
-				fusee.style.left = (player.range * 30) + "px";
-				fusee.style.top = "0px";
+			fusee.style.left = (player.range * 30) + "px";
+			fusee.style.top = "0px";
 
-				joueurs.appendChild(fusee);
+			joueurs.appendChild(fusee);
 
-				player.fusee = fusee;
+			player.fusee = fusee;
 
-				players.push(player);
-			}
+			players.push(player);
 		}
 	}
 
@@ -133,8 +128,6 @@ export default function(game) {
 				player.fusee = fusee;
 
 				players.push(player);
-			} else if(msg[0] == END_GAME) {
-				game.endGame(msg);
 			}
 		}
 	}

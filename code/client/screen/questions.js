@@ -1,6 +1,6 @@
 "use strict";
 
-const NEW_QUESTION = 6;
+const NEW_QUESTION = 1;
 
 const WAIT_QUESTION = 2,
 	WAIT_ANSWER = 3;
@@ -51,52 +51,45 @@ export default function(game) {
 		game.state = WAIT_ANSWER;
 	}
 
-	game.onWaitingRoomMessage = function(msg) {
-		if(msg[0] == NEW_QUESTION) {
-			document.body.innerHTML = `
-			<div id="question-number">Question ...</div>
-			<div id="question">...</div>
-			<div id="question-info"></div>
-			<div id="answer1" class="answer">
-				<span class="answer-letter">A - </span>
-				<span class="answer-text">...</div>
-			</div>
-			<div id="answer2" class="answer">
-				<span class="answer-letter">B - </span>
-				<span class="answer-text">...</div>
-			</div>
-			<div id="answer3" class="answer">
-				<span class="answer-letter">C - </span>
-				<span class="answer-text">...</div>
-			</div>
-			<div id="answer4" class="answer">
-				<span class="answer-letter">D - </span>
-				<span class="answer-text">...</div>
-			</div>
-			`;
+	game.onStart = function(msg) {
+		document.body.innerHTML = `
+		<div id="question-number">Question ...</div>
+		<div id="question">...</div>
+		<div id="question-info"></div>
+		<div id="answer1" class="answer">
+			<span class="answer-letter">A - </span>
+			<span class="answer-text">...</div>
+		</div>
+		<div id="answer2" class="answer">
+			<span class="answer-letter">B - </span>
+			<span class="answer-text">...</div>
+		</div>
+		<div id="answer3" class="answer">
+			<span class="answer-letter">C - </span>
+			<span class="answer-text">...</div>
+		</div>
+		<div id="answer4" class="answer">
+			<span class="answer-letter">D - </span>
+			<span class="answer-text">...</div>
+		</div>
+		`;
 
-			questionNumber = 0;
+		questionNumber = 0;
 
-			onNewQuestion(msg);
-		}
+		onNewQuestion(msg);
 	}
 
 	game.onMessage = function(msg) {
 		switch(game.state) {
 			case WAIT_QUESTION: {
-				if(msg[0] == NEW_QUESTION) {
-					onNewQuestion(msg);
-				} else if(msg[0] == END_GAME) {
-					game.endGame(msg);
-				}
+				onNewQuestion(msg);
 
 				break;
-
 			}
 
 			case WAIT_ANSWER: {
 				let questionInfo = document.getElementById("question-info");
-				questionInfo.innerHTML = "La bonne réponse était \"" + questionAnswers[msg[0]] + "\"";
+				questionInfo.innerHTML = "La bonne réponse était \"" + questionAnswers[msg[1]] + "\"";
 
 				let answers = document.getElementsByClassName("answer");
 

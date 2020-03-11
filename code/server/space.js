@@ -1,17 +1,16 @@
 "use strict";
 
-const END_GAME = 5,
-	START_GAME = 6;
-
 const WAIT_NOTHING = 0,
 	WAIT_COORDINATE = 4;
 
-const IN_GAME = 3;
+const START_GAME = 5;
 
-const PLAYER_MOVE = 0,
-	NEW_GATE = 1,
-	DEAD = 2,
-	NEW_PLAYER = 3;
+const PLAYER_MOVE = 1,
+	NEW_GATE = 2,
+	DEAD = 3,
+	NEW_PLAYER = 4;
+
+const IN_GAME = 3;
 
 const STARSHIP_HEIGHT = 10;
 

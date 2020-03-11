@@ -1,12 +1,12 @@
 "use strict";
 
-const ANSWERS_STATS = 0,
-	END_QUESTION = 1;
+const NEW_QUESTION = 1;
 
-const NEW_QUESTION = 6;
+const ANSWERS_STATS = 1,
+	END_QUESTION = 2;
 
-const WAIT_QUESTION = 3,
-	WAIT_QUESTION_EVENT = 4;
+const WAIT_QUESTION = 2,
+	WAIT_QUESTION_EVENT = 3;
 
 export default function(game) {
 	let chosenAnswer;
@@ -58,57 +58,55 @@ export default function(game) {
 		game.state = WAIT_QUESTION_EVENT;
 	}
 
-	game.onWaitingRoomMessage = function(msg) {
-		if(msg[0] == NEW_QUESTION) {
-			document.body.innerHTML = `
-			<div id="question-number">Question</div>
-			<div id="question-info"></div>
-			<div class="answer-button">
-				<div class="answer-stat-bar"></div>
-				<div class="answer-button-content">
-					<div class="answer-letter">A</div>
-					<div class="answer-stat">0%</div>
-				</div>
+	game.onStart = function(msg) {
+		document.body.innerHTML = `
+		<div id="question-number">Question</div>
+		<div id="question-info"></div>
+		<div class="answer-button">
+			<div class="answer-stat-bar"></div>
+			<div class="answer-button-content">
+				<div class="answer-letter">A</div>
+				<div class="answer-stat">0%</div>
 			</div>
-			<div class="answer-button">
-				<div class="answer-stat-bar"></div>
-				<div class="answer-button-content">
-					<div class="answer-letter">B</div>
-					<div class="answer-stat">0%</div>
-				</div>
+		</div>
+		<div class="answer-button">
+			<div class="answer-stat-bar"></div>
+			<div class="answer-button-content">
+				<div class="answer-letter">B</div>
+				<div class="answer-stat">0%</div>
 			</div>
-			<div class="answer-button">
-				<div class="answer-stat-bar"></div>
-				<div class="answer-button-content">
-					<div class="answer-letter">C</div>
-					<div class="answer-stat">0%</div>
-				</div>
+		</div>
+		<div class="answer-button">
+			<div class="answer-stat-bar"></div>
+			<div class="answer-button-content">
+				<div class="answer-letter">C</div>
+				<div class="answer-stat">0%</div>
 			</div>
-			<div class="answer-button">
-				<div class="answer-stat-bar"></div>
-				<div class="answer-button-content">
-					<div class="answer-letter">D</div>
-					<div class="answer-stat">0%</div>
-				</div>
+		</div>
+		<div class="answer-button">
+			<div class="answer-stat-bar"></div>
+			<div class="answer-button-content">
+				<div class="answer-letter">D</div>
+				<div class="answer-stat">0%</div>
 			</div>
-			`;
+		</div>
+		`;
 
-			let answersButtons = document.getElementsByClassName("answer-button");
+		let answersButtons = document.getElementsByClassName("answer-button");
 
-			for (let i = 0; i < 4; i++) {
-				answersButtons[i].addEventListener("click", function () {
-					if (chosenAnswer === undefined && game.state == WAIT_QUESTION_EVENT) {
-						chosenAnswer = i;
-						answersButtons[chosenAnswer].style.border = "solid 2px #fefefe";
+		for (let i = 0; i < 4; i++) {
+			answersButtons[i].addEventListener("click", function () {
+				if (chosenAnswer === undefined && game.state == WAIT_QUESTION_EVENT) {
+					chosenAnswer = i;
+					answersButtons[chosenAnswer].style.border = "solid 2px #fefefe";
 
-						//REPERE 3
-						game.sock.send(JSON.stringify([chosenAnswer])); // on envoit le numéro de la réponse sélectionnée
-					}
-				});
-			}
-
-			game.onNewQuestion(msg);
+					//REPERE 3
+					game.sock.send(JSON.stringify([chosenAnswer])); // on envoit le numéro de la réponse sélectionnée
+				}
+			});
 		}
+
+		game.onNewQuestion(msg);
 	}
 
 	game.onMessage = function(msg) {
@@ -116,8 +114,6 @@ export default function(game) {
 			case WAIT_QUESTION: {
 				if (msg[0] == NEW_QUESTION) {
 					game.onNewQuestion(msg);
-				} else if(msg[0] == END_GAME) {
-					game.endGame(msg);
 				}
 
 				break;

@@ -5,10 +5,12 @@ const fs = require("fs");
 const WAIT_NOTHING = 0,
 	WAIT_ANSWER = 4;
 
-const NEW_QUESTION = 6;
+const START_GAME = 5;
 
-const ANSWERS_STATS = 0,
-	END_QUESTION = 1;
+const NEW_QUESTION = 1;
+
+const ANSWERS_STATS = 1,
+	END_QUESTION = 2;
 
 const QUESTION = 3,
 	QUESTION_RESULT = 4;
@@ -28,14 +30,6 @@ module.exports = function(game) {
 		function nextQuestion() {
 			actualQuestion++;
 
-			for(let i = 0; i < game.waitingRoomSocks.length; i++) {
-				if(game.waitingRoomSocks[i].isPlayer) {
-					game.waitingRoomSocks[i].player.answers = [];
-				}
-			}
-
-			game.clearWaitingRoom();
-
 			if (actualQuestion == questions.length) {
 				game.endGame();
 			} else {
@@ -46,12 +40,31 @@ module.exports = function(game) {
 
 				let question = questions[actualQuestion];
 
-				for (let playerSock of game.playersSocks) {
-					playerSock.send(JSON.stringify([NEW_QUESTION, question.time])); // on envoit uniquement le temps de la question aux joueurs, l'intitulé de la question sera affiché sur les grands écrans
+				for(let i = 0; i < game.waitingRoomSocks.length; i++) {
+					if(game.waitingRoomSocks[i].isPlayer) {
+						game.waitingRoomSocks[i].player.answers = [];
+						game.waitingRoomSocks[i].player.itsFirstQuestion = true;
+					}
+				}
+
+				game.clearWaitingRoom();
+
+				for(let playerSock of game.playersSocks) {
+					let header;
+
+					if(playerSock.player.itsFirstQuestion) {
+						header = START_GAME;
+						playerSock.player.itsFirstQuestion = false;
+					} else {
+						header = NEW_QUESTION;
+					}
+
+					playerSock.send(JSON.stringify([header, question.time])); // on envoit uniquement le temps de la question aux joueurs, l'intitulé de la question sera affiché sur les grands écrans
 					playerSock.state = WAIT_ANSWER;
 				}
 
-				let screenSockQuestion = [NEW_QUESTION, question.title];
+				let header = actualQuestion == 0 ? START_GAME : NEW_QUESTION;
+				let screenSockQuestion = [header, question.title];
 
 				for (let i = 0; i < 4; i++) {
 					screenSockQuestion[2 + i] = question.answers[i];
@@ -71,7 +84,7 @@ module.exports = function(game) {
 					game.state = QUESTION_RESULT;
 
 					for (let screenSock of game.screensSocks) {
-						screenSock.send(JSON.stringify([question.correctAnswer]));
+						screenSock.send(JSON.stringify([1, question.correctAnswer]));
 					}
 
 					for (let playerSock of game.playersSocks) {
@@ -96,7 +109,7 @@ module.exports = function(game) {
 
 			sock.player.answers = [];
 
-			sock.send(JSON.stringify([NEW_QUESTION, remainingQuestionTime]));
+			sock.send(JSON.stringify([START_GAME, remainingQuestionTime]));
 			sock.state = WAIT_ANSWER;
 		}
 	}
