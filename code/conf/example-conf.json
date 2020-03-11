@@ -10,5 +10,7 @@
 	"countdownTime": 15,
 	"port": 8082,
 
+	"nbQuestions": 4,
+
 	"testMode": false
 }

@@ -30,7 +30,7 @@ module.exports = function(game) {
 		function nextQuestion() {
 			actualQuestion++;
 
-			if (actualQuestion == questions.length) {
+			if (actualQuestion == game.conf.nbQuestions) {
 				game.endGame();
 			} else {
 				// REPERE 2

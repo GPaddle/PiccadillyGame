@@ -36,6 +36,8 @@ module.exports = function (httpServer, conf) {
 
 	game.state = WAITING_ROOM;
 
+	game.conf = conf;
+
 	const pseudoPossibilities = JSON.parse(fs.readFileSync("ressources/pseudos.json"));
 
 	let nextPlayerId = 0;
