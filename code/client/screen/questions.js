@@ -5,7 +5,7 @@ const NEW_QUESTION = 6;
 const WAIT_QUESTION = 2,
 	WAIT_ANSWER = 3;
 
-function initGame(game) {
+export default function(game) {
 	let questionNumber;
 	let questionAnswers;
 	let questionCountdown;

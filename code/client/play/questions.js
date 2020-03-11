@@ -5,7 +5,7 @@ const ANSWERS_STATS = 0,
 
 const NEW_QUESTION = 6;
 
-function initGame(game) {
+export default function(game) {
 	let chosenAnswer;
 	let questionCountdown;
 

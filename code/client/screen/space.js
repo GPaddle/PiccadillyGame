@@ -11,7 +11,7 @@ const PLAYER_MOVE = 0,
 const GAME_HEIGHT = 210;
 const BASE_HEIGHT = 12;
 
-function initGame(game) {
+export default function(game) {
 	game.onWaitingRoomMessage = function(msg) {
 		if(msg[0] == START_GAME) {
 			game.state = WAIT_GAME_EVENT;

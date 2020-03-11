@@ -1,5 +1,7 @@
 "use strict";
 
+import initGame from "./play/game.js"
+
 const CLIENT_TYPE_PLAYER = 0;
 
 const ADD_PLAYER = 0,

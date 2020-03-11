@@ -2,7 +2,7 @@
 
 const START_GAME = 6;
 
-function initGame(game) {
+export default function(game) {
 	game.onWaitingRoomMessage = function(msg) {
 		if(msg[0] == START_GAME) {
 			document.body.innerHTML = `

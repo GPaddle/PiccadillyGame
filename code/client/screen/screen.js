@@ -1,5 +1,7 @@
 "use strict";
 
+import initGame from "./screen/game.js";
+
 const CLIENT_TYPE_SCREEN = 1;
 
 const ADD_PLAYER = 0,
