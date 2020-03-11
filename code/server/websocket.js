@@ -214,7 +214,10 @@ module.exports = function (httpServer, conf) {
 				}
 
 				case WAIT_REPLAY: {
-					initPrePlayer();
+					if(msg.length == 3) {
+						initPrePlayer();
+					}
+
 					break;
 				}
 

@@ -155,7 +155,7 @@ window.onload = function () {
 						let replayButton = document.querySelector("#replay-button");
 
 						replayButton.addEventListener("click", function() {
-							game.sock.send("0"); // ici, on doit juste envoyer un paquet pour indiquer au serveur qu'on souhaite rejouer. le contenu du paquet est ignoré donc "0" ne signifie rien
+							game.sock.send("[0, 0, 0]"); // ici, on doit juste envoyer un paquet pour indiquer au serveur qu'on souhaite rejouer. le contenu du paquet est ignoré donc "0" ne signifie rien
 							displayWaitingRoom();
 						});
 					} else {
