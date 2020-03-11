@@ -102,7 +102,7 @@ module.exports = function (httpServer, conf) {
 				screenSock.send(JSON.stringify([conf.minPlayer, game.playersSocks.length]));
 			}
 
-			if (playersSocks.length >= conf.minPlayer) { // s'il y a déjà assez de joueurs quand on sort de l'écran d'affichage des scores, on déclenche directement le décompte de début de partie
+			if (game.playersSocks.length >= conf.minPlayer) { // s'il y a déjà assez de joueurs quand on sort de l'écran d'affichage des scores, on déclenche directement le décompte de début de partie
 				startBeginCountdown();
 			}
 		}, 30000);

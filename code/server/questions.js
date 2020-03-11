@@ -16,12 +16,14 @@ const QUESTION = 3,
 module.exports = function(game) {
 	let questions = JSON.parse(fs.readFileSync("ressources/questions.json"));
 	let questionEndTime;
-	let actualQuestion = -1;
+	let actualQuestion;
 
 	game.start = function() {
 		questions.sort(function () {
 			return .5 - Math.random();
 		});
+
+		actualQuestion = -1;
 
 		function nextQuestion() {
 			actualQuestion++;

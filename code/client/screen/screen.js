@@ -10,40 +10,40 @@ const ADD_PLAYER = 0,
 const WAIT_GAME_INFO = 0,
 	WAIT_WAITING_ROOM_EVENT = 1;
 
-let sock;
-let msg;
-let state = WAIT_GAME_INFO;
-let players;
+window.onload = function() {
+	const game = {}; // l'objet game contient les variables et fonctions partagées entre ce fichier et le fichier de jeu (questions.js ou space.js)
 
-function endGame() {
-	document.body.innerHTML = `<div id="results-header">Résultats</div><div id="results"></div>`;
+	game.sock = new WebSocket("ws://" + window.location.host);
+	game.state = WAIT_GAME_INFO;
 
-	let resultsDiv = document.getElementById("results");
+	initGame(game);
 
-	for(let i = 0; i < msg[1]; i++) {
-		resultsDiv.innerHTML += `
-		<div class="result">
-			<div class="result-pseudo">${msg[2 + i * 2]}</div>
-			<div class="result-score">${msg[3 + i * 2]}</div>
-		</div>`;
+	game.endGame = function(msg) {
+		document.body.innerHTML = `<div id="results-header">Résultats</div><div id="results"></div>`;
 
-		console.log(msg[2+i]);
+		let resultsDiv = document.getElementById("results");
+
+		for(let i = 0; i < msg[1]; i++) {
+			resultsDiv.innerHTML += `
+			<div class="result">
+				<div class="result-pseudo">${msg[2 + i * 2]}</div>
+				<div class="result-score">${msg[3 + i * 2]}</div>
+			</div>`;
+
+			console.log(msg[2+i]);
+		}
+
+		game.state = WAIT_GAME_INFO;
 	}
 
-	state = WAIT_GAME_INFO;
-}
-
-window.onload = function() {
-	sock = new WebSocket("ws://" + window.location.host);
-
-	sock.onopen = function() {
+	game.sock.onopen = function() {
 		//REPERE 1
-		sock.send(JSON.stringify([CLIENT_TYPE_SCREEN]));
+		game.sock.send(JSON.stringify([CLIENT_TYPE_SCREEN]));
 
-		sock.onmessage = function(json) {
-			msg = JSON.parse(json.data);
+		game.sock.onmessage = function(json) {
+			let msg = JSON.parse(json.data);
 
-			switch (state) {
+			switch (game.state) {
 				case WAIT_GAME_INFO: {
 					document.body.innerHTML = `
 					<div id="service-name">Piccadilly Game</div>
@@ -69,28 +69,28 @@ window.onload = function() {
 					let playersCountSpan = document.getElementById("players-count");
 					playersCountSpan.innerHTML = msg[1];
 
-					players = []; // TEMPORAIRE !! NE PAS OUBLIER DE RETIRER !
+					game.players = []; // TEMPORAIRE !! NE PAS OUBLIER DE RETIRER !
 
-					state = WAIT_WAITING_ROOM_EVENT;
+					game.state = WAIT_WAITING_ROOM_EVENT;
 					break;
 				}
 
 				case WAIT_WAITING_ROOM_EVENT: {
 					if(msg[0] == ADD_PLAYER) {
-						players.push({id: msg[1]});
+						game.players.push({id: msg[1]});
 
 						let playersCountSpan = document.getElementById("players-count");
-						playersCountSpan.innerHTML = players.length;
+						playersCountSpan.innerHTML = game.players.length;
 					} else if(msg[0] == DEL_PLAYER) {
-						for(let i = 0; i < players.length; i++) {
-							if(msg[1] == players[i].id) {
-								players.splice(i, 1);
+						for(let i = 0; i < game.players.length; i++) {
+							if(msg[1] == game.players[i].id) {
+								game.players.splice(i, 1);
 								break;
 							}
 						}
 
 						let playersCountSpan = document.getElementById("players-count");
-						playersCountSpan.innerHTML = players.length;
+						playersCountSpan.innerHTML = game.players.length;
 					} else if(msg[0] == START_GAME_COUNTDOWN) {
 						let countdownInfo = document.createElement("div");
 						countdownInfo.id = "start-countdown-info";
@@ -115,14 +115,14 @@ window.onload = function() {
 							}
 						}, 1000)
 					} else {
-						gameOnWaitingRoomMessage();
+						game.onWaitingRoomMessage(msg);
 					}
 
 					break;
 				}
 
 				default: {
-					gameOnMessage();
+					game.onMessage(msg);
 					break;
 				}
 			}
