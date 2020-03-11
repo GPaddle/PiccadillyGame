@@ -97,8 +97,6 @@ function gameOnWaitingRoomMessage() {
 					chosenAnswer = i;
 					answersButtons[chosenAnswer].style.border = "solid 2px #fefefe";
 
-					console.log(sock);
-
 					//REPERE 3
 					sock.send(JSON.stringify([chosenAnswer])); // on envoit le numéro de la réponse sélectionnée
 				}
@@ -110,8 +108,6 @@ function gameOnWaitingRoomMessage() {
 }
 
 function gameOnMessage() {
-	console.log("get a message");
-
 	switch(state) {
 		case WAIT_QUESTION: {
 			if (msg[0] == NEW_QUESTION) {

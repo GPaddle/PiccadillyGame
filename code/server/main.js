@@ -2,12 +2,12 @@
 
 const http = require("http");
 const fs = require("fs");
-const server = require("./websocket.js");
+const startWebSocket = require("./websocket.js");
 
 const conf = JSON.parse(fs.readFileSync("conf/conf.json"));
 
 const httpServer = http.createServer();
-httpServer.listen(8082) // On ouvre l'écoute sur le port 8082 pour ne pas concurrencer d'autres serveurs lancés classiquement sur 8080 : WAMP
+httpServer.listen(conf.port);
 
 httpServer.on("request", function(req, res) {
 	switch (req.url) {
@@ -145,4 +145,4 @@ httpServer.on("request", function(req, res) {
 	}
 });
 
-server.startWebSocket(httpServer, conf);
+startWebSocket(httpServer, conf);

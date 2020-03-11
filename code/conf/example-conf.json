@@ -8,5 +8,7 @@
 
 	"minPlayer": 3,
 	"countdownTime": 15,
+	"port": 8082,
+
 	"testMode": false
 }

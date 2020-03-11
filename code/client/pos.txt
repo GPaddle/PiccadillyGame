@@ -1,5 +1,0 @@
-pos : 40px minimum
-
-ecart : 20px minimum, 100px maximum
-
-bas : 170 maximum (210 - 40)
