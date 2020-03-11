@@ -150,7 +150,7 @@ module.exports = function (httpServer, conf) {
 			switch (sock.state) {
 				case WAIT_AUTH: {
 					if (msg[0] == CLIENT_TYPE_PLAYER) {
-						initPrePlayer(game, pseudoPossibilities, conf, sock);
+						initPrePlayer();
 					} else if (msg[0] == CLIENT_TYPE_SCREEN) {
 						//REPERE 10
 						sock.send(JSON.stringify([conf.minPlayer, game.playersSocks.length]));
@@ -186,7 +186,7 @@ module.exports = function (httpServer, conf) {
 
 						if (game.state == WAITING_ROOM || game.state == BEGIN_COUNT_DOWN) {
 							for (let screenSock of game.screensSocks) {
-								screenSock.send(JSON.stringify([ADD_PLAYER, sock.player.id]));
+								screenSock.send(JSON.stringify([ADD_PLAYER]));
 							}
 						}
 
@@ -210,7 +210,7 @@ module.exports = function (httpServer, conf) {
 				}
 
 				case WAIT_REPLAY: {
-					initPrePlayer(game, pseudoPossibilities, conf, sock);
+					initPrePlayer();
 					break;
 				}
 
@@ -235,7 +235,7 @@ module.exports = function (httpServer, conf) {
 
 				if (game.state == WAITING_ROOM || game.state == BEGIN_COUNT_DOWN) {
 					for (let screenSock of game.screensSocks) {
-						screenSock.send(JSON.stringify([DEL_PLAYER, sock.player.id]));
+						screenSock.send(JSON.stringify([DEL_PLAYER]));
 					}
 				}
 

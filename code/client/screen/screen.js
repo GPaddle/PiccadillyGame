@@ -20,6 +20,8 @@ window.onload = function() {
 
 	initGame(game);
 
+	let playersCount;
+
 	game.endGame = function(msg) {
 		document.body.innerHTML = `<div id="results-header">Résultats</div><div id="results"></div>`;
 
@@ -68,10 +70,10 @@ window.onload = function() {
 					let minPlayersCount = document.getElementById("min-players-count");
 					minPlayersCount.innerHTML = msg[0];
 
-					let playersCountSpan = document.getElementById("players-count");
-					playersCountSpan.innerHTML = msg[1];
+					playersCount = msg[1];
 
-					game.players = []; // TEMPORAIRE !! NE PAS OUBLIER DE RETIRER !
+					let playersCountSpan = document.getElementById("players-count");
+					playersCountSpan.innerHTML = playersCount;
 
 					game.state = WAIT_WAITING_ROOM_EVENT;
 					break;
@@ -79,20 +81,11 @@ window.onload = function() {
 
 				case WAIT_WAITING_ROOM_EVENT: {
 					if(msg[0] == ADD_PLAYER) {
-						game.players.push({id: msg[1]});
-
-						let playersCountSpan = document.getElementById("players-count");
-						playersCountSpan.innerHTML = game.players.length;
+						playersCount++;
+						document.getElementById("players-count").innerHTML = playersCount;
 					} else if(msg[0] == DEL_PLAYER) {
-						for(let i = 0; i < game.players.length; i++) {
-							if(msg[1] == game.players[i].id) {
-								game.players.splice(i, 1);
-								break;
-							}
-						}
-
-						let playersCountSpan = document.getElementById("players-count");
-						playersCountSpan.innerHTML = game.players.length;
+						playersCount--;
+						document.getElementById("players-count").innerHTML = playersCount;
 					} else if(msg[0] == START_GAME_COUNTDOWN) {
 						let countdownInfo = document.createElement("div");
 						countdownInfo.id = "start-countdown-info";
