@@ -12,9 +12,7 @@ const ADD_PLAYER = 0,
 
 const WAIT_NOTHING = 0,
 	WAIT_GAME_INFO = 1,
-	WAIT_WAITING_ROOM_EVENT = 2,
-	WAIT_QUESTION = 3,
-	WAIT_QUESTION_EVENT = 4;
+	WAIT_WAITING_ROOM_EVENT = 2;
 
 window.onload = function () {
 	const game = {} // l'objet game contient les variables et fonctions partagées entre ce fichier et le fichier de jeu (questions.js ou space.js)

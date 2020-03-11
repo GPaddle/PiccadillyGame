@@ -5,6 +5,9 @@ const ANSWERS_STATS = 0,
 
 const NEW_QUESTION = 6;
 
+const WAIT_QUESTION = 3,
+	WAIT_QUESTION_EVENT = 4;
+
 export default function(game) {
 	let chosenAnswer;
 	let questionCountdown;
