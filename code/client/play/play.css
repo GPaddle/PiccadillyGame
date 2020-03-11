@@ -24,6 +24,7 @@ body {
 	font-family: lato;
 	padding: 100px 20px 20px 20px;
 	height: calc(100vh - 140px);
+	overflow: hidden;
 	overscroll-behavior-y: none;
   
 }
@@ -283,8 +284,9 @@ Style pour le slider
 */
 
 #slider {
-	transform: rotate(90deg);
-	width: 50vh;
+	/* transform: rotate(90deg); */
+	width: 80vw;
+	padding: 0 5vw;
 	height: 50%;
 	background: transparent;
 }

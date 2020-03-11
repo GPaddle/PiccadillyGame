@@ -132,13 +132,13 @@ body {
 
 /* jeu de space */
 
-.joueur:nth-child(3n){
+.starship:nth-child(3n){
 	filter: hue-rotate(0deg);
 }
-.joueur:nth-child(3n+1){
+.starship:nth-child(3n+1){
 	filter: hue-rotate(100deg);
 }
-.joueur:nth-child(3n+2){
+.starship:nth-child(3n+2){
 	filter: hue-rotate(200deg);
 }
 
