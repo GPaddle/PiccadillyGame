@@ -14,99 +14,99 @@ const WAIT_NOTHING = 0,
 	WAIT_QUESTION = 3,
 	WAIT_QUESTION_EVENT = 4;
 
-let TEST_MODE;
+window.onload = function () {
+	const game = {} // l'objet game contient les variables et fonctions partagées entre ce fichier et le fichier de jeu (questions.js ou space.js)
 
-let state;
-let sock;
-let pseudoError = false;
-let players; // tableau des pseudos de joueurs
-let msg;
+	game.sock = new WebSocket("ws://" + window.location.host);
 
-function displayWaitingRoom() {
-	document.body.innerHTML = `
-	<div id="player-pseudo-info">Votre pseudo :</div>
-	<input id="pseudo-input" type="text" placeholder="Entrez votre pseudo" required autofocus>
-	<div id="game-info"></div>
-	<div id="join-button">Rejoindre la partie</div>
+	let pseudoError = false;
+	let players; // tableau des pseudos de joueurs
+	let testMode;
 
-	<div id="players-list-header">Joueurs connectés</div>
-	<div id="players-list">
+	initGame(game);
 
-	</div>
-	`;
+	function displayWaitingRoom() {
+		document.body.innerHTML = `
+		<div id="player-pseudo-info">Votre pseudo :</div>
+		<input id="pseudo-input" type="text" placeholder="Entrez votre pseudo" required autofocus>
+		<div id="game-info"></div>
+		<div id="join-button">Rejoindre la partie</div>
 
-	let pseudoInput = document.getElementById("pseudo-input");
-	pseudoInput.onfocus = function () {
-		if(pseudoError) {
-			let gameInfo = document.getElementById("game-info");
-			gameInfo.innerHTML = "";
-			pseudoError = false;
+		<div id="players-list-header">Joueurs connectés</div>
+		<div id="players-list">
+
+		</div>
+		`;
+
+		let pseudoInput = document.getElementById("pseudo-input");
+		pseudoInput.onfocus = function () {
+			if(pseudoError) {
+				let gameInfo = document.getElementById("game-info");
+				gameInfo.innerHTML = "";
+				pseudoError = false;
+			}
 		}
+
+		document.getElementById("join-button").addEventListener("click", function () {
+			//REPERE 1
+			game.sock.send(JSON.stringify([pseudoInput.value]));
+		});
+
+		game.state = WAIT_GAME_INFO;
 	}
 
-	document.getElementById("join-button").addEventListener("click", function () {
-		//REPERE 1
-		sock.send(JSON.stringify([pseudoInput.value]));
-	});
+	function addPlayer(id, pseudo) {
+		let player = {id: id, pseudo: pseudo};
 
-	state = WAIT_GAME_INFO;
-}
+		player.line = document.createElement("div");
+		player.line.classList.add("players-list-player");
+		player.line.innerHTML = player.pseudo;
 
-function addPlayer(id, pseudo) {
-	let player = {id: id, pseudo: pseudo};
+		let playersList = document.getElementById("players-list");
+		playersList.appendChild(player.line);
 
-	player.line = document.createElement("div");
-	player.line.classList.add("players-list-player");
-	player.line.innerHTML = player.pseudo;
+		players.push(player);
+	}
 
-	let playersList = document.getElementById("players-list");
-	playersList.appendChild(player.line);
+	game.endGame = function(msg) {
+		document.body.innerHTML = `
+		<div id="endContent">
+			<h1>Partie terminée</h1>	
+			<h1>Votre score : ${msg[1]}</h1>
+			<div>
+				<div id="replay-button" class="button">Rejouer</a>
+			</div>
+		</div>`;
 
-	players.push(player);
-}
+		let replayButton = document.querySelector("#replay-button");
 
-function endGame() {
-	document.body.innerHTML = `
-	<div id="endContent">
-		<h1>Partie terminée</h1>	
-		<h1>Votre score : ${msg[1]}</h1>
-		<div>
-			<div id="replay-button" class="button">Rejouer</a>
-		</div>
-	</div>`;
+		replayButton.addEventListener("click", function() {
+			game.sock.send("0"); // ici, on doit juste envoyer un paquet pour indiquer au serveur qu'on souhaite rejouer. le contenu du paquet est ignoré donc "0" ne signifie rien
+			displayWaitingRoom();
+		});
+	}
 
-	let replayButton = document.querySelector("#replay-button");
-
-	replayButton.addEventListener("click", function() {
-		sock.send("0"); // ici, on doit juste envoyer un paquet pour indiquer au serveur qu'on souhaite rejouer. le contenu du paquet est ignoré donc "0" ne signifie rien
-		displayWaitingRoom();
-	});
-}
-
-window.onload = function () {
-	sock = new WebSocket("ws://" + window.location.host);
-
-	sock.onopen = function () {
+	game.sock.onopen = function () {
 		displayWaitingRoom();
 
 		//REPERE 2
-		sock.send(JSON.stringify([CLIENT_TYPE_PLAYER]));
+		game.sock.send(JSON.stringify([CLIENT_TYPE_PLAYER]));
 
-		if(TEST_MODE) {
+		if(testMode) {
 			document.getElementById("join-button").click();
 		}
 
-		sock.onmessage = function (json) {
-			msg = JSON.parse(json.data);
+		game.sock.onmessage = function (json) {
+			let msg = JSON.parse(json.data);
 
-			switch (state) {
+			switch(game.state) {
 				case WAIT_GAME_INFO: {
 					let pseudoInput = document.getElementById("pseudo-input");
 					pseudoInput.value = msg[0];
 
 					let playersCount = msg[1];
 
-					TEST_MODE = msg[2];
+					testMode = msg[2];
 
 					players = [];
 					let playersList = document.getElementById("players-list");
@@ -123,7 +123,7 @@ window.onload = function () {
 						playersList.appendChild(players[i].line);
 					}
 
-					state = WAIT_WAITING_ROOM_EVENT;
+					game.state = WAIT_WAITING_ROOM_EVENT;
 					break;
 				}
 
@@ -152,16 +152,16 @@ window.onload = function () {
 						gameInfo.innerHTML = "Ce pseudo est déjà utilisé";
 						pseudoError = true;
 					} else if(msg[0] == END_GAME) {
-						endGame();
+						game.endGame(msg);
 					} else {
-						gameOnWaitingRoomMessage(); // on passe la main au code du jeu
+						game.onWaitingRoomMessage(msg); // on passe la main au code du jeu
 					}
 
 					break;
 				}
 
 				default: {
-					gameOnMessage(); // on passe la main au code du jeu
+					game.onMessage(msg); // on passe la main au code du jeu
 					break;
 				}
 			}
