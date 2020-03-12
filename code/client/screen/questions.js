@@ -97,7 +97,7 @@ export default function(game) {
 					answer.style.backgroundColor = "#bb0b0b";
 				}
 
-				answers[msg[0]].style.backgroundColor = "#22780f";
+				answers[msg[1]].style.backgroundColor = "#22780f";
 
 				game.state = WAIT_QUESTION;
 				break;
