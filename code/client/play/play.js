@@ -121,8 +121,10 @@ window.onload = function () {
 							}
 						}
 					} else if(msg[0] == PSEUDO_OK) {
+						game.meId = msg[1] // l'id du joueur (de moi)
+
 						let pseudoInput = document.getElementById("pseudo-input");
-						addPlayer(msg[1], pseudoInput.value);
+						addPlayer(game.meId, pseudoInput.value);
 
 						let joinButton = document.getElementById("join-button");
 						let gameInfo = document.getElementById("game-info");

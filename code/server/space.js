@@ -15,8 +15,6 @@ const IN_GAME = 3;
 const STARSHIP_HEIGHT = 10;
 
 module.exports = function(game) {
-	let nextRange;
-
 	game.start = function() {
 		let gameStart = new Date(Date.now());
 
@@ -28,17 +26,13 @@ module.exports = function(game) {
 		game.state = IN_GAME;
 
 		let gameInfo = [START_GAME, game.playersSocks.length];
-		nextRange = 0;
 
 		for(let playerSock of game.playersSocks) {
-			playerSock.send(JSON.stringify([START_GAME]));
-
 			playerSock.state = WAIT_COORDINATE;
 			playerSock.player.coord = 0;
 			playerSock.player.alive = true;
-			
-			playerSock.player.range = nextRange;
-			nextRange++;
+
+			playerSock.send(JSON.stringify([START_GAME]));
 
 			gameInfo.push(playerSock.player.id);
 		}
@@ -73,7 +67,7 @@ module.exports = function(game) {
 			}
 
 			for(let playerSock of game.playersSocks) {
-				let playerStarshipPos = playerSock.player.range * 30 + 21;
+				let playerStarshipPos = playerSock.player.id * 30 + 21;
 
 				setTimeout(function() {
 					if (playerSock.player.alive && (playerSock.player.coord < doorPos || (playerSock.player.coord + STARSHIP_HEIGHT) > doorPos + doorHeight)) {
@@ -119,9 +113,6 @@ module.exports = function(game) {
 		sock.state = WAIT_COORDINATE;
 		sock.player.coord = 0;
 		sock.player.alive = true;
-		sock.player.range = nextRange;
-
-		nextRange++;
 
 		for(let screenSock of game.screensSocks) {
 			screenSock.send(JSON.stringify([NEW_PLAYER, sock.player.id]));

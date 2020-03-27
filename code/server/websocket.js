@@ -98,6 +98,7 @@ module.exports = function (httpServer, conf) {
 		}
 
 		game.playersSocks = [];
+		nextPlayerId = 0;
 
 		setTimeout(function () { // on affiche les scores pendant 30 secondes puis on reprépare une nouvelle partie
 			game.state = WAITING_ROOM;

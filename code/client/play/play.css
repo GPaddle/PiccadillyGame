@@ -388,3 +388,15 @@ input[type=range]:focus::-ms-fill-lower {
 input[type=range]:focus::-ms-fill-upper {
 	background: rgba(255, 117, 117, 0);
 }
+
+#starship-pres {
+	font-size: 18px;
+	text-align: center;
+	margin-bottom: 20px;
+}
+
+#starship {
+	width: 200px;
+	display: block;
+	margin: auto;
+}

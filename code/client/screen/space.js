@@ -11,13 +11,9 @@ const GAME_HEIGHT = 210;
 const BASE_HEIGHT = 12;
 
 export default function(game) {
-	let nextRange;
-
 	let players;
 
 	game.onStart = function(msg) {
-		nextRange = 0;
-
 		game.state = WAIT_GAME_EVENT;
 
 		document.body.innerHTML = `
@@ -49,15 +45,14 @@ export default function(game) {
 		for(let i = 0; i < msg[1]; i++) {
 			let player = {id: msg[2 + i]};
 
-			player.range = nextRange;
-			nextRange++;
-
 			let fusee = document.createElement("img");
 			fusee.className = "starship";
 			fusee.src = "/screen/starship.png";
 
-			fusee.style.left = (player.range * 30) + "px";
+			fusee.style.left = (player.id * 30) + "px";
 			fusee.style.top = "0px";
+
+			fusee.style.filter = "hue-rotate(" + player.id * 80 + "deg)";
 
 			joueurs.appendChild(fusee);
 
@@ -112,15 +107,14 @@ export default function(game) {
 			} else if(msg[0] == NEW_PLAYER) {
 				let player = {id: msg[1]};
 
-				player.range = nextRange;
-				nextRange++;
-
 				let fusee = document.createElement("img");
 				fusee.className = "starship";
 				fusee.src = "/screen/starship.png";
 
-				fusee.style.left = (player.range * 30) + "px";
+				fusee.style.left = (player.id * 30) + "px";
 				fusee.style.top = "0px";
+
+				fusee.style.filter = "hue-rotate(" + player.id * 80 + "deg)";
 
 				let joueurs = document.querySelector("#starships");
 				joueurs.appendChild(fusee);

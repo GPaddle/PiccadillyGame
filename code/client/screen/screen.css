@@ -132,16 +132,6 @@ body {
 
 /* jeu de space */
 
-.starship:nth-child(3n){
-	filter: hue-rotate(0deg);
-}
-.starship:nth-child(3n+1){
-	filter: hue-rotate(100deg);
-}
-.starship:nth-child(3n+2){
-	filter: hue-rotate(200deg);
-}
-
 #game {
 	margin-top: 5%;
 	background-image: url(screen/moon.svg), url(screen/stars1.svg), url(screen/stars2.svg), url(screen/background.svg);
