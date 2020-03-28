@@ -13,8 +13,6 @@ const BASE_HEIGHT = 12;
 //Attention, si cette valeur est changée, il faut la changer dans space.js du serveur
 const DEPART_ORIGINE_X = 800;
 
-let origineX=800;
-
 export default function(game) {
 	let players;
 
@@ -108,9 +106,7 @@ export default function(game) {
 					
 					let gate =document.querySelector("#gate");
 					if (gate){
-
-						
-						origineX = DEPART_ORIGINE_X + players.length * 50;
+						let origineX = DEPART_ORIGINE_X + players.length * 50;
 
 						gate.style.left = (origineX - (timestamp - startTimeStamp) / 1000 * speed) + "px";
 					}
@@ -146,8 +142,6 @@ export default function(game) {
 				player.fusee = fusee;
 
 				players.push(player);
-				
-				origineX = DEPART_ORIGINE_X + players.length * 50;
 			}
 		}
 	}
