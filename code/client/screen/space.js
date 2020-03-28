@@ -10,7 +10,10 @@ const PLAYER_MOVE = 1,
 const GAME_HEIGHT = 210;
 const BASE_HEIGHT = 12;
 
-let origineX = 1000;
+//Attention, si cette valeur est changée, il faut la changer dans space.js du serveur
+const DEPART_ORIGINE_X = 800;
+
+let origineX;
 
 export default function(game) {
 	let players;
@@ -140,7 +143,7 @@ export default function(game) {
 
 				players.push(player);
 				
-				origineX = 800+players.length*50;
+				origineX = DEPART_ORIGINE_X + players.length * 50;
 			}
 		}
 	}
