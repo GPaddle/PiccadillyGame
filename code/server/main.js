@@ -18,6 +18,7 @@ httpServer.on("request", function(req, res) {
 
 	switch (req.url) {
 		case "/": res.end("Piccadilly Game"); break;
+		
 		case "/play": send("client/play/play.html", "text/html"); break;
 		case "/screen": send("client/screen/screen.html", "text/html"); break;
 		case "/play.css": send("client/play/play.css", "text/css"); break;
@@ -37,11 +38,10 @@ httpServer.on("request", function(req, res) {
 		case "/fonts/lato": send("client/fonts/lato/lato.ttf", "font/ttf"); break;
 		case "/fonts/lato-bold": send("client/fonts/lato/lato-bold.ttf", "font/ttf"); break;
 
-		default: {
+		default:
 			res.statusCode = 404;
 			res.end("Page inexistante");
 			break;
-		}
 	}
 });
 

@@ -65,7 +65,7 @@ module.exports = function(game) {
 
 			speed += 30;
 
-			let origineX = DEPART_ORIGINE_X + 4 * game.playerSock.length;
+			let origineX = DEPART_ORIGINE_X + 4 * game.playersSocks.length;
 
 			for (let screenSock of game.screensSocks) {
 				screenSock.send(JSON.stringify([NEW_GATE, doorPos, doorHeight, speed]));

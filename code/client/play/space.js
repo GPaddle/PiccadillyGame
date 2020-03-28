@@ -2,6 +2,8 @@
 
 const IN_GAME = 2;
 
+const DEAD = 3;
+
 export default function(game) {
 	game.onStart = function(msg) {
 		document.body.innerHTML = `
@@ -20,5 +22,13 @@ export default function(game) {
 		});
 
 		game.state = IN_GAME;
+	}
+
+	game.onMessage = function(msg) {
+		if(msg[0] == DEAD) {
+			document.body.innerHTML = `
+			<div id="dead-message">Vous êtes mort...<br>Retentez votre chance à la prochaine partie !</div>
+			`
+		}
 	}
 }
