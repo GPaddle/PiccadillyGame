@@ -255,9 +255,9 @@ button:active {
 	font-size: 2em;
 	display: block;
 	text-align: center;
-	animation: blink infinite 2s;
+	animation: blink infinite 1.5s;
 	animation-direction: alternate;
-	animation-timing-function: ease-in-out;
+	animation-timing-function: cubic-bezier(.45,.05,.55,.95);
 }
 
 @keyframes blink {

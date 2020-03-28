@@ -149,6 +149,8 @@ body {
 	position: absolute;
 	top: 0px;
 	left: 200px;
+
+	transform-origin: 0 105px;
 }
 
 .gate-wall {
@@ -183,5 +185,14 @@ body {
 @keyframes speed {
 	100% {
 		background-position: -500vw 0px, -400vw 0px, -300vw 0px, -200vw 0px;
+	}
+}
+
+@keyframes apparition {
+	0% {
+		transform: scale(0);
+	}
+	100%{
+		transform: scale(1);
 	}
 }
