@@ -27,7 +27,7 @@ export default function(game) {
 	game.onMessage = function(msg) {
 		if(msg[0] == DEAD) {
 			document.body.innerHTML = `
-			<div id="dead-message">Vous êtes mort...<br>Retentez votre chance à la prochaine partie !</div>
+			<div id="dead-message">Vous êtes mort...<br>Attendez la fin de la partie pour connaître votre score !<br>Ça ne prendra pas longtemps...</div>
 			`
 		}
 	}
