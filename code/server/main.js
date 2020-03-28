@@ -51,6 +51,13 @@ httpServer.on("request", function(req, res) {
 			break;
 		}
 
+		case "/play/starship.png": {
+			res.setHeader("Content-Type", "image/png");
+			let file = fs.createReadStream("client/play/starship.png");
+			file.pipe(res);
+			break;
+		}
+
 		case "/qrious.js": {
 			res.setHeader("Content-Type", "application/javascript");
 			let file = fs.createReadStream("node_modules/qrious/dist/qrious.js");
@@ -100,9 +107,9 @@ httpServer.on("request", function(req, res) {
 			break;
 		}
 
-		case "/screen/laser_top.png": {
+		case "/screen/laser-top.png": {
 			res.setHeader("Content-Type", "image/png");
-			let file = fs.createReadStream("client/screen/assets/laser_top.png");
+			let file = fs.createReadStream("client/screen/assets/laser-top.png");
 			file.pipe(res);
 			break;
 		}

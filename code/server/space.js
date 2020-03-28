@@ -12,7 +12,7 @@ const PLAYER_MOVE = 1,
 
 const IN_GAME = 3;
 
-const STARSHIP_HEIGHT = 10;
+const STARSHIP_HEIGHT = 19;
 
 module.exports = function(game) {
 	game.start = function() {
@@ -43,7 +43,7 @@ module.exports = function(game) {
 
 		let newGateTimer;
 
-		let MIN_HEIGHT = 50; // hauteur minimale de la porte
+		let MIN_HEIGHT = 80; // hauteur minimale de la porte
 		let MAX_HEIGHT = 100; // hauteur maximale de la porte
 		let MIN_POS = 40; // position minimale du haut de porte (en px depuis le haut)
 		let MAX_POS = 40; // position maximale du bas de porte (en px depuis le bas)
@@ -67,7 +67,7 @@ module.exports = function(game) {
 			}
 
 			for(let playerSock of game.playersSocks) {
-				let playerStarshipPos = playerSock.player.id * 30 + 21;
+				let playerStarshipPos = playerSock.player.id * 50 + 40;
 
 				setTimeout(function() {
 					if (playerSock.player.alive && (playerSock.player.coord < doorPos || (playerSock.player.coord + STARSHIP_HEIGHT) > doorPos + doorHeight)) {

@@ -23,14 +23,14 @@ export default function(game) {
 			</div>
 			<div id="gate">
 				<div class="gate-wall" id="top">
-					<img class="gate-base top" id="top" src="/screen/laser_top.png">
+					<img class="gate-base top" id="top" src="/screen/laser-top.png">
 					<div class="gate-laser" id="top"></div>
-					<img class="gate-base bottom" id="top" src="/screen/laser_top.png">
+					<img class="gate-base bottom" id="top" src="/screen/laser-top.png">
 				</div>
 				<div class="gate-wall" id="bottom">
-					<img class="gate-base top" id="bottom" src="/screen/laser_top.png">
+					<img class="gate-base top" id="bottom" src="/screen/laser-top.png">
 					<div class="gate-laser" id="bottom"></div>
-					<img class="gate-base bottom" id="bottom" src="/screen/laser_top.png">
+					<img class="gate-base bottom" id="bottom" src="/screen/laser-top.png">
 				</div>
 			</div>
 		</div>
@@ -49,7 +49,7 @@ export default function(game) {
 			fusee.className = "starship";
 			fusee.src = "/screen/starship.png";
 
-			fusee.style.left = (player.id * 30) + "px";
+			fusee.style.left = (player.id * 50) + "px";
 			fusee.style.top = "0px";
 
 			fusee.style.filter = "hue-rotate(" + player.id * 80 + "deg)";
@@ -111,7 +111,7 @@ export default function(game) {
 				fusee.className = "starship";
 				fusee.src = "/screen/starship.png";
 
-				fusee.style.left = (player.id * 30) + "px";
+				fusee.style.left = (player.id * 50) + "px";
 				fusee.style.top = "0px";
 
 				fusee.style.filter = "hue-rotate(" + player.id * 80 + "deg)";

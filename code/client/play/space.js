@@ -6,8 +6,8 @@ export default function(game) {
 	game.onStart = function(msg) {
 		document.body.innerHTML = `
 		<div id="starship-pres">Votre fusée est de cette couleur :</div>
-		<img id="starship" src="/screen/starship.png">
-		<input type="range" value="0" max="200" id="slider">
+		<img id="starship" src="/play/starship.png">
+		<input type="range" value="0" max="191" id="slider">
 		`;
 
 		let starship = document.querySelector("#starship");
