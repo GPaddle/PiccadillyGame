@@ -9,7 +9,7 @@ const conf = JSON.parse(fs.readFileSync("conf/conf.json"));
 const httpServer = http.createServer();
 httpServer.listen(conf.port);
 
-httpServer.on("request", function(req, res) {
+httpServer.on("request", function (req, res) {
 	function send(url, type) {
 		res.setHeader("Content-Type", type);
 		let file = fs.createReadStream(url);
@@ -18,7 +18,7 @@ httpServer.on("request", function(req, res) {
 
 	switch (req.url) {
 		case "/": res.end("Piccadilly Game"); break;
-		
+
 		case "/play": send("client/play/play.html", "text/html"); break;
 		case "/screen": send("client/screen/screen.html", "text/html"); break;
 		case "/play.css": send("client/play/play.css", "text/css"); break;

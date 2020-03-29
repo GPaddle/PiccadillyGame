@@ -167,7 +167,7 @@ body {
 	left: -15px;
 }
 
-.gate-base.top{
+.gate-base.top {
 	transform: rotate(180deg);
 	top: 0px;
 }
@@ -192,7 +192,8 @@ body {
 	0% {
 		transform: scale(0);
 	}
-	100%{
+
+	100% {
 		transform: scale(1);
 	}
 }

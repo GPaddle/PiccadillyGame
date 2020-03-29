@@ -5,7 +5,7 @@ const NEW_QUESTION = 1;
 const WAIT_QUESTION = 2,
 	WAIT_ANSWER = 3;
 
-export default function(game) {
+export default function (game) {
 	let questionNumber;
 	let questionAnswers;
 	let questionCountdown;
@@ -25,7 +25,7 @@ export default function(game) {
 
 		questionAnswers = [];
 
-		for(let i = 0; i < 4; i++) {
+		for (let i = 0; i < 4; i++) {
 			questionAnswers[i] = msg[2 + i];
 
 			answers[i].style.backgroundColor = "";
@@ -39,11 +39,11 @@ export default function(game) {
 
 		let questionCountdownSpan = document.getElementById("question-countdown");
 
-		questionCountdown = setInterval(function() {
+		questionCountdown = setInterval(function () {
 			time--;
 			questionCountdownSpan.innerHTML = time;
 
-			if(time == 0) {
+			if (time == 0) {
 				clearInterval(questionCountdown);
 			}
 		}, 1000);
@@ -51,7 +51,7 @@ export default function(game) {
 		game.state = WAIT_ANSWER;
 	}
 
-	game.onStart = function(msg) {
+	game.onStart = function (msg) {
 		document.body.innerHTML = `
 		<div id="question-number">Question ...</div>
 		<div id="question">...</div>
@@ -79,8 +79,8 @@ export default function(game) {
 		onNewQuestion(msg);
 	}
 
-	game.onMessage = function(msg) {
-		switch(game.state) {
+	game.onMessage = function (msg) {
+		switch (game.state) {
 			case WAIT_QUESTION: {
 				onNewQuestion(msg);
 
@@ -93,7 +93,7 @@ export default function(game) {
 
 				let answers = document.getElementsByClassName("answer");
 
-				for(let answer of answers) {
+				for (let answer of answers) {
 					answer.style.backgroundColor = "#bb0b0b";
 				}
 

@@ -8,12 +8,12 @@ const ANSWERS_STATS = 1,
 const WAIT_QUESTION = 2,
 	WAIT_QUESTION_EVENT = 3;
 
-export default function(game) {
+export default function (game) {
 	let chosenAnswer;
 	let questionCountdown;
 
-	game.onNewQuestion = function(msg) {
-		if(chosenAnswer !== undefined) {
+	game.onNewQuestion = function (msg) {
+		if (chosenAnswer !== undefined) {
 			let clickedAnswerButton = document.getElementsByClassName("answer-button")[chosenAnswer];
 			clickedAnswerButton.style.border = "";
 		}
@@ -56,7 +56,7 @@ export default function(game) {
 		game.state = WAIT_QUESTION_EVENT;
 	}
 
-	game.onStart = function(msg) {
+	game.onStart = function (msg) {
 		document.body.innerHTML = `
 		<div id="question-number">Question</div>
 		<div id="question-info"></div>
@@ -107,8 +107,8 @@ export default function(game) {
 		game.onNewQuestion(msg);
 	}
 
-	game.onMessage = function(msg) {
-		switch(game.state) {
+	game.onMessage = function (msg) {
+		switch (game.state) {
 			case WAIT_QUESTION: {
 				if (msg[0] == NEW_QUESTION) {
 					game.onNewQuestion(msg);

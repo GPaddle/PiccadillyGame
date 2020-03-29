@@ -11,12 +11,12 @@ export default function (game) {
 		document.body.innerHTML = `
 		<div id="starship-pres">Votre fusée est de cette couleur :</div>
 		<img id="starship" src="/play/starship.png">
-		<input type="range" value="0" max="191" id="slider">
+		<input type="range" value="0" max="500" id="slider">
 		`;
 
 		let background = document.querySelector("body");
-		
-		background.style.filter = "hue-rotate(" + game.meId * HUE_ROTATE + "deg)";		
+
+		background.style.filter = "hue-rotate(" + game.meId * HUE_ROTATE + "deg)";
 		background.style.background = "hsl(" + game.meId * HUE_ROTATE + "deg, 47%,32.5%)";
 
 		let slider = document.querySelector("#slider");
@@ -31,7 +31,10 @@ export default function (game) {
 	game.onMessage = function (msg) {
 		if (msg[0] == DEAD) {
 			document.body.innerHTML = `
-			<div id="dead-message">Vous êtes mort...<br>Attendez la fin de la partie pour connaître votre score !<br>Ça ne prendra pas longtemps...</div>
+			<div id="dead-message">Vous êtes mort...<br>
+				Attendez la fin de la partie pour connaître votre score !<br>
+				Ça ne prendra pas longtemps...
+			</div>
 			`
 		}
 	}

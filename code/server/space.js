@@ -14,11 +14,16 @@ const DEAD = 1;
 
 const IN_GAME = 3;
 
-const STARSHIP_HEIGHT = 19;
-const STARSHIP_WIDTH = 40;
 
-const DEPART_ORIGINE_X = 900;
-const PLAYER_ZONE = 200;
+
+const STARSHIP_HEIGHT = 19,
+	STARSHIP_WIDTH = 40,
+	GAME_HEIGHT = 210,
+	//Attention à garder la cohérence avec play/space.js
+	SLIDER_MAX = 500;
+
+const DEPART_ORIGINE_X = 900,
+	PLAYER_ZONE = 200;
 
 module.exports = function (game) {
 	game.start = function () {
@@ -61,7 +66,7 @@ module.exports = function (game) {
 
 		function newGate() {
 			let doorHeight = MIN_HEIGHT + Math.random() * (MAX_HEIGHT - MIN_HEIGHT);
-			let doorPos = MIN_POS + Math.random() * (210 - MIN_POS - MAX_POS - doorHeight); // 210px est la hauteur de l'espace de jeu
+			let doorPos = MIN_POS + Math.random() * (GAME_HEIGHT - MIN_POS - MAX_POS - doorHeight);
 
 			if (MIN_HEIGHT - 5 > STARSHIP_HEIGHT) {
 				MIN_HEIGHT -= 5;
@@ -121,7 +126,7 @@ module.exports = function (game) {
 	game.onMessage = function (sock, msg) {
 		if (sock.state == WAIT_COORDINATE) {
 			for (let screenSock of game.screensSocks) {
-				sock.player.coord = parseInt(msg[0]);
+				sock.player.coord = (parseInt(msg[0]) / SLIDER_MAX) * (GAME_HEIGHT - STARSHIP_HEIGHT);
 				screenSock.send(JSON.stringify([PLAYER_MOVE, sock.player.id, sock.player.coord]));
 			}
 		}
@@ -141,8 +146,8 @@ module.exports = function (game) {
 		}
 	}
 
-	game.onPlayerLeftInGame = function(sock) {
-		for(let screenSock of game.screensSocks) {
+	game.onPlayerLeftInGame = function (sock) {
+		for (let screenSock of game.screensSocks) {
 			screenSock.send(JSON.stringify([DEL_STARSHIP, sock.player.id]));
 		}
 	}

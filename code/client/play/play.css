@@ -19,14 +19,14 @@
 }
 
 body {
-	background: hsl(0,47%,32.5%);
+	background: hsl(0, 47%, 32.5%);
 	color: #fefefe;
 	font-family: lato;
 	padding: 100px 20px 20px 20px;
 	height: calc(100vh - 140px);
 	overflow: hidden;
 	overscroll-behavior-y: none;
-  
+
 }
 
 
@@ -70,10 +70,10 @@ body {
 	margin: 0px auto 30px auto;
 	cursor: pointer;
 
-	
+
 	animation: blink infinite 1.5s;
 	animation-direction: alternate;
-	animation-timing-function: cubic-bezier(.45,.05,.55,.95);
+	animation-timing-function: cubic-bezier(.45, .05, .55, .95);
 }
 
 #players-list-header {
@@ -263,7 +263,7 @@ button:active {
 
 	animation: blink infinite 1.5s;
 	animation-direction: alternate;
-	animation-timing-function: cubic-bezier(.45,.05,.55,.95);
+	animation-timing-function: cubic-bezier(.45, .05, .55, .95);
 }
 
 @keyframes blink {

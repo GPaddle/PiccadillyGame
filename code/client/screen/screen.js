@@ -14,7 +14,7 @@ const STOP_GAME = 0;
 const WAIT_GAME_INFO = 0,
 	WAIT_WAITING_ROOM_EVENT = 1;
 
-window.onload = function() {
+window.onload = function () {
 	const game = {}; // l'objet game contient les variables et fonctions partagées entre ce fichier et le fichier de jeu (questions.js ou space.js)
 
 	game.sock = new WebSocket("ws://" + window.location.host);
@@ -24,11 +24,11 @@ window.onload = function() {
 
 	let playersCount;
 
-	game.sock.onopen = function() {
+	game.sock.onopen = function () {
 		//REPERE 1
 		game.sock.send(JSON.stringify([CLIENT_TYPE_SCREEN]));
 
-		game.sock.onmessage = function(json) {
+		game.sock.onmessage = function (json) {
 			let msg = JSON.parse(json.data);
 
 			switch (game.state) {
@@ -42,13 +42,13 @@ window.onload = function() {
 					`;
 
 					let qr = new QRious({
-						element : document.getElementById("qr"),
-						value : `http://${window.location.host}/play`,
-						background : "transparent",
-						foreground : "#fff",
+						element: document.getElementById("qr"),
+						value: `http://${window.location.host}/play`,
+						background: "transparent",
+						foreground: "#fff",
 						level: 'H',
-						size : 300,
-						padding : null
+						size: 300,
+						padding: null
 					});
 
 					let minPlayersCount = document.getElementById("min-players-count");
@@ -64,13 +64,13 @@ window.onload = function() {
 				}
 
 				case WAIT_WAITING_ROOM_EVENT: {
-					if(msg[0] == ADD_PLAYER) {
+					if (msg[0] == ADD_PLAYER) {
 						playersCount++;
 						document.getElementById("players-count").innerHTML = playersCount;
-					} else if(msg[0] == DEL_PLAYER) {
+					} else if (msg[0] == DEL_PLAYER) {
 						playersCount--;
 						document.getElementById("players-count").innerHTML = playersCount;
-					} else if(msg[0] == START_GAME_COUNTDOWN) {
+					} else if (msg[0] == START_GAME_COUNTDOWN) {
 						let countdownInfo = document.createElement("div");
 						countdownInfo.id = "start-countdown-info";
 						countdownInfo.innerHTML = "La partie commence dans ";
@@ -85,15 +85,15 @@ window.onload = function() {
 						let playersInfo = document.getElementById("players-info");
 						document.body.insertBefore(countdownInfo, playersInfo);
 
-						let countdown = setInterval(function() {
+						let countdown = setInterval(function () {
 							time--;
 							countdownSpan.innerHTML = time;
 
-							if(time == 0) {
+							if (time == 0) {
 								clearInterval(countdown);
 							}
 						}, 1000)
-					} else if(msg[0] == START_GAME) {
+					} else if (msg[0] == START_GAME) {
 						game.onStart(msg);
 					}
 
@@ -101,26 +101,26 @@ window.onload = function() {
 				}
 
 				default: {
-					if(msg[0] == STOP_GAME) {
+					if (msg[0] == STOP_GAME) {
 						document.body.innerHTML = `<div id="results-header">Résultats</div><div id="results"></div>`;
 
 						let resultsDiv = document.getElementById("results");
 
-						for(let i = 0; i < msg[1]; i++) {
+						for (let i = 0; i < msg[1]; i++) {
 							resultsDiv.innerHTML += `
 							<div class="result">
 								<div class="result-pseudo">${msg[2 + i * 2]}</div>
 								<div class="result-score">${msg[3 + i * 2]}</div>
 							</div>`;
 
-							console.log(msg[2+i]);
+							console.log(msg[2 + i]);
 						}
 
 						game.state = WAIT_GAME_INFO;
 					} else {
 						game.onMessage(msg);
 					}
-					
+
 					break;
 				}
 			}
