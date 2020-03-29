@@ -1,7 +1,8 @@
 "use strict";
 
 const IN_GAME = 2;
-const DEAD = 3;
+
+const DEAD = 1;
 
 const HUE_ROTATE = 80;
 

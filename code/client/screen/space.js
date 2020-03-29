@@ -4,8 +4,8 @@ const WAIT_GAME_EVENT = 2;
 
 const PLAYER_MOVE = 1,
 	NEW_GATE = 2,
-	DEAD = 3,
-	NEW_PLAYER = 4;
+	NEW_STARSHIP = 3,
+	DEL_STARSHIP = 4;
 
 const GAME_HEIGHT = 210;
 const BASE_HEIGHT = 12;
@@ -43,8 +43,11 @@ export default function (game) {
 		let joueurs = document.querySelector("#starships");
 
 		players = [];
+		let playersCount = msg[1]
 
-		for (let i = 0; i < msg[1]; i++) {
+		let starshipsGap = Math.min(50, PLAYER_ZONE / playersCount);
+
+		for(let i = 0; i < playersCount; i++) {
 			let player = { id: msg[2 + i] };
 
 			let fusee = document.createElement("img");
@@ -52,24 +55,14 @@ export default function (game) {
 			fusee.src = "/screen/starship.png";
 
 			fusee.style.top = "0px";
+			fusee.style.left = i * starshipsGap + "px";
 
 			fusee.style.filter = "hue-rotate(" + player.id * 80 + "deg)";
 
+			player.fusee = fusee;
 			joueurs.appendChild(fusee);
 
-			player.fusee = fusee;
-
 			players.push(player);
-
-			let listeFusee = document.querySelectorAll(".starship");
-			let distanceJoueurs = Math.min(50, PLAYER_ZONE / listeFusee.length)
-
-			for (let index = 0; index < listeFusee.length; index++) {
-				const element = listeFusee[index];
-
-
-				element.style.left = (index * distanceJoueurs) + "px";
-			}
 		}
 	}
 
@@ -117,31 +110,47 @@ export default function (game) {
 				}
 
 				requestAnimationFrame(animation);
-			} else if (msg[0] == DEAD) {
-				for (let player of players) {
-					if (msg[1] == player.id) {
-						let fusees = document.querySelector("#starships");
-						fusees.removeChild(player.fusee);
-					}
-				}
-			} else if (msg[0] == NEW_PLAYER) {
-				let player = { id: msg[1] };
+			} else if (msg[0] == NEW_STARSHIP) {
+				let player = {id: msg[1]};
 
 				let fusee = document.createElement("img");
 				fusee.className = "starship";
 				fusee.src = "/screen/starship.png";
 
-				fusee.style.left = (player.id * 50) + "px";
 				fusee.style.top = "0px";
 
 				fusee.style.filter = "hue-rotate(" + player.id * 80 + "deg)";
 
+				player.fusee = fusee;
+
 				let joueurs = document.querySelector("#starships");
 				joueurs.appendChild(fusee);
 
-				player.fusee = fusee;
-
 				players.push(player);
+
+				let starshipsGap = Math.min(50, PLAYER_ZONE / players.length);
+
+				for(let i = 0; i < players.length; i++)
+					players[i].fusee.style.left = i * starshipsGap + "px";
+			} else if (msg[0] == DEL_STARSHIP) {
+				for (let i = 0; i < players.length; i++) {
+					console.log("searching" + i);
+
+					if (msg[1] == players[i].id) {
+						console.log("find");
+
+						let fusees = document.querySelector("#starships");
+						fusees.removeChild(players[i].fusee);
+						players.splice(i, 1);
+
+						let starshipsGap = Math.min(50, PLAYER_ZONE / players.length);
+
+						for(let i = 0; i < players.length; i++)
+							players[i].fusee.style.left = i * starshipsGap + "px";
+
+						return;
+					}
+				}
 			}
 		}
 	}

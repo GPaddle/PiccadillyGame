@@ -7,15 +7,17 @@ const START_GAME = 5;
 
 const PLAYER_MOVE = 1,
 	NEW_GATE = 2,
-	DEAD = 3,
-	NEW_PLAYER = 4;
+	NEW_STARSHIP = 3,
+	DEL_STARSHIP = 4;
+
+const DEAD = 1;
 
 const IN_GAME = 3;
 
 const STARSHIP_HEIGHT = 19;
+const STARSHIP_WIDTH = 40;
 
 const DEPART_ORIGINE_X = 900;
-const TAILLE_VAISSEAU = 40;
 const PLAYER_ZONE = 200;
 
 module.exports = function (game) {
@@ -71,21 +73,18 @@ module.exports = function (game) {
 
 			speed += 30;
 
-			let wallPos = DEPART_ORIGINE_X + game.nextPlayerId * 50;
+			let starshipsGap = Math.min(50, PLAYER_ZONE / game.playersSocks.length); // écart entre le côté gauche de chaque fusée
+			let wallPos = DEPART_ORIGINE_X + game.playersSocks.length * starshipsGap; // position d'apparition de la porte
 
 			for (let screenSock of game.screensSocks) {
 				screenSock.send(JSON.stringify([NEW_GATE, wallPos, doorPos, doorHeight, speed]));
 			}
 
-
-			let distanceGenerationPorte = Math.min(50, PLAYER_ZONE / game.playersSocks.length);
-
+			let range = 0;
 
 			for (let playerSock of game.playersSocks) {
 				if (playerSock.player.alive) {
-
-					let playerStarshipPos = playerSock.player.id * distanceGenerationPorte + TAILLE_VAISSEAU;
-					// let playerStarshipPos = playerSock.player.id * 50 + 40;
+					let playerStarshipPos = range * starshipsGap + STARSHIP_WIDTH;
 
 					setTimeout(function () {
 						if (playerSock.player.coord < doorPos || (playerSock.player.coord + STARSHIP_HEIGHT) > doorPos + doorHeight) {
@@ -99,7 +98,7 @@ module.exports = function (game) {
 							playerSock.player.score = (new Date(Date.now()) - gameStart) / 1000;
 
 							for (let screenSock of game.screensSocks) {
-								screenSock.send(JSON.stringify([DEAD, playerSock.player.id]));
+								screenSock.send(JSON.stringify([DEL_STARSHIP, playerSock.player.id]));
 							}
 
 							if (nbJoueursDead == game.playersSocks.length) {
@@ -108,6 +107,8 @@ module.exports = function (game) {
 							}
 						}
 					}, (wallPos - playerStarshipPos) / speed * 1000);
+
+					range++;
 				}
 			}
 
@@ -136,7 +137,13 @@ module.exports = function (game) {
 		sock.player.alive = true;
 
 		for (let screenSock of game.screensSocks) {
-			screenSock.send(JSON.stringify([NEW_PLAYER, sock.player.id]));
+			screenSock.send(JSON.stringify([NEW_STARSHIP, sock.player.id]));
+		}
+	}
+
+	game.onPlayerLeftInGame = function(sock) {
+		for(let screenSock of game.screensSocks) {
+			screenSock.send(JSON.stringify([DEL_STARSHIP, sock.player.id]));
 		}
 	}
 }

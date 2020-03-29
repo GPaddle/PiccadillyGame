@@ -40,7 +40,7 @@ module.exports = function (httpServer, conf) {
 
 	const pseudoPossibilities = JSON.parse(fs.readFileSync("ressources/pseudos.json"));
 
-	game.nextPlayerId = 0;
+	let nextPlayerId = 0;
 
 	if(conf.testMode) {
 		conf.minPlayer = 1;
@@ -92,7 +92,7 @@ module.exports = function (httpServer, conf) {
 		}
 
 		game.playersSocks = [];
-		game.nextPlayerId = 0;
+		nextPlayerId = 0;
 
 		setTimeout(function() { // on affiche les scores pendant 30 secondes puis on reprépare une nouvelle partie
 			game.state = WAITING_ROOM;
@@ -105,10 +105,6 @@ module.exports = function (httpServer, conf) {
 				startBeginCountdown();
 			}
 		}, 30000);
-	}
-
-	game.clearWaitingRoom = function() { // supprime tous les joueurs qui ont validé leur pseudo de la salle d'attente
-		
 	}
 
 	wss.on("connection", function (sock) {
@@ -175,11 +171,11 @@ module.exports = function (httpServer, conf) {
 						sock.isPlayer = true;
 
 						sock.player = {};
-						sock.player.id = game.nextPlayerId;
+						sock.player.id = nextPlayerId;
 						sock.player.pseudo = msg[0];
 						sock.player.score = 0;
 
-						game.nextPlayerId++;
+						nextPlayerId++;
 
 						game.playersSocks.push(sock);
 
@@ -240,6 +236,10 @@ module.exports = function (httpServer, conf) {
 					for(let screenSock of game.screensSocks) {
 						screenSock.send(JSON.stringify([DEL_PLAYER]));
 					}
+				}
+
+				if(game.state > SCORE) { // supérieur à score donc c'est qu'on est en pleine partie
+					game.onPlayerLeftInGame(sock);
 				}
 
 				for(let waitingRoomSock of game.waitingRoomSocks) {
