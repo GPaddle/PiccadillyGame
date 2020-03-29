@@ -16,10 +16,12 @@ export default function (game) {
 		let starship = document.querySelector("#starship");
 		starship.style.filter = "hue-rotate(" + game.meId * HUE_ROTATE + "deg)";
 
+		let slider = document.querySelector("#slider");
+		slider.style.filter = "hue-rotate(" + game.meId * HUE_ROTATE + "deg)";
+
 		let background = document.querySelector("body");
 		background.style.background = "hsl(" + game.meId * HUE_ROTATE + "deg, 47%,32.5%)";
 
-		let slider = document.querySelector("#slider");
 
 		slider.addEventListener("input", function () {
 			game.sock.send(JSON.stringify([slider.value]));

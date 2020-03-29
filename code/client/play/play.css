@@ -262,11 +262,11 @@ button:active {
 
 @keyframes blink {
 	0% {
-		background: #b47575;
+		background: #fff3;
 	}
 
 	100% {
-		background: #a65050;
+		background: #fff7;
 	}
 }
 
