@@ -19,7 +19,7 @@
 }
 
 body {
-	background-color: #7a2c2c;
+	background: hsl(0,47%,32.5%);
 	color: #fefefe;
 	font-family: lato;
 	padding: 100px 20px 20px 20px;
