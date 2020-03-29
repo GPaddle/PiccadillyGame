@@ -69,6 +69,11 @@ body {
 	font-size: 16px;
 	margin: 0px auto 30px auto;
 	cursor: pointer;
+
+	
+	animation: blink infinite 1.5s;
+	animation-direction: alternate;
+	animation-timing-function: cubic-bezier(.45,.05,.55,.95);
 }
 
 #players-list-header {
@@ -255,6 +260,7 @@ button:active {
 	font-size: 2em;
 	display: block;
 	text-align: center;
+
 	animation: blink infinite 1.5s;
 	animation-direction: alternate;
 	animation-timing-function: cubic-bezier(.45,.05,.55,.95);
