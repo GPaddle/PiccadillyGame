@@ -10,10 +10,12 @@ const PLAYER_MOVE = 1,
 const GAME_HEIGHT = 210;
 const BASE_HEIGHT = 12;
 
-export default function(game) {
+const PLAYER_ZONE = 200;
+
+export default function (game) {
 	let players;
 
-	game.onStart = function(msg) {
+	game.onStart = function (msg) {
 		game.state = WAIT_GAME_EVENT;
 
 		document.body.innerHTML = `
@@ -42,14 +44,13 @@ export default function(game) {
 
 		players = [];
 
-		for(let i = 0; i < msg[1]; i++) {
-			let player = {id: msg[2 + i]};
+		for (let i = 0; i < msg[1]; i++) {
+			let player = { id: msg[2 + i] };
 
 			let fusee = document.createElement("img");
 			fusee.className = "starship";
 			fusee.src = "/screen/starship.png";
 
-			fusee.style.left = (player.id * 50) + "px";
 			fusee.style.top = "0px";
 
 			fusee.style.filter = "hue-rotate(" + player.id * 80 + "deg)";
@@ -59,19 +60,29 @@ export default function(game) {
 			player.fusee = fusee;
 
 			players.push(player);
+
+			let listeFusee = document.querySelectorAll(".starship");
+			let distanceJoueurs = Math.min(50, PLAYER_ZONE / listeFusee.length)
+
+			for (let index = 0; index < listeFusee.length; index++) {
+				const element = listeFusee[index];
+
+
+				element.style.left = (index * distanceJoueurs) + "px";
+			}
 		}
 	}
 
-	game.onMessage = function(msg) {
-		if(game.state == WAIT_GAME_EVENT) {
-			if(msg[0] == PLAYER_MOVE) {
-				for(let i = 0; i < players.length; i++) {
-					if(players[i].id == msg[1]) {
+	game.onMessage = function (msg) {
+		if (game.state == WAIT_GAME_EVENT) {
+			if (msg[0] == PLAYER_MOVE) {
+				for (let i = 0; i < players.length; i++) {
+					if (players[i].id == msg[1]) {
 						players[i].fusee.style.top = msg[2] + "px";
 						break;
 					}
 				}
-			} else if(msg[0] == NEW_GATE) {
+			} else if (msg[0] == NEW_GATE) {
 				let porte = document.querySelector("#gate");
 
 				porte.remove();
@@ -81,8 +92,8 @@ export default function(game) {
 				let gatePos = msg[2];
 				let gateHeight = msg[3];
 				let speed = msg[4];
-				
-				porte.style.animation = "apparition " + (330 / speed) + "s" ;
+
+				porte.style.animation = "apparition " + (330 / speed) + "s";
 
 				document.querySelector(".gate-laser#top").style.height = (gatePos - 2 * BASE_HEIGHT) + "px";
 				document.querySelector(".gate-base.bottom#top").style.top = (gatePos - BASE_HEIGHT) + "px";
@@ -93,28 +104,28 @@ export default function(game) {
 				let startTimeStamp = null;
 
 				function animation(timestamp) {
-					if(startTimeStamp === null) {
+					if (startTimeStamp === null) {
 						startTimeStamp = timestamp;
 					}
 
 					let gate = document.querySelector("#gate");
 					gate.style.left = (wallPos - (timestamp - startTimeStamp) / 1000 * speed) + "px";
 
-					if(game.state == WAIT_GAME_EVENT) {
+					if (game.state == WAIT_GAME_EVENT) {
 						requestAnimationFrame(animation);
 					}
 				}
 
 				requestAnimationFrame(animation);
-			} else if(msg[0] == DEAD) {
-				for(let player of players) {
-					if(msg[1] == player.id) {
+			} else if (msg[0] == DEAD) {
+				for (let player of players) {
+					if (msg[1] == player.id) {
 						let fusees = document.querySelector("#starships");
 						fusees.removeChild(player.fusee);
 					}
 				}
-			} else if(msg[0] == NEW_PLAYER) {
-				let player = {id: msg[1]};
+			} else if (msg[0] == NEW_PLAYER) {
+				let player = { id: msg[1] };
 
 				let fusee = document.createElement("img");
 				fusee.className = "starship";

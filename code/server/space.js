@@ -14,10 +14,12 @@ const IN_GAME = 3;
 
 const STARSHIP_HEIGHT = 19;
 
-const DEPART_ORIGINE_X = 1200;
+const DEPART_ORIGINE_X = 900;
+const TAILLE_VAISSEAU = 40;
+const PLAYER_ZONE = 200;
 
-module.exports = function(game) {
-	game.start = function() {
+module.exports = function (game) {
+	game.start = function () {
 		let gameStart = new Date(Date.now());
 
 		let nbJoueursDead = 0;
@@ -25,8 +27,8 @@ module.exports = function(game) {
 
 		let w = 0;
 
-		while(w < game.waitingRoomSocks.length) {
-			if(game.waitingRoomSocks[w].isPlayer) game.waitingRoomSocks.splice(w, 1);
+		while (w < game.waitingRoomSocks.length) {
+			if (game.waitingRoomSocks[w].isPlayer) game.waitingRoomSocks.splice(w, 1);
 			else w++; // pour éviter de sauter des élements du tableau
 		}
 
@@ -34,7 +36,7 @@ module.exports = function(game) {
 
 		let gameInfo = [START_GAME, game.playersSocks.length];
 
-		for(let playerSock of game.playersSocks) {
+		for (let playerSock of game.playersSocks) {
 			playerSock.state = WAIT_COORDINATE;
 			playerSock.player.coord = 0;
 			playerSock.player.alive = true;
@@ -59,11 +61,11 @@ module.exports = function(game) {
 			let doorHeight = MIN_HEIGHT + Math.random() * (MAX_HEIGHT - MIN_HEIGHT);
 			let doorPos = MIN_POS + Math.random() * (210 - MIN_POS - MAX_POS - doorHeight); // 210px est la hauteur de l'espace de jeu
 
-			if(MIN_HEIGHT - 5 > STARSHIP_HEIGHT) {
+			if (MIN_HEIGHT - 5 > STARSHIP_HEIGHT) {
 				MIN_HEIGHT -= 5;
 			}
 
-			if(MAX_HEIGHT - 5 > STARSHIP_HEIGHT) {
+			if (MAX_HEIGHT - 5 > STARSHIP_HEIGHT) {
 				MAX_HEIGHT -= 5; // on diminue de 5px la hauteur maximale à chaque tour pour augmenter la difficulté
 			}
 
@@ -75,11 +77,17 @@ module.exports = function(game) {
 				screenSock.send(JSON.stringify([NEW_GATE, wallPos, doorPos, doorHeight, speed]));
 			}
 
-			for(let playerSock of game.playersSocks) {
-				if(playerSock.player.alive) {
-					let playerStarshipPos = playerSock.player.id * 50 + 40;
 
-					setTimeout(function() {
+			let distanceGenerationPorte = Math.min(50, PLAYER_ZONE / game.playersSocks.length);
+
+
+			for (let playerSock of game.playersSocks) {
+				if (playerSock.player.alive) {
+
+					let playerStarshipPos = playerSock.player.id * distanceGenerationPorte + TAILLE_VAISSEAU;
+					// let playerStarshipPos = playerSock.player.id * 50 + 40;
+
+					setTimeout(function () {
 						if (playerSock.player.coord < doorPos || (playerSock.player.coord + STARSHIP_HEIGHT) > doorPos + doorHeight) {
 							playerSock.send(JSON.stringify([DEAD]));
 
@@ -118,7 +126,7 @@ module.exports = function(game) {
 		}
 	}
 
-	game.onPlayerJoinInGame = function(sock, msg) {
+	game.onPlayerJoinInGame = function (sock, msg) {
 		game.waitingRoomSocks.splice(game.waitingRoomSocks.indexOf(sock), 1);
 
 		sock.send(JSON.stringify([START_GAME]));
@@ -127,7 +135,7 @@ module.exports = function(game) {
 		sock.player.coord = 0;
 		sock.player.alive = true;
 
-		for(let screenSock of game.screensSocks) {
+		for (let screenSock of game.screensSocks) {
 			screenSock.send(JSON.stringify([NEW_PLAYER, sock.player.id]));
 		}
 	}
