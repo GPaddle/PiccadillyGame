@@ -21,10 +21,15 @@ module.exports = function(game) {
 	game.start = function() {
 		let gameStart = new Date(Date.now());
 
-		game.clearWaitingRoom();
-
 		let nbJoueursDead = 0;
 		let speed = 300;
+
+		let w = 0;
+
+		while(w < game.waitingRoomSocks.length) {
+			if(game.waitingRoomSocks[w].isPlayer) game.waitingRoomSocks.splice(w, 1);
+			else w++; // pour éviter de sauter des élements du tableau
+		}
 
 		game.state = IN_GAME;
 
@@ -72,27 +77,31 @@ module.exports = function(game) {
 			}
 
 			for(let playerSock of game.playersSocks) {
-				let playerStarshipPos = playerSock.player.id * 50 + 40;
+				if(playerSock.player.alive) {
+					let playerStarshipPos = playerSock.player.id * 50 + 40;
 
-				setTimeout(function() {
-					if (playerSock.player.alive && (playerSock.player.coord < doorPos || (playerSock.player.coord + STARSHIP_HEIGHT) > doorPos + doorHeight)) {
-						playerSock.send(JSON.stringify([DEAD]));
+					setTimeout(function() {
+						if (playerSock.player.coord < doorPos || (playerSock.player.coord + STARSHIP_HEIGHT) > doorPos + doorHeight) {
+							playerSock.send(JSON.stringify([DEAD]));
 
-						playerSock.state = WAIT_NOTHING;
-						playerSock.player.alive = false;
-						nbJoueursDead++;
-						playerSock.player.score = (new Date(Date.now()) - gameStart) / 1000;
+							playerSock.state = WAIT_NOTHING;
 
-						for (let screenSock of game.screensSocks) {
-							screenSock.send(JSON.stringify([DEAD, playerSock.player.id]));
+							playerSock.player.alive = false;
+							nbJoueursDead++;
+
+							playerSock.player.score = (new Date(Date.now()) - gameStart) / 1000;
+
+							for (let screenSock of game.screensSocks) {
+								screenSock.send(JSON.stringify([DEAD, playerSock.player.id]));
+							}
+
+							if (nbJoueursDead == game.playersSocks.length) {
+								game.stop();
+								clearTimeout(newGateTimer);
+							}
 						}
-
-						if (nbJoueursDead == game.playersSocks.length) {
-							game.endGame();
-							clearTimeout(newGateTimer);
-						}
-					}
-				}, (origineX - playerStarshipPos) / speed * 1000)
+					}, (origineX - playerStarshipPos) / speed * 1000);
+				}
 			}
 
 			newGateTimer = setTimeout(newGate, 1200 / speed * 1000);

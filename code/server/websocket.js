@@ -13,7 +13,7 @@ const ADD_PLAYER = 0,
 	START_GAME_COUNTDOWN = 4,
 	START_GAME = 5;
 
-const END_GAME = 0;
+const STOP_GAME = 0;
 
 const WAIT_NOTHING = 0,
 	WAIT_AUTH = 1,
@@ -26,7 +26,7 @@ const WAITING_ROOM = 0, // les différents états du jeu. attente de joueurs
 // toutes les valeurs au dessus de SCORE veulent dire qu'on est en jeu
 
 module.exports = function (httpServer, conf) {
-	const wss = new ws.Server({ server: httpServer });
+	const wss = new ws.Server({server: httpServer});
 
 	const game = {}; // l'objet game contient les variables et fonctions partagées entre websocket.js et le fichier de jeu (questions.js ou space.js)
 
@@ -53,25 +53,19 @@ module.exports = function (httpServer, conf) {
 	function startBeginCountdown() {
 		game.state = BEGIN_COUNT_DOWN;
 
-		for (let screenSock of game.screensSocks) {
+		for(let screenSock of game.screensSocks) {
 			screenSock.send(JSON.stringify([START_GAME_COUNTDOWN, conf.countdownTime]));
 		}
 
-		let beginCountdown = setTimeout(function () {
-			for (let playerSock of game.playersSocks) { // on initialise tous les scores des joueurs à 0
-				playerSock.player.score = 0;
-			}
-
-			game.start();
-		}, conf.countdownTime * 1000); // quand on a assez de joueurs on lance la partie dans 15 secondes
+		let beginCountdown = setTimeout(game.start, conf.countdownTime * 1000); // on lance la partie à la fin du décompte
 	}
 
-	game.endGame = function() {
+	game.stop = function() {
 		game.state = SCORE;
 
 		let scores = [];
 
-		for (let i = 0; i < game.playersSocks.length; i++) {
+		for(let i = 0; i < game.playersSocks.length; i++) {
 			scores[i] = {
 				"pseudo": game.playersSocks[i].player.pseudo,
 				"score": game.playersSocks[i].player.score
@@ -82,10 +76,10 @@ module.exports = function (httpServer, conf) {
 			return b.score - a.score;
 		})
 
-		let screensSocksScores = [END_GAME, game.playersSocks.length];
+		let screensSocksScores = [STOP_GAME, game.playersSocks.length];
 
-		for (let i = 0; i < game.playersSocks.length; i++) {
-			game.playersSocks[i].send(JSON.stringify([END_GAME, game.playersSocks[i].player.score]));
+		for(let i = 0; i < game.playersSocks.length; i++) {
+			game.playersSocks[i].send(JSON.stringify([STOP_GAME, game.playersSocks[i].player.score]));
 
 			game.playersSocks[i].state = WAIT_REPLAY;
 
@@ -93,33 +87,28 @@ module.exports = function (httpServer, conf) {
 			screensSocksScores.push(scores[i].score);
 		}
 
-		for (let screenSock of game.screensSocks) {
+		for(let screenSock of game.screensSocks) {
 			screenSock.send(JSON.stringify(screensSocksScores));
 		}
 
 		game.playersSocks = [];
 		nextPlayerId = 0;
 
-		setTimeout(function () { // on affiche les scores pendant 30 secondes puis on reprépare une nouvelle partie
+		setTimeout(function() { // on affiche les scores pendant 30 secondes puis on reprépare une nouvelle partie
 			game.state = WAITING_ROOM;
 
-			for (let screenSock of game.screensSocks) {
+			for(let screenSock of game.screensSocks) {
 				screenSock.send(JSON.stringify([conf.minPlayer, game.playersSocks.length]));
 			}
 
-			if (game.playersSocks.length >= conf.minPlayer) { // s'il y a déjà assez de joueurs quand on sort de l'écran d'affichage des scores, on déclenche directement le décompte de début de partie
+			if(game.playersSocks.length >= conf.minPlayer) { // s'il y a déjà assez de joueurs quand on sort de l'écran d'affichage des scores, on déclenche directement le décompte de début de partie
 				startBeginCountdown();
 			}
 		}, 30000);
 	}
 
 	game.clearWaitingRoom = function() { // supprime tous les joueurs qui ont validé leur pseudo de la salle d'attente
-		for (let i = 0; i < game.waitingRoomSocks.length; i++) {
-			if (game.waitingRoomSocks[i].isPlayer) {
-				game.waitingRoomSocks.splice(i, 1);
-				i--; // pour éviter de sauter des élements du tableau
-			}
-		}
+		
 	}
 
 	wss.on("connection", function (sock) {
@@ -138,7 +127,7 @@ module.exports = function (httpServer, conf) {
 
 			let gameInfo = [pseudoSuggestion, game.playersSocks.length, conf.testMode];
 
-			for (let i = 0; i < game.playersSocks.length; i++) {
+			for(let i = 0; i < game.playersSocks.length; i++) {
 				gameInfo.push(game.playersSocks[i].player.id);
 				gameInfo.push(game.playersSocks[i].player.pseudo);
 			}
@@ -150,13 +139,19 @@ module.exports = function (httpServer, conf) {
 		}
 
 		sock.on("message", function(json) {
-			let msg = JSON.parse(json); // attention : si c'est pas du json, ça plante
+			let msg;
 
-			switch (sock.state) {
+			try {
+				msg = JSON.parse(json);
+			} catch(error) {
+				return;
+			}
+
+			switch(sock.state) {
 				case WAIT_AUTH: {
-					if (msg[0] == CLIENT_TYPE_PLAYER) {
+					if(msg[0] == CLIENT_TYPE_PLAYER) {
 						initPrePlayer();
-					} else if (msg[0] == CLIENT_TYPE_SCREEN) {
+					} else if(msg[0] == CLIENT_TYPE_SCREEN) {
 						//REPERE 10
 						sock.send(JSON.stringify([conf.minPlayer, game.playersSocks.length]));
 						sock.state = WAIT_NOTHING;
@@ -169,19 +164,20 @@ module.exports = function (httpServer, conf) {
 				case WAIT_PSEUDO: {
 					let isPseudoFree = true;
 
-					for (let playerSock of game.playersSocks) {
-						if (msg[0] == playerSock.player.pseudo) {
+					for(let playerSock of game.playersSocks) {
+						if(msg[0] == playerSock.player.pseudo) {
 							isPseudoFree = false;
 							break;
 						}
 					}
 
-					if (isPseudoFree) {
+					if(isPseudoFree) {
 						sock.isPlayer = true;
 
 						sock.player = {};
 						sock.player.id = nextPlayerId;
 						sock.player.pseudo = msg[0];
+						sock.player.score = 0;
 
 						nextPlayerId++;
 
@@ -189,22 +185,21 @@ module.exports = function (httpServer, conf) {
 
 						sock.send(JSON.stringify([PSEUDO_OK, sock.player.id]));
 
-						if (game.state == WAITING_ROOM || game.state == BEGIN_COUNT_DOWN) {
-							for (let screenSock of game.screensSocks) {
+						if(game.state == WAITING_ROOM || game.state == BEGIN_COUNT_DOWN) {
+							for(let screenSock of game.screensSocks) {
 								screenSock.send(JSON.stringify([ADD_PLAYER]));
 							}
 						}
 
-						for (let waitingRoomSock of game.waitingRoomSocks) {
-							if (waitingRoomSock != sock) {
+						for(let waitingRoomSock of game.waitingRoomSocks) {
+							if(waitingRoomSock != sock) {
 								waitingRoomSock.send(JSON.stringify([ADD_PLAYER, sock.player.id, sock.player.pseudo]));
 							}
 						}
 
-						if (game.state == WAITING_ROOM && game.playersSocks.length >= conf.minPlayer) {
+						if(game.state == WAITING_ROOM && game.playersSocks.length >= conf.minPlayer) {
 							startBeginCountdown();
-						} else if (game.state > SCORE) { // supérieur à score donc c'est qu'on est en pleine partie
-							sock.player.score = 0;
+						} else if(game.state > SCORE) { // supérieur à score donc c'est qu'on est en pleine partie
 							game.onPlayerJoinInGame(sock);
 						}
 					} else {
@@ -215,7 +210,7 @@ module.exports = function (httpServer, conf) {
 				}
 
 				case WAIT_REPLAY: {
-					if(msg.length == 3) {
+					if(msg.length == 3) { // pour éviter de confondre le message "je veux rejouer" avec un message de la partie en cours (surtout valable pour le jeu space)
 						initPrePlayer();
 					}
 
@@ -229,28 +224,32 @@ module.exports = function (httpServer, conf) {
 			}
 		});
 
-		sock.on("close", function () {
+		sock.on("close", function() {
 			let screensSocksIndex = game.screensSocks.indexOf(sock);
-			let playersSocksIndex = game.playersSocks.indexOf(sock);
-			let waitingRoomSocksIndex = game.waitingRoomSocks.indexOf(sock);
 
-			if (screensSocksIndex != -1) {
+			if(screensSocksIndex != -1) {
 				game.screensSocks.splice(screensSocksIndex, 1);
-			} else if (playersSocksIndex != -1) {
-				//REPERE 9
+			}
 
+			let playersSocksIndex = game.playersSocks.indexOf(sock);
+
+			if(playersSocksIndex != -1) {
 				game.playersSocks.splice(playersSocksIndex, 1);
 
-				if (game.state == WAITING_ROOM || game.state == BEGIN_COUNT_DOWN) {
-					for (let screenSock of game.screensSocks) {
+				if(game.state == WAITING_ROOM || game.state == BEGIN_COUNT_DOWN) {
+					for(let screenSock of game.screensSocks) {
 						screenSock.send(JSON.stringify([DEL_PLAYER]));
 					}
 				}
 
-				for (let waitingRoomSock of game.waitingRoomSocks) {
+				for(let waitingRoomSock of game.waitingRoomSocks) {
 					waitingRoomSock.send(JSON.stringify([DEL_PLAYER, sock.player.id]));
 				}
-			} else if (waitingRoomSocksIndex != -1) {
+			}
+
+			let waitingRoomSocksIndex = game.waitingRoomSocks.indexOf(sock);
+
+			if(waitingRoomSocksIndex != -1) {
 				game.waitingRoomSocks.splice(waitingRoomSocksIndex, 1);
 			}
 		});
