@@ -10,9 +10,6 @@ const PLAYER_MOVE = 1,
 const GAME_HEIGHT = 210;
 const BASE_HEIGHT = 12;
 
-//Attention, si cette valeur est changée, il faut la changer dans space.js du serveur
-const DEPART_ORIGINE_X = 800;
-
 export default function(game) {
 	let players;
 
@@ -75,20 +72,17 @@ export default function(game) {
 					}
 				}
 			} else if(msg[0] == NEW_GATE) {
-
 				let porte = document.querySelector("#gate");
 
 				porte.remove();
 				document.querySelector("#game").appendChild(porte);
 
-				// porte.style.animation = "" ;
-				let gatePos = msg[1];
-				let gateHeight = msg[2];
-				let speed = msg[3];
+				let wallPos = msg[1];
+				let gatePos = msg[2];
+				let gateHeight = msg[3];
+				let speed = msg[4];
 				
-				porte.style.animation = "apparition "+(330/speed)+"s" ;
-				// porte.style.transformOrigin = "center" ;
-
+				porte.style.animation = "apparition " + (330 / speed) + "s" ;
 
 				document.querySelector(".gate-laser#top").style.height = (gatePos - 2 * BASE_HEIGHT) + "px";
 				document.querySelector(".gate-base.bottom#top").style.top = (gatePos - BASE_HEIGHT) + "px";
@@ -103,13 +97,8 @@ export default function(game) {
 						startTimeStamp = timestamp;
 					}
 
-					
-					let gate =document.querySelector("#gate");
-					if (gate){
-						let origineX = DEPART_ORIGINE_X + players.length * 50;
-
-						gate.style.left = (origineX - (timestamp - startTimeStamp) / 1000 * speed) + "px";
-					}
+					let gate = document.querySelector("#gate");
+					gate.style.left = (wallPos - (timestamp - startTimeStamp) / 1000 * speed) + "px";
 
 					if(game.state == WAIT_GAME_EVENT) {
 						requestAnimationFrame(animation);

@@ -28,8 +28,6 @@ export default function(game) {
 			answersStatsBars[i].style.width = "";
 		}
 
-		let questionNumber = document.getElementById("question-number");
-
 		let answersButtons = document.getElementsByClassName("answer-button");
 
 		for (let answerButton of answersButtons) {

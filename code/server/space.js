@@ -14,8 +14,7 @@ const IN_GAME = 3;
 
 const STARSHIP_HEIGHT = 19;
 
-//Attention, si cette valeur est changée, il faut la changer dans space.js du client (screen)
-const DEPART_ORIGINE_X = 800;
+const DEPART_ORIGINE_X = 1200;
 
 module.exports = function(game) {
 	game.start = function() {
@@ -70,10 +69,10 @@ module.exports = function(game) {
 
 			speed += 30;
 
-			let origineX = DEPART_ORIGINE_X + 50 * game.playersSocks.length;
+			let wallPos = DEPART_ORIGINE_X + game.nextPlayerId * 50;
 
 			for (let screenSock of game.screensSocks) {
-				screenSock.send(JSON.stringify([NEW_GATE, doorPos, doorHeight, speed]));
+				screenSock.send(JSON.stringify([NEW_GATE, wallPos, doorPos, doorHeight, speed]));
 			}
 
 			for(let playerSock of game.playersSocks) {
@@ -100,11 +99,11 @@ module.exports = function(game) {
 								clearTimeout(newGateTimer);
 							}
 						}
-					}, (origineX - playerStarshipPos) / speed * 1000);
+					}, (wallPos - playerStarshipPos) / speed * 1000);
 				}
 			}
 
-			newGateTimer = setTimeout(newGate, 1200 / speed * 1000);
+			newGateTimer = setTimeout(newGate, (wallPos + 200) / speed * 1000);
 		}
 
 		setTimeout(newGate, 6000);

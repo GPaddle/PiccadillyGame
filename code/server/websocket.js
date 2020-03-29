@@ -40,7 +40,7 @@ module.exports = function (httpServer, conf) {
 
 	const pseudoPossibilities = JSON.parse(fs.readFileSync("ressources/pseudos.json"));
 
-	let nextPlayerId = 0;
+	game.nextPlayerId = 0;
 
 	if(conf.testMode) {
 		conf.minPlayer = 1;
@@ -92,7 +92,7 @@ module.exports = function (httpServer, conf) {
 		}
 
 		game.playersSocks = [];
-		nextPlayerId = 0;
+		game.nextPlayerId = 0;
 
 		setTimeout(function() { // on affiche les scores pendant 30 secondes puis on reprépare une nouvelle partie
 			game.state = WAITING_ROOM;
@@ -175,11 +175,11 @@ module.exports = function (httpServer, conf) {
 						sock.isPlayer = true;
 
 						sock.player = {};
-						sock.player.id = nextPlayerId;
+						sock.player.id = game.nextPlayerId;
 						sock.player.pseudo = msg[0];
 						sock.player.score = 0;
 
-						nextPlayerId++;
+						game.nextPlayerId++;
 
 						game.playersSocks.push(sock);
 

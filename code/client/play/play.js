@@ -10,7 +10,7 @@ const ADD_PLAYER = 0,
 	PSEUDO_ALREADY_USED = 3,
 	START_GAME = 5;
 
-const END_GAME = 0;
+const STOP_GAME = 0;
 
 const WAIT_GAME_INFO = 0,
 	WAIT_WAITING_ROOM_EVENT = 1;
@@ -22,7 +22,6 @@ window.onload = function () {
 
 	let pseudoError = false;
 	let players; // tableau des pseudos de joueurs
-	let testMode;
 
 	initGame(game);
 
@@ -75,10 +74,6 @@ window.onload = function () {
 		//REPERE 2
 		game.sock.send(JSON.stringify([CLIENT_TYPE_PLAYER]));
 
-		if(testMode) {
-			document.getElementById("join-button").click();
-		}
-
 		game.sock.onmessage = function (json) {
 			let msg = JSON.parse(json.data);
 
@@ -89,7 +84,9 @@ window.onload = function () {
 
 					let playersCount = msg[1];
 
-					testMode = msg[2];
+					if(msg[2]) { // si le mode de test est activé
+						document.getElementById("join-button").click();
+					}
 
 					players = [];
 					let playersList = document.getElementById("players-list");
@@ -144,7 +141,7 @@ window.onload = function () {
 				}
 
 				default: {
-					if(msg[0] == END_GAME) {
+					if(msg[0] == STOP_GAME) {
 						document.body.innerHTML = `
 						<div id="endContent">
 							<h1>Partie terminée</h1>	

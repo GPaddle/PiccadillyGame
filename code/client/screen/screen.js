@@ -9,7 +9,7 @@ const ADD_PLAYER = 0,
 	START_GAME_COUNTDOWN = 4,
 	START_GAME = 5;
 
-const END_GAME = 0;
+const STOP_GAME = 0;
 
 const WAIT_GAME_INFO = 0,
 	WAIT_WAITING_ROOM_EVENT = 1;
@@ -101,7 +101,7 @@ window.onload = function() {
 				}
 
 				default: {
-					if(msg[0] == END_GAME) {
+					if(msg[0] == STOP_GAME) {
 						document.body.innerHTML = `<div id="results-header">Résultats</div><div id="results"></div>`;
 
 						let resultsDiv = document.getElementById("results");
