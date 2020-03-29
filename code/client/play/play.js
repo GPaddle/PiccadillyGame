@@ -40,7 +40,7 @@ window.onload = function () {
 
 		let pseudoInput = document.getElementById("pseudo-input");
 		pseudoInput.onfocus = function () {
-			if(pseudoError) {
+			if (pseudoError) {
 				let gameInfo = document.getElementById("game-info");
 				gameInfo.innerHTML = "";
 				pseudoError = false;
@@ -56,7 +56,7 @@ window.onload = function () {
 	}
 
 	function addPlayer(id, pseudo) {
-		let player = {id: id, pseudo: pseudo};
+		let player = { id: id, pseudo: pseudo };
 
 		player.line = document.createElement("div");
 		player.line.classList.add("players-list-player");
@@ -77,14 +77,14 @@ window.onload = function () {
 		game.sock.onmessage = function (json) {
 			let msg = JSON.parse(json.data);
 
-			switch(game.state) {
+			switch (game.state) {
 				case WAIT_GAME_INFO: {
 					let pseudoInput = document.getElementById("pseudo-input");
 					pseudoInput.value = msg[0];
 
 					let playersCount = msg[1];
 
-					if(msg[2]) { // si le mode de test est activé
+					if (msg[2]) { // si le mode de test est activé
 						document.getElementById("join-button").click();
 					}
 
@@ -117,7 +117,7 @@ window.onload = function () {
 								players.splice(players.indexOf(player), 1);
 							}
 						}
-					} else if(msg[0] == PSEUDO_OK) {
+					} else if (msg[0] == PSEUDO_OK) {
 						game.meId = msg[1] // l'id du joueur (de moi)
 
 						let pseudoInput = document.getElementById("pseudo-input");
@@ -133,7 +133,7 @@ window.onload = function () {
 						let gameInfo = document.getElementById("game-info");
 						gameInfo.innerHTML = "Ce pseudo est déjà utilisé";
 						pseudoError = true;
-					} else if(msg[0] == START_GAME) {
+					} else if (msg[0] == START_GAME) {
 						game.onStart(msg);
 					}
 
@@ -141,7 +141,7 @@ window.onload = function () {
 				}
 
 				default: {
-					if(msg[0] == STOP_GAME) {
+					if (msg[0] == STOP_GAME) {
 						document.body.innerHTML = `
 						<div id="endContent">
 							<h1>Partie terminée</h1>	
@@ -153,9 +153,12 @@ window.onload = function () {
 
 						let replayButton = document.querySelector("#replay-button");
 
-						replayButton.addEventListener("click", function() {
+						replayButton.addEventListener("click", function () {
 							game.sock.send("[0, 0, 0]"); // ici, on doit juste envoyer un paquet pour indiquer au serveur qu'on souhaite rejouer. le contenu du paquet est ignoré donc "0" ne signifie rien
 							displayWaitingRoom();
+
+							let background = document.querySelector("body");
+							background.style.background = "hsl(0deg, 47%,32.5%)";
 						});
 					} else {
 						game.onMessage(msg); // on passe la main au code du jeu
