@@ -107,10 +107,6 @@ module.exports = function (httpServer, conf) {
 		}, 30000);
 	}
 
-	game.clearWaitingRoom = function () { // supprime tous les joueurs qui ont validé leur pseudo de la salle d'attente
-
-	}
-
 	wss.on("connection", function (sock) {
 		sock.state = WAIT_AUTH;
 
