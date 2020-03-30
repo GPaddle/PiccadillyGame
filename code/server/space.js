@@ -122,7 +122,7 @@ module.exports = function (game) {
 			newGateTimer = setTimeout(newGate, (wallPos + 200) / speed * 1000);
 		}
 
-		setTimeout(newGate, /*6000*/20000);
+		setTimeout(newGate, 6000);
 	}
 
 	game.onMessage = function (sock, msg) {
