@@ -29,6 +29,10 @@ body {
 
 }
 
+#disconnect-message {
+	font-size: 20px;
+	text-align: center;
+}
 
 /* Page d'accueil - ajout du pseudo */
 

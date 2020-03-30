@@ -126,4 +126,8 @@ window.onload = function () {
 			}
 		}
 	}
+
+	game.sock.onclose = function() {
+		document.body.innerHTML = `<div id="disconnect-message">Le serveur a été déconnecté. La page doit être rechargée.</div>`;
+	}
 }
