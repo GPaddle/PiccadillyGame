@@ -14,8 +14,6 @@ const DEAD = 1;
 
 const IN_GAME = 3;
 
-
-
 const STARSHIP_HEIGHT = 19,
 	STARSHIP_WIDTH = 40,
 	GAME_HEIGHT = 210,
@@ -25,11 +23,15 @@ const STARSHIP_HEIGHT = 19,
 const DEPART_ORIGINE_X = 900,
 	PLAYER_ZONE = 200;
 
+let livingPlayersCount;
+
 module.exports = function (game) {
 	game.start = function () {
 		let gameStart = new Date(Date.now());
 
-		let nbJoueursDead = 0;
+		livingPlayersCount = game.playersSocks.length;
+		console.log(livingPlayersCount);
+
 		let speed = 300;
 
 		let w = 0;
@@ -78,8 +80,8 @@ module.exports = function (game) {
 
 			speed += 30;
 
-			let starshipsGap = Math.min(50, PLAYER_ZONE / game.playersSocks.length); // écart entre le côté gauche de chaque fusée
-			let wallPos = DEPART_ORIGINE_X + game.playersSocks.length * starshipsGap; // position d'apparition de la porte
+			let starshipsGap = Math.min(50, PLAYER_ZONE / livingPlayersCount); // écart entre le côté gauche de chaque fusée
+			let wallPos = DEPART_ORIGINE_X + livingPlayersCount * starshipsGap; // position d'apparition de la porte
 
 			for (let screenSock of game.screensSocks) {
 				screenSock.send(JSON.stringify([NEW_GATE, wallPos, doorPos, doorHeight, speed]));
@@ -98,7 +100,7 @@ module.exports = function (game) {
 							playerSock.state = WAIT_NOTHING;
 
 							playerSock.player.alive = false;
-							nbJoueursDead++;
+							livingPlayersCount--;
 
 							playerSock.player.score = (new Date(Date.now()) - gameStart) / 1000;
 
@@ -106,7 +108,7 @@ module.exports = function (game) {
 								screenSock.send(JSON.stringify([DEL_STARSHIP, playerSock.player.id]));
 							}
 
-							if (nbJoueursDead == game.playersSocks.length) {
+							if (livingPlayersCount <= 0) {
 								game.stop();
 								clearTimeout(newGateTimer);
 							}
@@ -120,7 +122,7 @@ module.exports = function (game) {
 			newGateTimer = setTimeout(newGate, (wallPos + 200) / speed * 1000);
 		}
 
-		setTimeout(newGate, 6000);
+		setTimeout(newGate, /*6000*/20000);
 	}
 
 	game.onMessage = function (sock, msg) {
@@ -134,6 +136,8 @@ module.exports = function (game) {
 
 	game.onPlayerJoinInGame = function (sock, msg) {
 		game.waitingRoomSocks.splice(game.waitingRoomSocks.indexOf(sock), 1);
+
+		livingPlayersCount++;
 
 		sock.send(JSON.stringify([START_GAME]));
 
