@@ -13,7 +13,7 @@ const BASE_HEIGHT = 12;
 const PLAYER_ZONE = 200;
 
 export default function (game) {
-	let players;
+	let starships;
 
 	game.onStart = function (msg) {
 		game.state = WAIT_GAME_EVENT;
@@ -40,38 +40,38 @@ export default function (game) {
 
 		document.querySelector("#gate").style.left = "-100px";
 
-		let joueurs = document.querySelector("#starships");
+		let starshipsSprites = document.querySelector("#starships");
 
-		players = [];
-		let playersCount = msg[1]
+		starships = [];
+		let starshipsCount = msg[1]
 
-		let starshipsGap = Math.min(50, PLAYER_ZONE / playersCount);
+		let starshipsGap = Math.min(50, PLAYER_ZONE / starshipsCount);
 
-		for(let i = 0; i < playersCount; i++) {
-			let player = { id: msg[2 + i] };
+		for(let i = 0; i < starshipsCount; i++) {
+			let starship = { playerId: msg[2 + i] };
 
-			let fusee = document.createElement("img");
-			fusee.className = "starship";
-			fusee.src = "/screen/starship.png";
+			let sprite = document.createElement("img");
+			sprite.className = "starship";
+			sprite.src = "/screen/starship.png";
 
-			fusee.style.top = "0px";
-			fusee.style.left = i * starshipsGap + "px";
+			sprite.style.top = "0px";
+			sprite.style.left = i * starshipsGap + "px";
 
-			fusee.style.filter = "hue-rotate(" + player.id * 80 + "deg)";
+			sprite.style.filter = "hue-rotate(" + starship.playerId * 80 + "deg)";
 
-			player.fusee = fusee;
-			joueurs.appendChild(fusee);
+			starship.sprite = sprite;
+			starshipsSprites.appendChild(sprite);
 
-			players.push(player);
+			starships.push(starship);
 		}
 	}
 
 	game.onMessage = function (msg) {
 		if (game.state == WAIT_GAME_EVENT) {
 			if (msg[0] == PLAYER_MOVE) {
-				for (let i = 0; i < players.length; i++) {
-					if (players[i].id == msg[1]) {
-						players[i].fusee.style.top = msg[2] + "px";
+				for (let i = 0; i < starships.length; i++) {
+					if (starships[i].playerId == msg[1]) {
+						starships[i].sprite.style.top = msg[2] + "px";
 						break;
 					}
 				}
@@ -111,42 +111,42 @@ export default function (game) {
 
 				requestAnimationFrame(animation);
 			} else if (msg[0] == NEW_STARSHIP) {
-				let player = {id: msg[1]};
+				let starship = {playerId: msg[1]};
 
-				let fusee = document.createElement("img");
-				fusee.className = "starship";
-				fusee.src = "/screen/starship.png";
+				let sprite  = document.createElement("img");
+				sprite.className = "starship";
+				sprite.src = "/screen/starship.png";
 
-				fusee.style.top = "0px";
+				sprite.style.top = "0px";
 
-				fusee.style.filter = "hue-rotate(" + player.id * 80 + "deg)";
+				sprite.style.filter = "hue-rotate(" + starship.playerId * 80 + "deg)";
 
-				player.fusee = fusee;
+				starship.sprite = sprite;
 
-				let joueurs = document.querySelector("#starships");
-				joueurs.appendChild(fusee);
+				let starshipsSprites = document.querySelector("#starships");
+				starshipsSprites.appendChild(sprite);
 
-				players.push(player);
+				starships.push(starship);
 
-				let starshipsGap = Math.min(50, PLAYER_ZONE / players.length);
+				let starshipsGap = Math.min(50, PLAYER_ZONE / starships.length);
 
-				for(let i = 0; i < players.length; i++)
-					players[i].fusee.style.left = i * starshipsGap + "px";
+				for(let i = 0; i < starships.length; i++)
+					starships[i].sprite.style.left = i * starshipsGap + "px";
 			} else if (msg[0] == DEL_STARSHIP) {
-				for (let i = 0; i < players.length; i++) {
+				for (let i = 0; i < starships.length; i++) {
 					console.log("searching" + i);
 
-					if (msg[1] == players[i].id) {
+					if (msg[1] == starships[i].playerId) {
 						console.log("find");
 
-						let fusees = document.querySelector("#starships");
-						fusees.removeChild(players[i].fusee);
-						players.splice(i, 1);
+						let starshipsSprites = document.querySelector("#starships");
+						starshipsSprites.removeChild(starships[i].sprite);
+						starships.splice(i, 1);
 
-						let starshipsGap = Math.min(50, PLAYER_ZONE / players.length);
+						let starshipsGap = Math.min(50, PLAYER_ZONE / starships.length);
 
-						for(let i = 0; i < players.length; i++)
-							players[i].fusee.style.left = i * starshipsGap + "px";
+						for(let i = 0; i < starships.length; i++)
+							starships[i].sprite.style.left = i * starshipsGap + "px";
 
 						return;
 					}
