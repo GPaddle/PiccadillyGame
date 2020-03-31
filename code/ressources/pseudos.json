@@ -6,15 +6,24 @@
 		"Supreme",
 		"Méga",
 		"Rouge",
-		"Lord"
+		"Lord",
+		"Le petit",
+		"Ultra"
 	],
 	"adjectives": [
-		"Maitre",
+		"Cerveau",
 		"Croc",
 		"Flash",
 		"Maitre",
 		"Chevalier",
 		"Fantome",
-		"Clown"
+		"Clown",
+		"Nain",
+		"Vilain",
+		"Lâche",
+		"Intrépide",
+		"Déserteur",
+		"Hypocrite",
+		"Sage"
 	]
 }
