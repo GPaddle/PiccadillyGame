@@ -1,22 +1,22 @@
 "use strict";
 
-const http = require("http");
-const fs = require("fs");
-const startWebSocket = require("./websocket.js");
+const http = require("http"); // bibliothèque native http pour servir les fichiers
+const fs = require("fs"); // bibliothèque native filesystem pour lire les fichiers
+const startWebSocket = require("./websocket.js"); // fonction qui lance le serveur websocket (fichier server/websocket.js)
 
-const conf = JSON.parse(fs.readFileSync("conf/conf.json"));
+const conf = JSON.parse(fs.readFileSync("conf/conf.json")); // on lit le fichier json de configuration dans un objet
 
-const httpServer = http.createServer();
-httpServer.listen(conf.port);
+const httpServer = http.createServer(); // on crée le serveur http
+httpServer.listen(conf.port); // on lance l'écoute du serveur sur le port choisi dans le fichier de configuration
 
-httpServer.on("request", function (req, res) {
-	function send(url, type) {
+httpServer.on("request", function (req, res) { // évènement qui se déclenche quand on reçoit une requête http
+	function send(url, type) { // la fonction send envoit le fichier se trouvant à l'url donné avec l'en-tête http Content-Type donné (text/html pour un fichier html par exemple)
 		res.setHeader("Content-Type", type);
 		let file = fs.createReadStream(url);
 		file.pipe(res);
 	}
 
-	switch (req.url) {
+	switch (req.url) { // on associe chaque url à une action (envoyer tels fichiers)
 		case "/": res.end("Piccadilly Game"); break;
 
 		case "/play": send("client/play/play.html", "text/html"); break;
@@ -38,7 +38,7 @@ httpServer.on("request", function (req, res) {
 		case "/fonts/lato": send("client/fonts/lato/lato.ttf", "font/ttf"); break;
 		case "/fonts/lato-bold": send("client/fonts/lato/lato-bold.ttf", "font/ttf"); break;
 
-		default:
+		default: // si l'url n'existe pas, on envoit un message d'erreur 404
 			res.statusCode = 404;
 			res.end("Page inexistante");
 			break;
