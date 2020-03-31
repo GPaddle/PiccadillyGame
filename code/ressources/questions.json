@@ -84,15 +84,15 @@
 	},
 
 	{
-		"title": "Combien de fois la chanson All I Want for Christmas Is You de Mariah Carey a-t-elle été écoutée sur Spotify ?",
+		"title": "Quel est le premier acteur français ayant reçu un Oscar ?",
 		"answers": [
-			"200.000 à 400.000",
-			"500 à 600 millions",
-			"1 à 2 milliards",
-			"600 à 700 millions"
+			"Jean-Paul Belmondo",
+			"Sophie Marceau",
+			"Omar Sy",
+			"Jean Dujardin"
 		],
 		"correctAnswer": 3,
-		"time": 20
+		"time": 15
 	},
 
 	{
