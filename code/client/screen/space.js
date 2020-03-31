@@ -13,10 +13,10 @@ const BASE_HEIGHT = 12;
 const PLAYER_ZONE = 200;
 
 export default function (game) {
-	let starships;
+	let starships; // liste des fusées affichées
 
-	game.onStart = function (msg) {
-		game.state = WAIT_GAME_EVENT;
+	game.onStart = function (msg) { // quand la partie commence
+		game.state = WAIT_GAME_EVENT; // on met l'état à "attente d'évènement de jeu"
 
 		document.body.innerHTML = `
 		<div id="game" style="height: 210px;width: 100%;overflow: hidden;">
@@ -36,59 +36,59 @@ export default function (game) {
 				</div>
 			</div>
 		</div>
-		`;
+		`; // on affiche le terrain de jeu
 
-		document.querySelector("#gate").style.left = "-100px";
+		document.querySelector("#gate").style.left = "-100px"; // on cache la porte car on ne sait pas à quel endroit elle doit être pour le moment
 
 		let starshipsSprites = document.querySelector("#starships");
 
-		starships = [];
-		let starshipsCount = msg[1]
+		starships = []; // on vide la liste des fusées
+		let starshipsCount = msg[1]; // on récupère le nombre de fusées à afficher
 
-		let starshipsGap = Math.min(50, PLAYER_ZONE / starshipsCount);
+		let starshipsGap = Math.min(50, PLAYER_ZONE / starshipsCount); // on calcule l'écart entre chaque fusée
 
-		for(let i = 0; i < starshipsCount; i++) {
-			let starship = { playerId: msg[2 + i] };
+		for(let i = 0; i < starshipsCount; i++) { // pour chaque fusée (joueur)
+			let starship = { playerId: msg[2 + i] }; // on crée l'objet fusée avec l'id du joueur
 
 			let sprite = document.createElement("img");
 			sprite.className = "starship";
-			sprite.src = "/screen/starship.png";
+			sprite.src = "/screen/starship.png"; // on crée le sprite de la fusée
 
 			sprite.style.top = "0px";
-			sprite.style.left = i * starshipsGap + "px";
+			sprite.style.left = i * starshipsGap + "px"; // on la positionne au bon endroit
 
-			sprite.style.filter = "hue-rotate(" + starship.playerId * 80 + "deg)";
+			sprite.style.filter = "hue-rotate(" + starship.playerId * 80 + "deg)"; // on lui met la bonne couleur pour que les joueurs puissent trouver leur fusée facilement
 
 			starship.sprite = sprite;
-			starshipsSprites.appendChild(sprite);
+			starshipsSprites.appendChild(sprite); // on insère le sprite dans le html
 
-			starships.push(starship);
+			starships.push(starship); // on ajoute l'objet fusée à la liste des fusées
 		}
 	}
 
-	game.onMessage = function (msg) {
-		if (game.state == WAIT_GAME_EVENT) {
-			if (msg[0] == PLAYER_MOVE) {
+	game.onMessage = function (msg) { // quand on reçoit un message du serveur
+		if (game.state == WAIT_GAME_EVENT) { // quand on est à l'état "attente d'évènement de jeu"
+			if (msg[0] == PLAYER_MOVE) { // quand la fusée d'un joueur a bougé
 				for (let i = 0; i < starships.length; i++) {
 					if (starships[i].playerId == msg[1]) {
-						starships[i].sprite.style.top = msg[2] + "px";
+						starships[i].sprite.style.top = msg[2] + "px"; // on repositionne la fusée du joueur
 						break;
 					}
 				}
-			} else if (msg[0] == NEW_GATE) {
+			} else if (msg[0] == NEW_GATE) { // quand une nouvelle porte a été créée
 				let porte = document.querySelector("#gate");
 
 				porte.remove();
-				document.querySelector("#game").appendChild(porte);
+				document.querySelector("#game").appendChild(porte); // on retire et remet la porte dans le html pour redémarrer l'animation d'apparition
 
 				let wallPos = msg[1];
 				let gatePos = msg[2];
 				let gateHeight = msg[3];
-				let speed = msg[4];
+				let speed = msg[4]; // on récupère des données du serveur
 
-				porte.style.animation = "apparition " + (330 / speed) + "s";
+				porte.style.animation = "apparition " + (330 / speed) + "s"; // on adapte la vitesse de l'animation d'apparition à la vitesse de la porte
 
-				document.querySelector(".gate-laser#top").style.height = (gatePos - 2 * BASE_HEIGHT) + "px";
+				document.querySelector(".gate-laser#top").style.height = (gatePos - 2 * BASE_HEIGHT) + "px"; // on redimensionne la porte
 				document.querySelector(".gate-base.bottom#top").style.top = (gatePos - BASE_HEIGHT) + "px";
 				document.querySelector(".gate-wall#bottom").style.top = (gatePos + gateHeight) + "px";
 				document.querySelector(".gate-laser#bottom").style.height = (GAME_HEIGHT - gatePos - gateHeight - 2 * BASE_HEIGHT) + "px";
@@ -98,55 +98,51 @@ export default function (game) {
 
 				function animation(timestamp) {
 					if (startTimeStamp === null) {
-						startTimeStamp = timestamp;
+						startTimeStamp = timestamp; // on enregistre la date de début de l'animation
 					}
 
 					let gate = document.querySelector("#gate");
-					gate.style.left = (wallPos - (timestamp - startTimeStamp) / 1000 * speed) + "px";
+					gate.style.left = (wallPos - (timestamp - startTimeStamp) / 1000 * speed) + "px"; // on anime le déplacement de la porte vers les joueurs à la bonne vitesse
 
 					if (game.state == WAIT_GAME_EVENT) {
-						requestAnimationFrame(animation);
+						requestAnimationFrame(animation); // si on est toujours en train de jouer, on continue l'animation
 					}
 				}
 
-				requestAnimationFrame(animation);
-			} else if (msg[0] == NEW_STARSHIP) {
-				let starship = {playerId: msg[1]};
+				requestAnimationFrame(animation); // on démarre l'animation de mouvement de la porte
+			} else if (msg[0] == NEW_STARSHIP) { // quand une nouvelle fusée est ajoutée (nouveau joueur)
+				let starship = {playerId: msg[1]}; // on crée un nouvel objet fusée
 
 				let sprite  = document.createElement("img");
 				sprite.className = "starship";
-				sprite.src = "/screen/starship.png";
+				sprite.src = "/screen/starship.png"; // on ajoute le sprite de la fusée
 
-				sprite.style.top = "0px";
+				sprite.style.top = "0px"; // on positionne la fusée
 
-				sprite.style.filter = "hue-rotate(" + starship.playerId * 80 + "deg)";
+				sprite.style.filter = "hue-rotate(" + starship.playerId * 80 + "deg)"; // on lui attribue la bonne couleur
 
 				starship.sprite = sprite;
 
 				let starshipsSprites = document.querySelector("#starships");
-				starshipsSprites.appendChild(sprite);
+				starshipsSprites.appendChild(sprite); // on insère le sprite dans le html
 
 				starships.push(starship);
 
-				let starshipsGap = Math.min(50, PLAYER_ZONE / starships.length);
+				let starshipsGap = Math.min(50, PLAYER_ZONE / starships.length); // on calcule le nouvel écart entre les fusées
 
 				for(let i = 0; i < starships.length; i++)
-					starships[i].sprite.style.left = i * starshipsGap + "px";
-			} else if (msg[0] == DEL_STARSHIP) {
+					starships[i].sprite.style.left = i * starshipsGap + "px"; // on replace chaque fusée sur l'axe x en fonction du nouvel écart
+			} else if (msg[0] == DEL_STARSHIP) { // quand une fusée est supprimée (morte ou déconnexion)
 				for (let i = 0; i < starships.length; i++) {
-					console.log("searching" + i);
-
 					if (msg[1] == starships[i].playerId) {
-						console.log("find");
-
 						let starshipsSprites = document.querySelector("#starships");
-						starshipsSprites.removeChild(starships[i].sprite);
-						starships.splice(i, 1);
+						starshipsSprites.removeChild(starships[i].sprite); // on supprime la fusée de l'écran
+						starships.splice(i, 1); // on supprime l'objet fusée de la liste des fusées
 
-						let starshipsGap = Math.min(50, PLAYER_ZONE / starships.length);
+						let starshipsGap = Math.min(50, PLAYER_ZONE / starships.length); // on calcule le nouvel écart entre les fusées
 
 						for(let i = 0; i < starships.length; i++)
-							starships[i].sprite.style.left = i * starshipsGap + "px";
+							starships[i].sprite.style.left = i * starshipsGap + "px"; // on replace toutes les fusées sur l'axe x
 
 						return;
 					}

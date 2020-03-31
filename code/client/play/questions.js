@@ -12,7 +12,7 @@ export default function (game) {
 	let chosenAnswer;
 	let questionCountdown;
 
-	game.onNewQuestion = function (msg) { // quand on reçoit une nouvelle question
+	function onNewQuestion (msg) { // quand on reçoit une nouvelle question
 		if (chosenAnswer !== undefined) {
 			let clickedAnswerButton = document.getElementsByClassName("answer-button")[chosenAnswer];
 			clickedAnswerButton.style.border = ""; // on décoche le bouton de la réponse précemment sélectionnée
@@ -104,14 +104,14 @@ export default function (game) {
 			});
 		}
 
-		game.onNewQuestion(msg); // on traîte la première question
+		onNewQuestion(msg); // on traîte la première question
 	}
 
 	game.onMessage = function (msg) {
 		switch (game.state) {
 			case WAIT_QUESTION: { // quand on reçoit une questions
 				if (msg[0] == NEW_QUESTION) {
-					game.onNewQuestion(msg); // on traîte cette question
+					onNewQuestion(msg); // on traîte cette question
 				}
 
 				break;
