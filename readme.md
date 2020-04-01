@@ -1,232 +1,78 @@
-**Piccadilly Game**
+# Piccadilly Game
 
-Projet Tutoré
+Projet Tutoré - IUT Nancy Charlemagne 2019-2020
 
-@IUT Nancy Charlemagne 2019-2020
-
- - Tom Georgelin
- - Martin Jossic
- - Matéo Achterfeld
- - Guillaume Keller
+- Tom Georgelin [@totomdotcom](https://github.com/totomdotcom)
+- Martin Jossic [@daiSKeul](https://github.com/daiSKeul)
+- Matéo Achterfeld [@Achterfeld](https://github.com/Achterfeld)
+- Guillaume Keller [@GPaddle](https://github.com/GPaddle)
 
 ## Philosophie du projet :
 
 > Durant un voyage à Londres, j'ai vu Piccadilly Circus, et je n'ai pas pu m'empêcher de réfléchir à la manière dont les passants pourraient interagir avec les pubs. Le jeu me paraissait être la meilleure approche.
 
-Avec cette brève introduction notre tuteur nous a lancé sur une plateforme de jeu, massivement jouable et facilement accessible (via un navigateur).
+Avec cette brève introduction, notre tuteur nous a lancés sur une plateforme de jeu massivement jouable et facilement accessible (via un navigateur).
 
 ## Technologies :
 	
- - [x] HTML
- - [x] CSS
- - [x] JS
- - [x] Node Js
+- [x] HTML
+- [x] CSS
+- [x] JS
+- [x] Node.Js
 
-## Protocoles :
+## Documentation
 
-Les envois de données sont identifiés dans le code par des commentaire de type //REPERE {x}
-ex : //REPERE 1
-Chaque fichier comporte sa propre numérotation
+Les étapes d'installation sont détaillées ci-dessous. Pour ce qui est du code, il est entièrement commenté donc il n'y a pas de documentation du code (en dehors de lui-même).
 
- - **Protocole d'échange Ecran-> Serveur :** (screen.js)
+### Fichier `conf/conf.json`
 
-Envois d'information à propos du client (state = WAIT_GAME_INFO) :
-chercher "REPERE 1"
+Le fichier de configuration `conf/conf.json` contient les champs suivants :
+- `game` : permet de choisir le jeu à charger
+- `liste des jeux...` : c'est une option "commentaire" qui est juste là pour indiquer quels sont les jeux qu'on peut charger avec l'option `game`
+- `minPlayer` : nombre minimal de joueurs nécessaire au lancement de la partie
+- `startCountdownTime` : temps du compte à rebours avant le début de la partie
+- `scoreCountdownTime` : temps pendant lequel les scores finaux sont affichés en fin de partie
+- `port` : port sur lequel le serveur écoute
+- `nbQuestions` : nombre de questions affichées par partie (les questions sont piochées dans le fichier `ressources/questions.json`), ce champ ne concerne bien sûr que le jeu de questions
+- `testMode` : active ou non le mode de test qui permet de rendre une partie plus rapide, réservé aux développeurs
 
-	[
-		0 : CLIENT_TYPE_SCREEN,
-	 	1 : SECRET_SCREEN_KEY
-	 ]
+Le serveur doit être relancé pour tenir compte d'un changement dans le fichier de configuration.
 
- - **Protocole d'échange Joueur-> Serveur :** (play.js)
+### Fichier `ressources/questions.json`
 
+Le fichier `ressources/questions.json` contient les différentes questions pouvant être affichées pendant une partie de jeu de questions. C'est un tableau d'objets JSON contenant les champs suivants :
+ - `title` : intitulé de la question
+ - `answers` : tableau des 4 réponses possibles, elles seront affichées dans l'ordre décrit dans ce fichier
+ - `correctAnswer` : index de la bonne réponse dans le tableau `answers` écrit juste avant, la première réponse du tableau est la réponse `0`, la deuxième est la `1`...
+ - `time` : temps en secondes dont les joueurs disposent pour répondre à cette question
 
-Envois du pseudo (state = ?) :
-chercher "REPERE 1"
+### Fichier `ressources/pseudos.json`
 
-	[
-		0 : valeur champ pseudo
-	 ]
+Le fichier `ressources/pseudos.json` contient les noms et adjectifs nécessaires à la génération des pseudos aléatoires proposés aux joueurs lorsqu'ils se connectent. Le tableau `names` contient les premières parties des pseudos et le tableau `adjectives` contient les secondes parties des pseudos. Un pseudo est généré en concaténant un `name` et un `adjective` pris au hasard dans ce fichier.
 
-Envois d'information à propos du client (state = WAIT_GAME_INFO) :
-chercher "REPERE 2"
+### Installation :
 
-	[
-		0 : CLIENT_TYPE_PLAYER
-	]
+Pour héberger l'application, vous devez installer Node.Js.
 
-Envois de la réponse choisie  (state = WAIT_QUESTION_EVENT) :
-chercher "REPERE 3"
+Une fois cela fait, clonez le dépôt, ouvrez un terminal à la racine de celui-ci et tapez ceci pour installer la bibliothèque WebSocket dont le projet dépend :
+```bash
+cd code
+npm install
+```
 
-	[
-		0 : Réponse choisie
-	]
+Créez ensuite le fichier de configuration grâce à l'exemple fourni :
+```bash
+cd conf
+cp example-conf.json conf.json
+```
 
+Vous pouvez maintenant lancer le serveur (tapez bien cette commande depuis le dossier code et non depuis le dossier server) :
+```bash
+node server/main.js
+```
 
- - **Protocole d'échange Serveur-> Joueurs :** (websocket.js)
+Le serveur se lance par défaut sur le port 80. Si vous avez une erreur à son lancement, réessayez avec les droits d'administrateur ou changez le port dans `conf/conf.json` avec un numéro supérieur ou égal à 1024 (les droits d'administrateur ne sont pas nécessaires pour lancer un serveur à partir du 1024ème port).
 
- 
-Envois des questions (state = ?) :
-chercher "REPERE 2"
+Une fois le serveur lancé, vous pouvez connecter un ou plusieurs écrans (faites le avant le début du compte à rebours de début de partie) en vous connectant sur http://adresse-du-serveur/screen
 
-	[
-		0 : NEW_QUESTION,
-		1 : durée de la question
-	]
- 
-Envois des informations joueurs (state = WAIT_AUTH) :
-chercher "REPERE 4"
-
-	[
-		0 : ADD_PLAYER,
-		1 : player ID,
-		2 : player pseudo
-	]
- 
-Envois des informations sur le jeu (state = WAIT_AUTH) :
-chercher "REPERE 4"
-
-	[
-		0 : MIN_PLAYER,
-		1 : nombre de joueurs +1,
-		2k+2 : player id,
-		2k+3 : player pseudo,
-
-		n-2 : dernier id ajouté
-		n-1 : dernier pseudo ajouté
-		n : rappel du dernier id
-	]
-
-Décompte pour le début du jeu (state = WAIT_AUTH) :
-chercher "REPERE 5"
-
-	[
-		0 : START_GAME_COUNTDOWN
-		1 : Durée du compte à rebours
-	]
-
-Début du jeu, affichage des informations spécifiques aux questions (state = WAIT_AUTH) :
-chercher "REPERE 6"
-
-	[
-		0 : START_GAME
-	]
-
-Envois d'un nouveau joueur à tous les joueurs (state = WAIT_PSEUDO) :
-chercher "REPERE 7"
-
-	[
-		0 : SET_PSEUDO,
-		1 : id du nouveau joueur,
-		2 : pseudo du nouveau joueur
-	]
-
-Envois des statistiques à tous les joueurs après avoir répondu (state = WAIT_ANSWER) :
-chercher "REPERE 8"
-
-	[
-		0 : ANSWER_STATS,
-		1 : statistiques de la réponse 1,
-		2 : statistiques de la réponse 2,
-		3 : statistiques de la réponse 3,
-		4 : statistiques de la réponse 4
-	]
-
-Suppression d'un nouveau player  : 
-chercher "REPERE 9"
-
-	[
-		0 : DEL_PLAYER,
-		1 : id du joueur à retirer
-	]
-
-
- - **Protocole d'échange Serveur-> Ecrans :**
-
-Fin du jeu, affichage des scores (state = ?) :
-chercher "REPERE 1" 
-
-	[
-		0 : END_GAME
-		1 : nombre de joueurs 
-		2n+2 : Pseudos d'un joueur
-		2n+3 : Score d'un joueur
-		...
-	]
-
-Envois des questions (state = ?) :
-chercher "REPERE 2"
-
-	[
-		0 : NEW_QUESTION,
-		1 : titre de la question,
-		2 : Réponse 1,
-		3 : Réponse 2,
-		4 : Réponse 3,
-		5 : Réponse 4,
-		6 : Durée de la question,
-	]
-
-Envois d'un nouveau joueur (state = WAIT_AUTH) :
-chercher "REPERE 4"
-
-	[
-		0 : ADD_PLAYER
-	]
-
-
-Décompte pour le début du jeu (state = WAIT_AUTH) :
-chercher "REPERE 5"
-
-	[
-		0 : START_GAME_COUNTDOWN
-		1 : Durée du compte à rebours
-	]
-
-Début du jeu, affichage des informations spécifiques aux questions (state = WAIT_AUTH) :
-chercher "REPERE 6"
-
-	[
-		0 : START_GAME
-	]
-
-Suppression d'un nouveau player : 
-chercher "REPERE 9"
-
-	[
-		0 : DEL_PLAYER
-	]
-
-Ajout d'un nouvel écran (state = WAIT_AUTH) : 
-chercher "REPERE 10"
-
-	[
-		0 : MIN_PLAYER,
-		1 : longeur de la liste de joueurs
-	]
-
-
-## Installation :
-
-Pour utiliser l'application :
-
-	installer node
-
-Depuis le dossier `code` lancer l'application avec la commande
-`node server/main.js` 
-
-Depuis un écran d'affichage : se rendre sur la page d'URL :
-`URLHébergé/CléSecrete/screen`
-
-Depuis cette page, les joueurs auront accès par 2 moyens à l'application :
-
- - Un URL direct de type `URLHébergé/play`
- - Un QR Code qui y redirige
-
- 
-
-##  :
-
-
-##  :
-
+Les joueurs se connecteront sur http://adresse-du-serveur/play
