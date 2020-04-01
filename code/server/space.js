@@ -69,13 +69,16 @@ module.exports = function (game) {
 			let doorHeight = MIN_HEIGHT + Math.random() * (MAX_HEIGHT - MIN_HEIGHT); // on calcule la hauteur de la porte au hasard
 			let doorPos = MIN_POS + Math.random() * (GAME_HEIGHT - MIN_POS - MAX_POS - doorHeight); // on calcule la position verticale de la porte au hasard
 
-			if (MIN_HEIGHT - 5 > STARSHIP_HEIGHT) {
+			if (MIN_HEIGHT - 5 > 2 * STARSHIP_HEIGHT)
 				MIN_HEIGHT -= 5; // si la porte est encore assez grande, on diminue la hauteur minimale des portes
-			}
+			else
+				MIN_HEIGHT = 2 * STARSHIP_HEIGHT; // si on ne peut pas diminuer d'avantage sans passer en dessous de notre hauteur minimale absolue, on attribue directement cette limite
 
-			if (MAX_HEIGHT - 5 > STARSHIP_HEIGHT) {
+			if (MAX_HEIGHT - 5 > 2 * STARSHIP_HEIGHT)
 				MAX_HEIGHT -= 5; // si la porte est encore assez grande, on diminue la hauteur maximale des portes
-			}
+			else
+				MIN_HEIGHT = 2 * STARSHIP_HEIGHT; // si on ne peut pas diminuer d'avantage sans passer en dessous de notre hauteur minimale absolue, on attribue directement cette limite
+
 
 			speed += 30; // on augmente la vitesse des portes
 
