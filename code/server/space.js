@@ -150,6 +150,10 @@ module.exports = function (game) {
 	}
 
 	game.onPlayerLeftInGame = function (sock) { // quand un joueur quitte la partie en cours
+		if(sock.player.alive) {
+			livingPlayersCount--;
+		}
+
 		for (let screenSock of game.screensSocks) {
 			screenSock.send(JSON.stringify([DEL_STARSHIP, sock.player.id])); // les grands écrans doivent supprimer la fusée du joueur ayant quitté
 		}
