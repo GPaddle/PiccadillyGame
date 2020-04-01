@@ -7,7 +7,7 @@
 	],
 
 	"minPlayer": 3,
-	"countdownTime": 15,
+	"countdownTime": 10,
 	"port": 80,
 
 	"nbQuestions": 4,
