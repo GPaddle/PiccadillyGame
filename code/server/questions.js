@@ -118,6 +118,10 @@ module.exports = function (game) {
 		}
 	}
 
+	game.onPlayerLeftInGame = function (sock) {
+
+	}
+
 	game.onMessage = function (sock, msg) { // quand on reçoit un message du joueur
 		switch (sock.state) {
 			case WAIT_ANSWER: { // quand on est en attente d'une réponse
