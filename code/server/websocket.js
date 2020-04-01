@@ -44,7 +44,7 @@ module.exports = function (httpServer, conf) {
 
 	if (conf.testMode) { // changement de configuration si le mode test est activé
 		conf.minPlayer = 1;
-		conf.countdownTime = 1;
+		conf.startCountdownTime = 1;
 	}
 
 	const initGame = require("./" + conf.game + ".js"); // on charge le fichier js correspondant au jeu choisi dans la configuration
@@ -54,10 +54,10 @@ module.exports = function (httpServer, conf) {
 		game.state = BEGIN_COUNT_DOWN; // on passe l'état du jeu sur "compte à rebours"
 
 		for (let screenSock of game.screensSocks) {
-			screenSock.send(JSON.stringify([START_GAME_COUNTDOWN, conf.countdownTime])); // on dit à tous les écrans que le compte à rebours se lance et la durée de ce décompte
+			screenSock.send(JSON.stringify([START_GAME_COUNTDOWN, conf.startCountdownTime])); // on dit à tous les écrans que le compte à rebours se lance et la durée de ce décompte
 		}
 
-		let beginCountdown = setTimeout(game.start, conf.countdownTime * 1000); // on lance la partie à la fin du décompte
+		let beginCountdown = setTimeout(game.start, conf.startCountdownTime * 1000); // on lance la partie à la fin du décompte
 	}
 
 	game.stop = function () { // fonction lancée par le module propre au jeu qui termine la partie
@@ -94,7 +94,7 @@ module.exports = function (httpServer, conf) {
 		game.playersSocks = []; // on vide la liste de joueurs pour la prochaine partie
 		nextPlayerId = 0;
 
-		setTimeout(function () { // on affiche les scores pendant 30 secondes puis on reprépare une nouvelle partie
+		setTimeout(function () { // on affiche les scores pendant un certain temps (configurable) puis on reprépare une nouvelle partie
 			game.state = WAITING_ROOM; // on met l'état du jeu sur "salle d'attente"
 
 			for (let screenSock of game.screensSocks) {
@@ -104,7 +104,7 @@ module.exports = function (httpServer, conf) {
 			if (game.playersSocks.length >= conf.minPlayer) { // s'il y a déjà assez de joueurs quand on sort de l'écran d'affichage des scores, on déclenche directement le décompte de début de partie
 				startBeginCountdown();
 			}
-		}, 30000);
+		}, conf.scoreCountdownTime * 1000); // on multiplie par 1000 pour convertir les secondes du fichier de configuration en millisecondes
 	}
 
 	wss.on("connection", function (sock) { // quand un client se connecte sur le serveur websocket
