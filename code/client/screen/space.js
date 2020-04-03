@@ -117,7 +117,7 @@ export default function (game) {
 
 				for (let index = 0; index < msg[1].length; index++) {
 					const element = msg[1][index];
-					element.alive?createStarship(element.id):"";
+					element.alive ? createStarship(element.id) : "";
 					starships[index].sprite.style.top = element.coord + "px";
 				}
 			}

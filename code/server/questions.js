@@ -15,6 +15,8 @@ const ANSWERS_STATS = 1,
 const QUESTION = 3,
 	QUESTION_RESULT = 4;
 
+const NEW_SCREEN = 6;
+
 module.exports = function (game) {
 	let questions = JSON.parse(fs.readFileSync("ressources/questions.json")); // on récupère le fichier contenant les questions
 	let questionEndTime; // date à laquelle la question prend fin
@@ -73,6 +75,8 @@ module.exports = function (game) {
 
 				screenSockQuestion.push(question.time); // on ajoute le temps de réponse
 
+				screenSockQuestion.push(actualQuestion + 1);
+
 				questionEndTime = Date.now() + question.time * 1000; // on calcule la date de fin de la question
 
 				for (let screenSock of game.screensSocks) {
@@ -118,11 +122,34 @@ module.exports = function (game) {
 		}
 	}
 
+	game.onScreenJoinInGame = function (sock, msg) {
+
+		let question = questions[actualQuestion];
+
+		let header = actualQuestion == 0 ? START_GAME : NEW_QUESTION; // on choisit le type de message pour les écrans comme pour les joueurs juste avant
+		let screenSockQuestion = [header, question.title]; // on prépare le message contenant la question
+
+		for (let i = 0; i < 4; i++) {
+			screenSockQuestion.push(question.answers[i]); // on ajoute chaque réponse de la question au message
+		}
+
+		let remainingQuestionTime = Math.floor((questionEndTime - Date.now()) / 1000); // on calcule le temps restant avant la fin de la question
+		screenSockQuestion.push(remainingQuestionTime); // on ajoute le temps de réponse
+
+		screenSockQuestion.push(actualQuestion + 1);
+
+		sock.send(JSON.stringify(screenSockQuestion)); // on envoie un message de début de partie au joueur avec le temps restant de la question en cours
+
+		sock.send(JSON.stringify([NEW_SCREEN, game.state, screenSockQuestion]));
+
+	}
+
 	game.onPlayerLeftInGame = function (sock) {
 
 	}
 
 	game.onMessage = function (sock, msg) { // quand on reçoit un message du joueur
+
 		switch (sock.state) {
 			case WAIT_ANSWER: { // quand on est en attente d'une réponse
 				if (sock.player.answers[actualQuestion] === undefined && msg[0] >= 0 && msg[0] <= 3) { // si le joueur n'a pas encore donné de réponse et si le code de réponse est 0, 1, 2 ou 3

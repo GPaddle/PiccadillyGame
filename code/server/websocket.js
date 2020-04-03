@@ -156,6 +156,7 @@ module.exports = function (httpServer, conf) {
 						game.screensSocks.push(sock); // on ajoute l'écran à la liste des écrans
 
 						if (game.state > SCORE) {
+							
 							game.onScreenJoinInGame(sock, game.playersSocks);
 						}
 					}
