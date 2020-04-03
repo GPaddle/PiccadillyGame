@@ -144,14 +144,20 @@ module.exports = function (httpServer, conf) {
 			}
 
 			switch (sock.state) {
+
 				case WAIT_AUTH: { // quand on est en attente d'authentification
 					if (msg[0] == CLIENT_TYPE_PLAYER) {
 						initPrePlayer(); // si le client nous dit "je suis un joueur", on prépare ce futur joueur
 					} else if (msg[0] == CLIENT_TYPE_SCREEN) {
+
 						//REPERE 10
 						sock.send(JSON.stringify([conf.minPlayer, game.playersSocks.length])); // si le client nous dit "je suis un grand écran", on envoit les caractéristiques de la partie à cet écran
 						sock.state = WAIT_NOTHING; // on n'attend plus aucune donnée envoyé par l'écran (il ne fait qu'afficher ce qu'on lui envoit)
 						game.screensSocks.push(sock); // on ajoute l'écran à la liste des écrans
+
+						if (game.state > SCORE) {
+							game.onScreenJoinInGame(sock, game.playersSocks);
+						}
 					}
 
 					break;
@@ -213,7 +219,7 @@ module.exports = function (httpServer, conf) {
 					break;
 				}
 
-				default: { // si on est pas dans un état connu, on laisse le jeu gérer le message
+				default: { // si on est pas dans un état connu, on laisse le jeu gérer le message					
 					game.onMessage(sock, msg); // on déclenche l'évènement onMessage du jeu actuel (nouvelle réponse, mouvement du space du joueur...)
 					break;
 				}

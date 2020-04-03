@@ -8,7 +8,8 @@ const START_GAME = 5;
 const PLAYER_MOVE = 1,
 	NEW_GATE = 2,
 	NEW_STARSHIP = 3,
-	DEL_STARSHIP = 4;
+	DEL_STARSHIP = 4,
+	NEW_SCREEN = 6;
 
 const DEAD = 1;
 
@@ -152,8 +153,20 @@ module.exports = function (game) {
 		}
 	}
 
+	game.onScreenJoinInGame = function (sock, msg) {
+
+		let listeJoueurs = [];
+
+		msg.forEach(element => {
+			listeJoueurs.push(element.player);
+		});
+
+		sock.send(JSON.stringify([NEW_SCREEN, listeJoueurs]));
+
+	}
+
 	game.onPlayerLeftInGame = function (sock) { // quand un joueur quitte la partie en cours
-		if(sock.player.alive) {
+		if (sock.player.alive) {
 			livingPlayersCount--;
 		}
 

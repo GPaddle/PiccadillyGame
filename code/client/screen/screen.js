@@ -7,7 +7,8 @@ const CLIENT_TYPE_SCREEN = 1;
 const ADD_PLAYER = 0,
 	DEL_PLAYER = 1,
 	START_GAME_COUNTDOWN = 4,
-	START_GAME = 5;
+	START_GAME = 5,
+	NEW_SCREEN = 6;
 
 const STOP_GAME = 0;
 
@@ -95,6 +96,8 @@ window.onload = function () {
 						}, 1000)
 					} else if (msg[0] == START_GAME) { // quand la partie commence
 						game.onStart(msg); // on passe la main au jeu
+					} else if (msg[0] == NEW_SCREEN) { // Si il s'agit d'un nouvel écran
+						game.onMessage(msg); // On utilise la fonction onMessage combinée au message de nouvel écran
 					}
 
 					break;
@@ -125,7 +128,7 @@ window.onload = function () {
 		}
 	}
 
-	game.sock.onclose = function() {
+	game.sock.onclose = function () {
 		document.body.innerHTML = `<div id="disconnect-message">Le serveur a été déconnecté. La page doit être rechargée.</div>`; // on affiche un message quand le serveur est déconnecté
 	}
 }
