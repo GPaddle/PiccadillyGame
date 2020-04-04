@@ -101,6 +101,14 @@ module.exports = function (httpServer, conf) {
 				screenSock.send(JSON.stringify([conf.minPlayer, game.playersSocks.length])); // on envoit les caractéristiques de la partie aux grands écrans
 			}
 
+			/*
+			if (conf.randomGame) {
+				let listeJeux = conf["liste des jeux possibles (commentaire)"];
+				conf.game = listeJeux[Math.trunc(Math.random() * listeJeux.length)];
+				game.conf = conf;
+			}
+			*/
+			
 			if (game.playersSocks.length >= conf.minPlayer) { // s'il y a déjà assez de joueurs quand on sort de l'écran d'affichage des scores, on déclenche directement le décompte de début de partie
 				startBeginCountdown();
 			}
