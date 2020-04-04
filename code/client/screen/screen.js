@@ -35,12 +35,13 @@ window.onload = function () {
 			switch (game.state) {
 				case WAIT_GAME_INFO: { // quand on reçoit les infos de la partie
 					document.body.innerHTML = `
-					<div id="service-name">Piccadilly Game</div>
-					<div id="join-invitation">Rejoignez la partie sur <a href='http://${window.location.host}/play' id='url' target='_blank'>http://${window.location.host}/play</a></div>
-					<canvas id="qr"></canvas>
-					<div id="players-info">Nombre de joueurs connectés : <span id="players-count">0</span></div>
-					<div id="min-players-info">Nombre de joueurs minimum nécessaires : <span id="min-players-count">...</span></div>
-					`; // on affiche l'écran d'attente
+					<div id="home">
+						<div id="service-name">Piccadilly Game</div>
+						<div id="join-invitation">Rejoignez la partie sur <a href='http://${window.location.host}/play' id='url' target='_blank'>http://${window.location.host}/play</a></div>
+						<canvas id="qr"></canvas>
+						<div id="players-info">Nombre de joueurs connectés : <span id="players-count">0</span></div>
+						<div id="min-players-info">Nombre de joueurs minimum nécessaires : <span id="min-players-count">...</span></div>
+					</div>`; // on affiche l'écran d'attente
 
 					let qr = new QRious({
 						element: document.getElementById("qr"),
@@ -74,17 +75,34 @@ window.onload = function () {
 					} else if (msg[0] == START_GAME_COUNTDOWN) { // quand le compte à rebours a commencé
 						let countdownInfo = document.createElement("div");
 						countdownInfo.id = "start-countdown-info";
-						countdownInfo.innerHTML = "La partie commence dans ";
+
+						//msg[2] correspond au nom du jeu 
+						let icone;
+						switch (msg[2]) {
+							case "questions":
+								icone = "🖋️";
+								break;
+
+							case "space":
+								icone = "🚀";
+								break;
+
+							default:
+								break;
+						}
+
+						countdownInfo.innerHTML = "<div> Le jeu sera : "+msg[2]+" "+icone + "</div><div>La partie commence dans ";
 
 						let time = msg[1]; // on récupère le temps de compte à rebours
 
 						let countdownSpan = document.createElement("span");
-						countdownSpan.innerHTML = time;
+						countdownSpan.innerHTML = time+"</div>";
 
 						countdownInfo.appendChild(countdownSpan); // on ajoute la balise de compte à rebours
 
 						let playersInfo = document.getElementById("players-info");
-						document.body.insertBefore(countdownInfo, playersInfo);
+						let home = document.querySelector("#home");
+						home.insertBefore(countdownInfo, playersInfo);
 
 						let countdown = setInterval(function () {
 							time--;

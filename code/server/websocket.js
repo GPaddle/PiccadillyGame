@@ -54,7 +54,7 @@ module.exports = function (httpServer, conf) {
 		game.state = BEGIN_COUNT_DOWN; // on passe l'état du jeu sur "compte à rebours"
 
 		for (let screenSock of game.screensSocks) {
-			screenSock.send(JSON.stringify([START_GAME_COUNTDOWN, conf.startCountdownTime])); // on dit à tous les écrans que le compte à rebours se lance et la durée de ce décompte
+			screenSock.send(JSON.stringify([START_GAME_COUNTDOWN, conf.startCountdownTime, conf.game])); // on dit à tous les écrans que le compte à rebours se lance et la durée de ce décompte
 		}
 
 		let beginCountdown = setTimeout(game.start, conf.startCountdownTime * 1000); // on lance la partie à la fin du décompte
@@ -156,7 +156,7 @@ module.exports = function (httpServer, conf) {
 						game.screensSocks.push(sock); // on ajoute l'écran à la liste des écrans
 
 						if (game.state > SCORE) {
-							
+
 							game.onScreenJoinInGame(sock, game.playersSocks);
 						}
 					}
